@@ -139,7 +139,7 @@ export class RevenueCalculationService {
 
         // 9. 根據規則計算最終營收金額
         const rulePayload = {
-          rule_type: rule.ruleType,
+          rule_type: rule.ruleType as 'fixed' | 'percentage' | 'tiered',
           rule_payload: rule.rulePayload,
         };
 
