@@ -12,6 +12,7 @@ import { RevenueRuleService } from "./services/revenue-rule.service";
 import { RevenueRecordService } from "./services/revenue-record.service";
 import { RevenueAdjustmentService } from "./services/revenue-adjustment.service";
 import { RevenueCalculatorService } from "./services/revenue-calculator.service";
+import { RevenueCalculationService } from "./services/revenue-calculation.service";
 import { RevenueRuleEngine } from "./services/revenue-rule-engine.service";
 import { RevenueEventListener } from "./listeners/revenue-event.listener";
 import { RevenueRuleController } from "./controllers/revenue-rule.controller";
@@ -41,6 +42,7 @@ import { RevenueAdjustmentController } from "./controllers/revenue-adjustment.co
     RevenueRecordService,
     RevenueAdjustmentService,
     RevenueCalculatorService,
+    RevenueCalculationService,
     RevenueRuleEngine,
     RevenueEventListener,
   ],
@@ -49,6 +51,7 @@ import { RevenueAdjustmentController } from "./controllers/revenue-adjustment.co
     RevenueRecordService,
     RevenueAdjustmentService,
     RevenueCalculatorService,
+    RevenueCalculationService,
     RevenueRuleEngine,
   ],
 })
