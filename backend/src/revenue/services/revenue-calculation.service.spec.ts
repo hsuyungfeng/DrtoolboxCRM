@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Logger } from '@nestjs/common';
+import { Logger, NotFoundException } from '@nestjs/common';
 import { RevenueCalculationService } from './revenue-calculation.service';
 import { RevenueRuleEngine } from './revenue-rule-engine.service';
 import { RevenueRecord } from '../entities/revenue-record.entity';
@@ -34,6 +34,7 @@ describe('RevenueCalculationService', () => {
           useValue: {
             save: jest.fn(),
             find: jest.fn(),
+            create: jest.fn(),
           },
         },
         {
@@ -111,13 +112,6 @@ describe('RevenueCalculationService', () => {
           role: 'doctor',
           revenuePercentage: 50,
         },
-        {
-          id: 'assign-2',
-          staffId: 'staff-2',
-          treatmentId,
-          role: 'therapist',
-          revenuePercentage: 30,
-        },
       ];
 
       const rule: Partial<RevenueRule> = {
@@ -127,6 +121,8 @@ describe('RevenueCalculationService', () => {
         rulePayload: { percentage: 50 },
         effectiveFrom: new Date('2025-01-01'),
         effectiveTo: null,
+        clinicId,
+        isActive: true,
       };
 
       jest.spyOn(treatmentRepo, 'findOne').mockResolvedValue(treatment as any);
@@ -134,7 +130,7 @@ describe('RevenueCalculationService', () => {
       jest.spyOn(treatmentStaffAssignmentRepo, 'find').mockResolvedValue(staffAssignments as any);
       jest.spyOn(revenueRuleRepo, 'find').mockResolvedValue([rule as any]);
       jest.spyOn(revenueRuleEngine, 'calculateAmount').mockReturnValue(500);
-      jest.spyOn(revenueRecordRepo, 'save').mockResolvedValue({} as any);
+      jest.spyOn(revenueRecordRepo, 'save').mockResolvedValue({ id: 'record-1' } as any);
 
       const results = await service.calculateSessionRevenue(
         clinicId,
@@ -143,12 +139,16 @@ describe('RevenueCalculationService', () => {
       );
 
       expect(results).toBeDefined();
+      expect(results.length).toBe(1);
       expect(treatmentRepo.findOne).toHaveBeenCalledWith({
         where: { id: treatmentId },
       });
       expect(treatmentSessionRepo.findOne).toHaveBeenCalledWith({
         where: { id: sessionId },
       });
+      // 驗證批量查詢被呼叫一次（不是迴圈中多次）
+      expect(revenueRuleRepo.find).toHaveBeenCalledTimes(1);
+      expect(revenueRecordRepo.save).toHaveBeenCalledTimes(1);
     });
 
     it('should throw error if treatment not found', async () => {
@@ -160,7 +160,7 @@ describe('RevenueCalculationService', () => {
 
       await expect(
         service.calculateSessionRevenue(clinicId, treatmentId, sessionId),
-      ).rejects.toThrow();
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should handle missing rules gracefully', async () => {
@@ -203,6 +203,108 @@ describe('RevenueCalculationService', () => {
       );
 
       expect(results).toBeDefined();
+      expect(results.length).toBe(0);
+      // 驗證批量查詢被呼叫一次以獲取所有角色的規則
+      expect(revenueRuleRepo.find).toHaveBeenCalledTimes(1);
+    });
+
+    it('should handle multiple staff assignments with different roles efficiently', async () => {
+      const clinicId = 'clinic-1';
+      const treatmentId = 'treatment-1';
+      const sessionId = 'session-1';
+
+      const treatment: Partial<Treatment> = {
+        id: treatmentId,
+        clinicId,
+        totalPrice: 3000,
+        name: 'Test Treatment',
+      };
+
+      const session: Partial<TreatmentSession> = {
+        id: sessionId,
+        treatmentId,
+        clinicId,
+        status: 'completed',
+        revenueCalculated: false,
+      };
+
+      const staffAssignments: Partial<TreatmentStaffAssignment>[] = [
+        {
+          id: 'assign-1',
+          staffId: 'doctor-1',
+          treatmentId,
+          role: 'doctor',
+          revenuePercentage: 50,
+        },
+        {
+          id: 'assign-2',
+          staffId: 'therapist-1',
+          treatmentId,
+          role: 'therapist',
+          revenuePercentage: 30,
+        },
+      ];
+
+      const mockRules: Partial<RevenueRule>[] = [
+        {
+          id: 'rule-doctor',
+          role: 'doctor',
+          ruleType: 'percentage',
+          rulePayload: { percentage: 50 },
+          revenuePercentage: 50,
+          isActive: true,
+          clinicId,
+          effectiveFrom: new Date('2025-01-01'),
+        },
+        {
+          id: 'rule-therapist',
+          role: 'therapist',
+          ruleType: 'percentage',
+          rulePayload: { percentage: 30 },
+          revenuePercentage: 30,
+          isActive: true,
+          clinicId,
+          effectiveFrom: new Date('2025-01-01'),
+        },
+      ];
+
+      jest.spyOn(treatmentRepo, 'findOne').mockResolvedValue(treatment as any);
+      jest.spyOn(treatmentSessionRepo, 'findOne').mockResolvedValue(session as any);
+      jest.spyOn(treatmentStaffAssignmentRepo, 'find').mockResolvedValue(staffAssignments as any);
+      jest.spyOn(revenueRuleRepo, 'find').mockResolvedValue(mockRules as any);
+      jest.spyOn(revenueRuleEngine, 'calculateAmount')
+        .mockReturnValueOnce(1500) // 醫生：3000 * 50% = 1500
+        .mockReturnValueOnce(900);  // 治療師：3000 * 30% = 900
+      jest.spyOn(revenueRecordRepo, 'save')
+        .mockResolvedValueOnce({ id: 'record-1' } as any)
+        .mockResolvedValueOnce({ id: 'record-2' } as any);
+
+      const results = await service.calculateSessionRevenue(
+        clinicId,
+        treatmentId,
+        sessionId,
+      );
+
+      // 驗證結果
+      expect(results).toBeDefined();
+      expect(results.length).toBe(2);
+
+      // 驗證批量查詢被呼叫一次（不是迴圈中多次）
+      // 這是本次修復的核心優化
+      expect(revenueRuleRepo.find).toHaveBeenCalledTimes(1);
+
+      // 驗證查詢時使用了 In() 操作符進行批量查詢
+      const findCall = (revenueRuleRepo.find as jest.Mock).mock.calls[0][0];
+      expect(findCall.where).toBeDefined();
+      expect(findCall.where.role).toBeDefined(); // 應該包含 In(['doctor', 'therapist'])
+      expect(findCall.where.clinicId).toBe(clinicId);
+      expect(findCall.where.isActive).toBe(true);
+
+      // 驗證為兩個員工都建立了記錄
+      expect(revenueRecordRepo.save).toHaveBeenCalledTimes(2);
+
+      // 驗證計算引擎被正確呼叫
+      expect(revenueRuleEngine.calculateAmount).toHaveBeenCalledTimes(2);
     });
   });
 });
