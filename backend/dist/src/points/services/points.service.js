@@ -26,7 +26,7 @@ let PointsService = PointsService_1 = class PointsService {
         if (amount <= 0) {
             throw new common_1.BadRequestException('獎勵點數必須大於 0');
         }
-        let lastError;
+        let lastError = new Error('Unknown error');
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
                 const balance = await this.transactionService.getOrCreateBalance(customerId, this.getCustomerTypeFromId(customerId), clinicId);
@@ -40,18 +40,18 @@ let PointsService = PointsService_1 = class PointsService {
                 return transaction;
             }
             catch (error) {
+                lastError = error;
                 if (this.isOptimisticLockError(error) &&
                     attempt < maxRetries) {
                     const delay = (Math.pow(2, attempt) - 1) * 100;
                     this.logger.warn(`樂觀鎖衝突，${delay}ms 後進行第 ${attempt + 1} 次重試`);
                     await this.sleep(delay);
-                    lastError = error;
                     continue;
                 }
                 throw error;
             }
         }
-        throw new common_1.ConflictException(`經過 ${maxRetries} 次重試後仍無法更新點數餘額：${lastError?.message}`);
+        throw new common_1.ConflictException(`經過 ${maxRetries} 次重試後仍無法更新點數餘額：${lastError.message}`);
     }
     async redeemPoints(customerId, amount, clinicId, treatmentId, maxRetries = 3) {
         if (amount <= 0) {
@@ -61,7 +61,7 @@ let PointsService = PointsService_1 = class PointsService {
         if (Number(balance.balance) < amount) {
             throw new common_1.BadRequestException(`點數不足。目前餘額：${balance.balance}，需要：${amount}`);
         }
-        let lastError;
+        let lastError = new Error('Unknown error');
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
                 const newBalance = Number(balance.balance) - amount;
@@ -74,18 +74,18 @@ let PointsService = PointsService_1 = class PointsService {
                 return transaction;
             }
             catch (error) {
+                lastError = error;
                 if (this.isOptimisticLockError(error) &&
                     attempt < maxRetries) {
                     const delay = (Math.pow(2, attempt) - 1) * 100;
                     this.logger.warn(`樂觀鎖衝突，${delay}ms 後進行第 ${attempt + 1} 次重試`);
                     await this.sleep(delay);
-                    lastError = error;
                     continue;
                 }
                 throw error;
             }
         }
-        throw new common_1.ConflictException(`經過 ${maxRetries} 次重試後仍無法兌換點數：${lastError?.message}`);
+        throw new common_1.ConflictException(`經過 ${maxRetries} 次重試後仍無法兌換點數：${lastError.message}`);
     }
     async getBalance(customerId, customerType, clinicId) {
         return await this.transactionService.getBalance(customerId, customerType, clinicId);

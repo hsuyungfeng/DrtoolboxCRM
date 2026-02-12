@@ -39,7 +39,7 @@ export class PointsService {
       throw new BadRequestException('獎勵點數必須大於 0');
     }
 
-    let lastError: Error;
+    let lastError: Error = new Error('Unknown error');
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
@@ -80,9 +80,10 @@ export class PointsService {
 
         return transaction;
       } catch (error) {
+        lastError = error as Error;
         // 檢查是否是樂觀鎖衝突
         if (
-          this.isOptimisticLockError(error) &&
+          this.isOptimisticLockError(error as Error) &&
           attempt < maxRetries
         ) {
           // 指數退避：等待 (2^attempt - 1) * 100ms
@@ -91,7 +92,6 @@ export class PointsService {
             `樂觀鎖衝突，${delay}ms 後進行第 ${attempt + 1} 次重試`,
           );
           await this.sleep(delay);
-          lastError = error;
           continue;
         }
 
@@ -102,7 +102,7 @@ export class PointsService {
 
     // 超過最大重試次數
     throw new ConflictException(
-      `經過 ${maxRetries} 次重試後仍無法更新點數餘額：${lastError?.message}`,
+      `經過 ${maxRetries} 次重試後仍無法更新點數餘額：${lastError.message}`,
     );
   }
 
@@ -138,7 +138,7 @@ export class PointsService {
       );
     }
 
-    let lastError: Error;
+    let lastError: Error = new Error('Unknown error');
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
@@ -173,9 +173,10 @@ export class PointsService {
 
         return transaction;
       } catch (error) {
+        lastError = error as Error;
         // 檢查是否是樂觀鎖衝突
         if (
-          this.isOptimisticLockError(error) &&
+          this.isOptimisticLockError(error as Error) &&
           attempt < maxRetries
         ) {
           // 指數退避
@@ -184,7 +185,6 @@ export class PointsService {
             `樂觀鎖衝突，${delay}ms 後進行第 ${attempt + 1} 次重試`,
           );
           await this.sleep(delay);
-          lastError = error;
           continue;
         }
 
@@ -193,7 +193,7 @@ export class PointsService {
     }
 
     throw new ConflictException(
-      `經過 ${maxRetries} 次重試後仍無法兌換點數：${lastError?.message}`,
+      `經過 ${maxRetries} 次重試後仍無法兌換點數：${lastError.message}`,
     );
   }
 
