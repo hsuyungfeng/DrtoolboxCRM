@@ -48,6 +48,7 @@ const formValue = ref({
 const searchQuery = ref('');
 const isSearching = ref(false);
 const searchResults = ref<Patient[]>([]);
+const hasSearched = ref(false);
 
 // 計算 clinicId，優先使用 store 中的值，否則使用默認值
 const clinicId = computed(() => {
@@ -107,9 +108,9 @@ const columns: DataTableColumns<Patient> = [
   },
   {
     title: '出生日期',
-    key: 'birthDate',
+    key: 'dateOfBirth',
     render(row) {
-      return row.birthDate ? new Date(row.birthDate).toLocaleDateString('zh-TW') : '-';
+      return row.dateOfBirth ? new Date(row.dateOfBirth).toLocaleDateString('zh-TW') : '-';
     },
   },
   {
@@ -173,7 +174,7 @@ function editPatient(patient: Patient) {
   formValue.value = {
     name: patient.name,
     idNumber: patient.idNumber || '',
-    phone: patient.phone,
+    phone: patient.phone || '',
     email: patient.email || '',
     gender: patient.gender || 'male',
   };
@@ -263,9 +264,11 @@ function resetForm() {
 async function performSearch() {
   if (!searchQuery.value.trim()) {
     searchResults.value = [];
+    hasSearched.value = false;
     return;
   }
 
+  hasSearched.value = true;
   isSearching.value = true;
   try {
     const query = searchQuery.value.toLowerCase();
@@ -273,7 +276,7 @@ async function performSearch() {
       const nameMatch = patient.name?.toLowerCase().includes(query);
       const phoneMatch = patient.phone?.includes(searchQuery.value);
       const idMatch = patient.idNumber?.includes(searchQuery.value);
-      const dateMatch = patient.birthDate?.toString().includes(searchQuery.value);
+      const dateMatch = patient.dateOfBirth?.toString().includes(searchQuery.value);
 
       return nameMatch || phoneMatch || idMatch || dateMatch;
     });
@@ -289,6 +292,7 @@ async function performSearch() {
 function clearSearch() {
   searchQuery.value = '';
   searchResults.value = [];
+  hasSearched.value = false;
 }
 </script>
 
@@ -343,7 +347,7 @@ function clearSearch() {
         <n-card>
           <n-data-table
             :columns="columns"
-            :data="searchResults.length > 0 ? searchResults : patients"
+            :data="hasSearched ? searchResults : patients"
             :loading="loading"
             :pagination="pagination"
             :row-key="(row) => row.id"

@@ -20,9 +20,9 @@ export interface Patient {
   id: string;
   name: string;
   idNumber?: string;
-  phone: string;
+  phone?: string;
   email?: string;
-  birthDate?: string;
+  dateOfBirth?: string;
   gender?: 'male' | 'female' | 'other';
   allergyHistory?: string;
   medicationRecord?: string;
