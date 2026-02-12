@@ -9,7 +9,7 @@ import {
 } from 'typeorm';
 
 @Entity('points_balance')
-@Unique(['customerId', 'customerType'])
+@Unique(['customerId', 'customerType', 'clinicId'])
 export class PointsBalance {
   @PrimaryGeneratedColumn('uuid')
   id: string;

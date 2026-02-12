@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository, QueryRunner } from 'typeorm';
+import { Repository, QueryRunner, DataSource } from 'typeorm';
 import { NotFoundException, ConflictException } from '@nestjs/common';
 import { PointsTransactionService } from './points-transaction.service';
 import { PointsTransaction } from '../entities/points-transaction.entity';
@@ -53,6 +53,20 @@ describe('PointsTransactionService', () => {
       save: jest.fn(),
     };
 
+    const mockDataSource = {
+      createQueryRunner: jest.fn().mockReturnValue({
+        connect: jest.fn(),
+        startTransaction: jest.fn(),
+        manager: {
+          save: jest.fn(),
+          create: jest.fn(),
+        },
+        commitTransaction: jest.fn(),
+        rollbackTransaction: jest.fn(),
+        release: jest.fn(),
+      }),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PointsTransactionService,
@@ -63,6 +77,10 @@ describe('PointsTransactionService', () => {
         {
           provide: getRepositoryToken(PointsBalance),
           useValue: mockBalanceRepository,
+        },
+        {
+          provide: DataSource,
+          useValue: mockDataSource,
         },
       ],
     }).compile();

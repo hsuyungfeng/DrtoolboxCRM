@@ -52,22 +52,28 @@ let PointsConfigService = class PointsConfigService {
         });
         return await this.configRepository.save(config);
     }
-    async updateConfig(configId, updateData) {
+    async updateConfig(configId, clinicId, updateData) {
         const config = await this.configRepository.findOne({
-            where: { id: configId },
+            where: {
+                id: configId,
+                clinicId,
+            },
         });
         if (!config) {
-            throw new common_1.NotFoundException(`配置 ${configId} 不存在`);
+            throw new common_1.NotFoundException(`配置 ${configId} 不存在或無權限訪問`);
         }
         Object.assign(config, updateData);
         return await this.configRepository.save(config);
     }
-    async disableConfig(configId) {
+    async disableConfig(configId, clinicId) {
         const config = await this.configRepository.findOne({
-            where: { id: configId },
+            where: {
+                id: configId,
+                clinicId,
+            },
         });
         if (!config) {
-            throw new common_1.NotFoundException(`配置 ${configId} 不存在`);
+            throw new common_1.NotFoundException(`配置 ${configId} 不存在或無權限訪問`);
         }
         config.isActive = false;
         return await this.configRepository.save(config);

@@ -68,14 +68,18 @@ export class PointsConfigService {
    */
   async updateConfig(
     configId: string,
+    clinicId: string,
     updateData: Partial<PointsConfig>,
   ): Promise<PointsConfig> {
     const config = await this.configRepository.findOne({
-      where: { id: configId },
+      where: {
+        id: configId,
+        clinicId, // 確保診所隔離
+      },
     });
 
     if (!config) {
-      throw new NotFoundException(`配置 ${configId} 不存在`);
+      throw new NotFoundException(`配置 ${configId} 不存在或無權限訪問`);
     }
 
     Object.assign(config, updateData);
@@ -85,13 +89,16 @@ export class PointsConfigService {
   /**
    * 停用配置
    */
-  async disableConfig(configId: string): Promise<PointsConfig> {
+  async disableConfig(configId: string, clinicId: string): Promise<PointsConfig> {
     const config = await this.configRepository.findOne({
-      where: { id: configId },
+      where: {
+        id: configId,
+        clinicId, // 確保診所隔離
+      },
     });
 
     if (!config) {
-      throw new NotFoundException(`配置 ${configId} 不存在`);
+      throw new NotFoundException(`配置 ${configId} 不存在或無權限訪問`);
     }
 
     config.isActive = false;

@@ -56,6 +56,7 @@ describe('PointsService', () => {
       getBalance: jest.fn(),
       getOrCreateBalance: jest.fn(),
       updateBalance: jest.fn(),
+      updateBalanceAndCreateTransaction: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -87,13 +88,7 @@ describe('PointsService', () => {
       // Arrange
       const balance = { ...mockBalance, version: 1 } as PointsBalance;
       transactionService.getOrCreateBalance.mockResolvedValue(balance);
-      transactionService.updateBalance.mockResolvedValue({
-        ...balance,
-        balance: 600,
-        totalEarned: 1100,
-        version: 2,
-      } as PointsBalance);
-      transactionService.createTransaction.mockResolvedValue(
+      transactionService.updateBalanceAndCreateTransaction.mockResolvedValue(
         mockTransaction as PointsTransaction,
       );
 
@@ -108,20 +103,15 @@ describe('PointsService', () => {
       // Assert
       expect(result).toEqual(mockTransaction);
       expect(transactionService.getOrCreateBalance).toHaveBeenCalled();
-      expect(transactionService.createTransaction).toHaveBeenCalled();
+      expect(transactionService.updateBalanceAndCreateTransaction).toHaveBeenCalled();
     });
 
     it('應該支持推薦 ID', async () => {
       // Arrange
       const balance = { ...mockBalance } as PointsBalance;
       transactionService.getOrCreateBalance.mockResolvedValue(balance);
-      transactionService.updateBalance.mockResolvedValue({
-        ...balance,
-        balance: 600,
-      } as PointsBalance);
-      transactionService.createTransaction.mockResolvedValue(
-        { ...mockTransaction, referralId: 'ref-123' } as PointsTransaction,
-      );
+      const txResult = { ...mockTransaction, referralId: 'ref-123' } as PointsTransaction;
+      transactionService.updateBalanceAndCreateTransaction.mockResolvedValue(txResult);
 
       // Act
       await service.awardPoints(
@@ -133,15 +123,12 @@ describe('PointsService', () => {
       );
 
       // Assert
-      expect(transactionService.createTransaction).toHaveBeenCalledWith(
-        mockCustomerId,
-        'patient',
-        'earn_referral',
-        100,
-        600,
-        'referral',
-        mockClinicId,
-        'ref-123',
+      expect(transactionService.updateBalanceAndCreateTransaction).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.objectContaining({
+          customerId: mockCustomerId,
+          referralId: 'ref-123',
+        }),
       );
     });
 
@@ -153,17 +140,9 @@ describe('PointsService', () => {
       transactionService.getOrCreateBalance.mockResolvedValue(balance);
 
       // 第一次失敗，第二次成功
-      transactionService.updateBalance
+      transactionService.updateBalanceAndCreateTransaction
         .mockRejectedValueOnce(error)
-        .mockResolvedValueOnce({
-          ...balance,
-          balance: 600,
-          version: 2,
-        } as PointsBalance);
-
-      transactionService.createTransaction.mockResolvedValue(
-        mockTransaction as PointsTransaction,
-      );
+        .mockResolvedValueOnce(mockTransaction as PointsTransaction);
 
       // Act
       const result = await service.awardPoints(
@@ -175,7 +154,7 @@ describe('PointsService', () => {
 
       // Assert
       expect(result).toEqual(mockTransaction);
-      expect(transactionService.updateBalance).toHaveBeenCalledTimes(2);
+      expect(transactionService.updateBalanceAndCreateTransaction).toHaveBeenCalledTimes(2);
     });
 
     it('應該在超過重試次數後拋出異常', async () => {
@@ -184,10 +163,7 @@ describe('PointsService', () => {
       const error = new Error('version mismatch');
 
       transactionService.getOrCreateBalance.mockResolvedValue(balance);
-      transactionService.updateBalance.mockRejectedValue(error);
-      transactionService.createTransaction.mockResolvedValue(
-        mockTransaction as PointsTransaction,
-      );
+      transactionService.updateBalanceAndCreateTransaction.mockRejectedValue(error);
 
       // Act & Assert
       await expect(
@@ -211,13 +187,7 @@ describe('PointsService', () => {
       } as PointsBalance;
 
       transactionService.getOrCreateBalance.mockResolvedValue(balance);
-      transactionService.updateBalance.mockResolvedValue({
-        ...balance,
-        balance: 600, // 500 + 100
-        totalEarned: 1100, // 1000 + 100
-        version: 2,
-      } as PointsBalance);
-      transactionService.createTransaction.mockResolvedValue(
+      transactionService.updateBalanceAndCreateTransaction.mockResolvedValue(
         mockTransaction as PointsTransaction,
       );
 
@@ -225,11 +195,12 @@ describe('PointsService', () => {
       await service.awardPoints(mockCustomerId, 100, 'referral', mockClinicId);
 
       // Assert
-      expect(transactionService.updateBalance).toHaveBeenCalledWith(
+      expect(transactionService.updateBalanceAndCreateTransaction).toHaveBeenCalledWith(
         expect.objectContaining({
           balance: 600,
           totalEarned: 1100,
         }),
+        expect.any(Object),
       );
     });
   });
@@ -239,12 +210,6 @@ describe('PointsService', () => {
       // Arrange
       const balance = { ...mockBalance } as PointsBalance;
       transactionService.getBalance.mockResolvedValue(balance);
-      transactionService.updateBalance.mockResolvedValue({
-        ...balance,
-        balance: 450,
-        totalRedeemed: 550,
-        version: 2,
-      } as PointsBalance);
 
       const redeemTx = {
         ...mockTransaction,
@@ -252,7 +217,7 @@ describe('PointsService', () => {
         amount: -50,
         balance: 450,
       } as PointsTransaction;
-      transactionService.createTransaction.mockResolvedValue(redeemTx);
+      transactionService.updateBalanceAndCreateTransaction.mockResolvedValue(redeemTx);
 
       // Act
       const result = await service.redeemPoints(
@@ -264,39 +229,30 @@ describe('PointsService', () => {
       // Assert
       expect(result).toEqual(redeemTx);
       expect(transactionService.getBalance).toHaveBeenCalled();
-      expect(transactionService.createTransaction).toHaveBeenCalled();
+      expect(transactionService.updateBalanceAndCreateTransaction).toHaveBeenCalled();
     });
 
     it('應該支持療程 ID', async () => {
       // Arrange
       const balance = { ...mockBalance } as PointsBalance;
       transactionService.getBalance.mockResolvedValue(balance);
-      transactionService.updateBalance.mockResolvedValue({
-        ...balance,
-        balance: 450,
-      } as PointsBalance);
 
       const redeemTx = {
         ...mockTransaction,
         type: 'redeem',
         treatmentId: 'treat-123',
       } as PointsTransaction;
-      transactionService.createTransaction.mockResolvedValue(redeemTx);
+      transactionService.updateBalanceAndCreateTransaction.mockResolvedValue(redeemTx);
 
       // Act
       await service.redeemPoints(mockCustomerId, 50, mockClinicId, 'treat-123');
 
       // Assert
-      expect(transactionService.createTransaction).toHaveBeenCalledWith(
-        mockCustomerId,
-        'patient',
-        'redeem',
-        -50,
-        450,
-        'treatment',
-        mockClinicId,
-        undefined,
-        'treat-123',
+      expect(transactionService.updateBalanceAndCreateTransaction).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.objectContaining({
+          treatmentId: 'treat-123',
+        }),
       );
     });
 
@@ -323,13 +279,7 @@ describe('PointsService', () => {
       } as PointsBalance;
 
       transactionService.getBalance.mockResolvedValue(balance);
-      transactionService.updateBalance.mockResolvedValue({
-        ...balance,
-        balance: 450, // 500 - 50
-        totalRedeemed: 550, // 500 + 50
-        version: 2,
-      } as PointsBalance);
-      transactionService.createTransaction.mockResolvedValue(
+      transactionService.updateBalanceAndCreateTransaction.mockResolvedValue(
         mockTransaction as PointsTransaction,
       );
 
@@ -337,11 +287,12 @@ describe('PointsService', () => {
       await service.redeemPoints(mockCustomerId, 50, mockClinicId);
 
       // Assert
-      expect(transactionService.updateBalance).toHaveBeenCalledWith(
+      expect(transactionService.updateBalanceAndCreateTransaction).toHaveBeenCalledWith(
         expect.objectContaining({
           balance: 450,
           totalRedeemed: 550,
         }),
+        expect.any(Object),
       );
     });
   });

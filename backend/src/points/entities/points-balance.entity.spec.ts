@@ -158,14 +158,16 @@ describe('PointsBalance Entity', () => {
       expect(pointsBalance.id).toBe('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11');
     });
 
-    it('(customerId, customerType) 應該有唯一約束', () => {
+    it('(customerId, customerType, clinicId) 應該有唯一約束', () => {
       // Arrange & Act
       pointsBalance.customerId = 'customer-001';
       pointsBalance.customerType = 'patient';
+      pointsBalance.clinicId = 'clinic-001';
 
       // Assert
       expect(pointsBalance.customerId).toBe('customer-001');
       expect(pointsBalance.customerType).toBe('patient');
+      expect(pointsBalance.clinicId).toBe('clinic-001');
       // 實際的唯一約束驗證將在資料庫層面進行
     });
   });

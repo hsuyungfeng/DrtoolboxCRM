@@ -8,6 +8,6 @@ export declare class PointsController {
     constructor(pointsService: PointsService);
     awardPoints(createDto: CreatePointsTransactionDto): Promise<PointsTransaction>;
     redeemPoints(redeemDto: RedeemPointsDto): Promise<PointsTransaction>;
-    getBalance(customerId: string, customerType: string, clinicId: string): Promise<PointsBalance>;
-    getTransactionHistory(customerId: string, customerType: string, clinicId: string, limit?: number): Promise<PointsTransaction[]>;
+    getBalance(customerId?: string, customerType?: string, clinicId?: string): Promise<PointsBalance>;
+    getTransactionHistory(customerId?: string, customerType?: string, clinicId?: string, limit?: string): Promise<PointsTransaction[]>;
 }

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { PointsTransaction } from '../entities/points-transaction.entity';
 import { PointsBalance } from '../entities/points-balance.entity';
 
@@ -11,6 +11,7 @@ export class PointsTransactionService {
     private transactionRepository: Repository<PointsTransaction>,
     @InjectRepository(PointsBalance)
     private balanceRepository: Repository<PointsBalance>,
+    private dataSource: DataSource,
   ) {}
 
   /**
@@ -127,5 +128,56 @@ export class PointsTransactionService {
    */
   async updateBalance(balance: PointsBalance): Promise<PointsBalance> {
     return await this.balanceRepository.save(balance);
+  }
+
+  /**
+   * 在事務中原子性地更新餘額和建立交易記錄
+   */
+  async updateBalanceAndCreateTransaction(
+    balance: PointsBalance,
+    transactionData: {
+      customerId: string;
+      customerType: string;
+      type: string;
+      amount: number;
+      source: string;
+      clinicId: string;
+      referralId?: string;
+      treatmentId?: string;
+      notes?: string;
+    },
+  ): Promise<PointsTransaction> {
+    const queryRunner = this.dataSource.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // 1. 更新點數餘額
+      const updatedBalance = await queryRunner.manager.save(
+        PointsBalance,
+        balance,
+      );
+
+      // 2. 建立交易記錄
+      const transaction = queryRunner.manager.create(PointsTransaction, {
+        ...transactionData,
+        balance: updatedBalance.balance,
+      });
+
+      const savedTransaction = await queryRunner.manager.save(
+        PointsTransaction,
+        transaction,
+      );
+
+      await queryRunner.commitTransaction();
+
+      return savedTransaction;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 }

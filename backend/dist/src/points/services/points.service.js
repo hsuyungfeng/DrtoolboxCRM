@@ -12,6 +12,7 @@ var PointsService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PointsService = void 0;
 const common_1 = require("@nestjs/common");
+const typeorm_1 = require("typeorm");
 const points_config_service_1 = require("./points-config.service");
 const points_transaction_service_1 = require("./points-transaction.service");
 let PointsService = PointsService_1 = class PointsService {
@@ -34,8 +35,16 @@ let PointsService = PointsService_1 = class PointsService {
                 const newTotalEarned = Number(balance.totalEarned) + amount;
                 balance.balance = newBalance;
                 balance.totalEarned = newTotalEarned;
-                const updatedBalance = await this.transactionService.updateBalance(balance);
-                const transaction = await this.transactionService.createTransaction(customerId, balance.customerType, 'earn_referral', amount, updatedBalance.balance, source, clinicId, referralId);
+                const transactionType = this.getTransactionTypeBySource(source);
+                const transaction = await this.transactionService.updateBalanceAndCreateTransaction(balance, {
+                    customerId,
+                    customerType: balance.customerType,
+                    type: transactionType,
+                    amount,
+                    source,
+                    clinicId,
+                    referralId,
+                });
                 this.logger.log(`成功獎勵 ${amount} 點給 ${customerId}（嘗試 ${attempt}/${maxRetries}）`);
                 return transaction;
             }
@@ -57,19 +66,26 @@ let PointsService = PointsService_1 = class PointsService {
         if (amount <= 0) {
             throw new common_1.BadRequestException('兌換點數必須大於 0');
         }
-        const balance = await this.transactionService.getBalance(customerId, this.getCustomerTypeFromId(customerId), clinicId);
-        if (Number(balance.balance) < amount) {
-            throw new common_1.BadRequestException(`點數不足。目前餘額：${balance.balance}，需要：${amount}`);
-        }
         let lastError = new Error('Unknown error');
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
-                const newBalance = Number(balance.balance) - amount;
-                const newTotalRedeemed = Number(balance.totalRedeemed) + amount;
-                balance.balance = newBalance;
-                balance.totalRedeemed = newTotalRedeemed;
-                const updatedBalance = await this.transactionService.updateBalance(balance);
-                const transaction = await this.transactionService.createTransaction(customerId, balance.customerType, 'redeem', -amount, updatedBalance.balance, 'treatment', clinicId, undefined, treatmentId);
+                const latestBalance = await this.transactionService.getBalance(customerId, this.getCustomerTypeFromId(customerId), clinicId);
+                if (Number(latestBalance.balance) < amount) {
+                    throw new common_1.BadRequestException(`點數不足。目前餘額：${latestBalance.balance}，需要：${amount}`);
+                }
+                const newBalance = Number(latestBalance.balance) - amount;
+                const newTotalRedeemed = Number(latestBalance.totalRedeemed) + amount;
+                latestBalance.balance = newBalance;
+                latestBalance.totalRedeemed = newTotalRedeemed;
+                const transaction = await this.transactionService.updateBalanceAndCreateTransaction(latestBalance, {
+                    customerId,
+                    customerType: latestBalance.customerType,
+                    type: 'redeem',
+                    amount: -amount,
+                    source: 'treatment',
+                    clinicId,
+                    treatmentId,
+                });
                 this.logger.log(`成功兌換 ${amount} 點 - ${customerId}（嘗試 ${attempt}/${maxRetries}）`);
                 return transaction;
             }
@@ -94,6 +110,9 @@ let PointsService = PointsService_1 = class PointsService {
         return await this.transactionService.getTransactionHistory(customerId, customerType, clinicId, limit);
     }
     isOptimisticLockError(error) {
+        if (error instanceof typeorm_1.OptimisticLockVersionMismatchError) {
+            return true;
+        }
         return (error.message.includes('version') ||
             error.message.includes('mismatch') ||
             error.message.includes('optimistic lock'));
@@ -106,6 +125,18 @@ let PointsService = PointsService_1 = class PointsService {
             return 'staff';
         }
         return 'patient';
+    }
+    getTransactionTypeBySource(source) {
+        switch (source) {
+            case 'referral':
+                return 'earn_referral';
+            case 'treatment':
+                return 'earn_treatment';
+            case 'manual':
+                return 'manual_adjust';
+            default:
+                return 'earn_referral';
+        }
     }
 };
 exports.PointsService = PointsService;

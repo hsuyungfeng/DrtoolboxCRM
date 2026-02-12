@@ -21,9 +21,11 @@ const points_balance_entity_1 = require("../entities/points-balance.entity");
 let PointsTransactionService = class PointsTransactionService {
     transactionRepository;
     balanceRepository;
-    constructor(transactionRepository, balanceRepository) {
+    dataSource;
+    constructor(transactionRepository, balanceRepository, dataSource) {
         this.transactionRepository = transactionRepository;
         this.balanceRepository = balanceRepository;
+        this.dataSource = dataSource;
     }
     async createTransaction(customerId, customerType, type, amount, balance, source, clinicId, referralId, treatmentId, notes) {
         const transaction = this.transactionRepository.create({
@@ -89,6 +91,28 @@ let PointsTransactionService = class PointsTransactionService {
     async updateBalance(balance) {
         return await this.balanceRepository.save(balance);
     }
+    async updateBalanceAndCreateTransaction(balance, transactionData) {
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+        try {
+            const updatedBalance = await queryRunner.manager.save(points_balance_entity_1.PointsBalance, balance);
+            const transaction = queryRunner.manager.create(points_transaction_entity_1.PointsTransaction, {
+                ...transactionData,
+                balance: updatedBalance.balance,
+            });
+            const savedTransaction = await queryRunner.manager.save(points_transaction_entity_1.PointsTransaction, transaction);
+            await queryRunner.commitTransaction();
+            return savedTransaction;
+        }
+        catch (error) {
+            await queryRunner.rollbackTransaction();
+            throw error;
+        }
+        finally {
+            await queryRunner.release();
+        }
+    }
 };
 exports.PointsTransactionService = PointsTransactionService;
 exports.PointsTransactionService = PointsTransactionService = __decorate([
@@ -96,6 +120,7 @@ exports.PointsTransactionService = PointsTransactionService = __decorate([
     __param(0, (0, typeorm_1.InjectRepository)(points_transaction_entity_1.PointsTransaction)),
     __param(1, (0, typeorm_1.InjectRepository)(points_balance_entity_1.PointsBalance)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
-        typeorm_2.Repository])
+        typeorm_2.Repository,
+        typeorm_2.DataSource])
 ], PointsTransactionService);
 //# sourceMappingURL=points-transaction.service.js.map

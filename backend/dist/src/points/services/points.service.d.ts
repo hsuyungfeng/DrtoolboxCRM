@@ -14,4 +14,5 @@ export declare class PointsService {
     private isOptimisticLockError;
     private sleep;
     private getCustomerTypeFromId;
+    private getTransactionTypeBySource;
 }

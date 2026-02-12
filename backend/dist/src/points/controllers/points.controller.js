@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const points_service_1 = require("../services/points.service");
 const create_points_transaction_dto_1 = require("../dto/create-points-transaction.dto");
 const redeem_points_dto_1 = require("../dto/redeem-points.dto");
+const jwt_auth_guard_1 = require("../../auth/guards/jwt-auth.guard");
 let PointsController = class PointsController {
     pointsService;
     constructor(pointsService) {
@@ -29,10 +30,45 @@ let PointsController = class PointsController {
         return await this.pointsService.redeemPoints(redeemDto.customerId, redeemDto.amount, redeemDto.clinicId, redeemDto.treatmentId);
     }
     async getBalance(customerId, customerType, clinicId) {
+        if (!customerId) {
+            throw new common_1.BadRequestException('customerId 參數必填');
+        }
+        if (!customerType) {
+            throw new common_1.BadRequestException('customerType 參數必填');
+        }
+        if (!clinicId) {
+            throw new common_1.BadRequestException('clinicId 參數必填');
+        }
+        if (!['patient', 'staff'].includes(customerType)) {
+            throw new common_1.BadRequestException('customerType 必須是 "patient" 或 "staff"');
+        }
         return await this.pointsService.getBalance(customerId, customerType, clinicId);
     }
     async getTransactionHistory(customerId, customerType, clinicId, limit) {
-        return await this.pointsService.getTransactionHistory(customerId, customerType, clinicId, limit || 20);
+        if (!customerId) {
+            throw new common_1.BadRequestException('customerId 參數必填');
+        }
+        if (!customerType) {
+            throw new common_1.BadRequestException('customerType 參數必填');
+        }
+        if (!clinicId) {
+            throw new common_1.BadRequestException('clinicId 參數必填');
+        }
+        if (!['patient', 'staff'].includes(customerType)) {
+            throw new common_1.BadRequestException('customerType 必須是 "patient" 或 "staff"');
+        }
+        let parsedLimit = 20;
+        if (limit) {
+            const parsed = parseInt(limit, 10);
+            if (isNaN(parsed) || parsed < 1) {
+                throw new common_1.BadRequestException('limit 必須是正整數');
+            }
+            if (parsed > 100) {
+                throw new common_1.BadRequestException('limit 最多 100 筆記錄');
+            }
+            parsedLimit = parsed;
+        }
+        return await this.pointsService.getTransactionHistory(customerId, customerType, clinicId, parsedLimit);
     }
 };
 exports.PointsController = PointsController;
@@ -66,11 +102,12 @@ __decorate([
     __param(2, (0, common_1.Query)('clinicId')),
     __param(3, (0, common_1.Query)('limit')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String, Number]),
+    __metadata("design:paramtypes", [String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], PointsController.prototype, "getTransactionHistory", null);
 exports.PointsController = PointsController = __decorate([
     (0, common_1.Controller)('points'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __metadata("design:paramtypes", [points_service_1.PointsService])
 ], PointsController);
 //# sourceMappingURL=points.controller.js.map

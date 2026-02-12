@@ -189,10 +189,16 @@ describe('PointsConfigService', () => {
       configRepo.save.mockResolvedValue(updatedConfig as PointsConfig);
 
       // Act
-      const result = await service.updateConfig(configId, updateData);
+      const result = await service.updateConfig(configId, mockClinicId, updateData);
 
       // Assert
       expect(result).toEqual(updatedConfig);
+      expect(configRepo.findOne).toHaveBeenCalledWith({
+        where: {
+          id: configId,
+          clinicId: mockClinicId,
+        },
+      });
       expect(configRepo.save).toHaveBeenCalled();
     });
 
@@ -202,7 +208,7 @@ describe('PointsConfigService', () => {
 
       // Act & Assert
       await expect(
-        service.updateConfig('non_existent', { configValue: 100 }),
+        service.updateConfig('non_existent', mockClinicId, { configValue: 100 }),
       ).rejects.toThrow(NotFoundException);
     });
   });
@@ -216,10 +222,16 @@ describe('PointsConfigService', () => {
       configRepo.save.mockResolvedValue(disabledConfig as PointsConfig);
 
       // Act
-      const result = await service.disableConfig(configId);
+      const result = await service.disableConfig(configId, mockClinicId);
 
       // Assert
       expect(result.isActive).toBe(false);
+      expect(configRepo.findOne).toHaveBeenCalledWith({
+        where: {
+          id: configId,
+          clinicId: mockClinicId,
+        },
+      });
       expect(configRepo.save).toHaveBeenCalled();
     });
 
@@ -228,7 +240,7 @@ describe('PointsConfigService', () => {
       configRepo.findOne.mockResolvedValue(null);
 
       // Act & Assert
-      await expect(service.disableConfig('non_existent')).rejects.toThrow(
+      await expect(service.disableConfig('non_existent', mockClinicId)).rejects.toThrow(
         NotFoundException,
       );
     });

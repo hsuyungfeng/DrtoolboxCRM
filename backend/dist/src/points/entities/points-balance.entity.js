@@ -66,6 +66,6 @@ __decorate([
 ], PointsBalance.prototype, "updatedAt", void 0);
 exports.PointsBalance = PointsBalance = __decorate([
     (0, typeorm_1.Entity)('points_balance'),
-    (0, typeorm_1.Unique)(['customerId', 'customerType'])
+    (0, typeorm_1.Unique)(['customerId', 'customerType', 'clinicId'])
 ], PointsBalance);
 //# sourceMappingURL=points-balance.entity.js.map

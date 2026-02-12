@@ -4,6 +4,7 @@ import {
   ConflictException,
   Logger,
 } from '@nestjs/common';
+import { OptimisticLockVersionMismatchError } from 'typeorm';
 import { PointsConfigService } from './points-config.service';
 import { PointsTransactionService } from './points-transaction.service';
 import { PointsTransaction } from '../entities/points-transaction.entity';
@@ -58,20 +59,21 @@ export class PointsService {
         balance.balance = newBalance;
         balance.totalEarned = newTotalEarned;
 
-        const updatedBalance = await this.transactionService.updateBalance(
-          balance,
-        );
+        // 4. 根據 source 動態決定交易類型
+        const transactionType = this.getTransactionTypeBySource(source);
 
-        // 4. 建立交易記錄
-        const transaction = await this.transactionService.createTransaction(
-          customerId,
-          balance.customerType,
-          'earn_referral',
-          amount,
-          updatedBalance.balance,
-          source,
-          clinicId,
-          referralId,
+        // 5. 在事務中原子性地更新餘額和建立交易記錄
+        const transaction = await this.transactionService.updateBalanceAndCreateTransaction(
+          balance,
+          {
+            customerId,
+            customerType: balance.customerType,
+            type: transactionType,
+            amount,
+            source,
+            clinicId,
+            referralId,
+          },
         );
 
         this.logger.log(
@@ -125,46 +127,44 @@ export class PointsService {
       throw new BadRequestException('兌換點數必須大於 0');
     }
 
-    // 1. 取得餘額並驗證
-    const balance = await this.transactionService.getBalance(
-      customerId,
-      this.getCustomerTypeFromId(customerId),
-      clinicId,
-    );
-
-    if (Number(balance.balance) < amount) {
-      throw new BadRequestException(
-        `點數不足。目前餘額：${balance.balance}，需要：${amount}`,
-      );
-    }
-
     let lastError: Error = new Error('Unknown error');
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        // 2. 計算新的餘額
-        const newBalance = Number(balance.balance) - amount;
-        const newTotalRedeemed = Number(balance.totalRedeemed) + amount;
-
-        // 3. 更新點數餘額（處理樂觀鎖）
-        balance.balance = newBalance;
-        balance.totalRedeemed = newTotalRedeemed;
-
-        const updatedBalance = await this.transactionService.updateBalance(
-          balance,
+        // 1. 每次重試都重新讀取最新的餘額（防止 TOCTOU 競態條件）
+        const latestBalance = await this.transactionService.getBalance(
+          customerId,
+          this.getCustomerTypeFromId(customerId),
+          clinicId,
         );
 
-        // 4. 建立交易記錄
-        const transaction = await this.transactionService.createTransaction(
-          customerId,
-          balance.customerType,
-          'redeem',
-          -amount, // 負數表示扣減
-          updatedBalance.balance,
-          'treatment',
-          clinicId,
-          undefined,
-          treatmentId,
+        // 2. 驗證點數充足
+        if (Number(latestBalance.balance) < amount) {
+          throw new BadRequestException(
+            `點數不足。目前餘額：${latestBalance.balance}，需要：${amount}`,
+          );
+        }
+
+        // 3. 計算新的餘額
+        const newBalance = Number(latestBalance.balance) - amount;
+        const newTotalRedeemed = Number(latestBalance.totalRedeemed) + amount;
+
+        // 4. 更新點數餘額（處理樂觀鎖）
+        latestBalance.balance = newBalance;
+        latestBalance.totalRedeemed = newTotalRedeemed;
+
+        // 5. 在事務中原子性地更新餘額和建立交易記錄
+        const transaction = await this.transactionService.updateBalanceAndCreateTransaction(
+          latestBalance,
+          {
+            customerId,
+            customerType: latestBalance.customerType,
+            type: 'redeem',
+            amount: -amount, // 負數表示扣減
+            source: 'treatment',
+            clinicId,
+            treatmentId,
+          },
         );
 
         this.logger.log(
@@ -233,6 +233,12 @@ export class PointsService {
    * 檢查是否是樂觀鎖錯誤
    */
   private isOptimisticLockError(error: Error): boolean {
+    // 使用 TypeORM 的精確類型檢查
+    if (error instanceof OptimisticLockVersionMismatchError) {
+      return true;
+    }
+
+    // 備用檢查：某些情況下錯誤訊息可能包含版本相關信息
     return (
       error.message.includes('version') ||
       error.message.includes('mismatch') ||
@@ -257,5 +263,21 @@ export class PointsService {
       return 'staff';
     }
     return 'patient';
+  }
+
+  /**
+   * 根據來源動態決定交易類型
+   */
+  private getTransactionTypeBySource(source: string): string {
+    switch (source) {
+      case 'referral':
+        return 'earn_referral';
+      case 'treatment':
+        return 'earn_treatment';
+      case 'manual':
+        return 'manual_adjust';
+      default:
+        return 'earn_referral';
+    }
   }
 }
