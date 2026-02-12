@@ -21,6 +21,12 @@ const routes: Array<RouteRecordRaw> = [
     meta: { title: '療程管理' },
   },
   {
+    path: '/treatment-templates',
+    name: 'TreatmentTemplates',
+    component: () => import('@/views/TreatmentTemplatesView.vue'),
+    meta: { title: '療法模板管理' },
+  },
+  {
     path: '/staff',
     name: 'Staff',
     component: () => import('@/views/StaffView.vue'),

@@ -217,4 +217,6 @@ export const revenueAdjustmentApi = {
     http.get(`/revenue-adjustments/revenue-record/${revenueRecordId}/total-adjustment`, { params: { clinicId } }),
 };
 
+export { treatmentTemplatesApi } from './treatment-templates-api';
+
 export default api;

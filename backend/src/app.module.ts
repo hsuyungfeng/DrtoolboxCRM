@@ -11,6 +11,7 @@ import { RevenueModule } from "./revenue/revenue.module";
 import { AuthModule } from "./auth/auth.module";
 import { PointsModule } from "./points/points.module";
 import { ReferralsModule } from "./referrals/referrals.module";
+import { TreatmentTemplatesModule } from "./treatment-templates/treatment-templates.module";
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { ReferralsModule } from "./referrals/referrals.module";
     AuthModule,
     PatientsModule,
     TreatmentsModule,
+    TreatmentTemplatesModule,
     StaffModule,
     RevenueModule,
     PointsModule,
