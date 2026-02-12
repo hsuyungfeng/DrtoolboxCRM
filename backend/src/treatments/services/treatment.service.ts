@@ -1,20 +1,38 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 import { Treatment } from "../entities/treatment.entity";
 import { CreateTreatmentDto } from "../dto/create-treatment.dto";
 import { UpdateTreatmentDto } from "../dto/update-treatment.dto";
 
 @Injectable()
 export class TreatmentService {
+  private readonly logger = new Logger(TreatmentService.name);
+
   constructor(
     @InjectRepository(Treatment)
     private treatmentRepository: Repository<Treatment>,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async create(createTreatmentDto: CreateTreatmentDto): Promise<Treatment> {
     const treatment = this.treatmentRepository.create(createTreatmentDto);
-    return await this.treatmentRepository.save(treatment);
+    const savedTreatment = await this.treatmentRepository.save(treatment);
+
+    // 發送 treatment.created 事件，觸發推薦轉化邏輯
+    try {
+      this.eventEmitter.emit('treatment.created', {
+        treatmentId: savedTreatment.id,
+        patientId: savedTreatment.patientId,
+        clinicId: savedTreatment.clinicId,
+      });
+    } catch (error) {
+      this.logger.warn(`Failed to emit treatment.created event: ${error.message}`);
+      // 不拋出異常，防止治療創建失敗
+    }
+
+    return savedTreatment;
   }
 
   async findAll(clinicId: string): Promise<Treatment[]> {

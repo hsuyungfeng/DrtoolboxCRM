@@ -10,6 +10,7 @@ import { StaffModule } from "./staff/staff.module";
 import { RevenueModule } from "./revenue/revenue.module";
 import { AuthModule } from "./auth/auth.module";
 import { PointsModule } from "./points/points.module";
+import { ReferralsModule } from "./referrals/referrals.module";
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { PointsModule } from "./points/points.module";
     StaffModule,
     RevenueModule,
     PointsModule,
+    ReferralsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

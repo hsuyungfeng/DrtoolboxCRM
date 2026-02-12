@@ -11,20 +11,36 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var TreatmentService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TreatmentService = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
+const event_emitter_1 = require("@nestjs/event-emitter");
 const treatment_entity_1 = require("../entities/treatment.entity");
-let TreatmentService = class TreatmentService {
+let TreatmentService = TreatmentService_1 = class TreatmentService {
     treatmentRepository;
-    constructor(treatmentRepository) {
+    eventEmitter;
+    logger = new common_1.Logger(TreatmentService_1.name);
+    constructor(treatmentRepository, eventEmitter) {
         this.treatmentRepository = treatmentRepository;
+        this.eventEmitter = eventEmitter;
     }
     async create(createTreatmentDto) {
         const treatment = this.treatmentRepository.create(createTreatmentDto);
-        return await this.treatmentRepository.save(treatment);
+        const savedTreatment = await this.treatmentRepository.save(treatment);
+        try {
+            this.eventEmitter.emit('treatment.created', {
+                treatmentId: savedTreatment.id,
+                patientId: savedTreatment.patientId,
+                clinicId: savedTreatment.clinicId,
+            });
+        }
+        catch (error) {
+            this.logger.warn(`Failed to emit treatment.created event: ${error.message}`);
+        }
+        return savedTreatment;
     }
     async findAll(clinicId) {
         return await this.treatmentRepository.find({
@@ -74,9 +90,10 @@ let TreatmentService = class TreatmentService {
     }
 };
 exports.TreatmentService = TreatmentService;
-exports.TreatmentService = TreatmentService = __decorate([
+exports.TreatmentService = TreatmentService = TreatmentService_1 = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(treatment_entity_1.Treatment)),
-    __metadata("design:paramtypes", [typeorm_2.Repository])
+    __metadata("design:paramtypes", [typeorm_2.Repository,
+        event_emitter_1.EventEmitter2])
 ], TreatmentService);
 //# sourceMappingURL=treatment.service.js.map

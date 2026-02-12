@@ -19,6 +19,7 @@ const staff_module_1 = require("./staff/staff.module");
 const revenue_module_1 = require("./revenue/revenue.module");
 const auth_module_1 = require("./auth/auth.module");
 const points_module_1 = require("./points/points.module");
+const referrals_module_1 = require("./referrals/referrals.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -33,6 +34,7 @@ exports.AppModule = AppModule = __decorate([
             staff_module_1.StaffModule,
             revenue_module_1.RevenueModule,
             points_module_1.PointsModule,
+            referrals_module_1.ReferralsModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
