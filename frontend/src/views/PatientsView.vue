@@ -44,6 +44,11 @@ const formValue = ref({
   gender: 'male' as 'male' | 'female' | 'other',
 });
 
+// 搜尋相關的狀態
+const searchQuery = ref('');
+const isSearching = ref(false);
+const searchResults = ref<Patient[]>([]);
+
 // 計算 clinicId，優先使用 store 中的值，否則使用默認值
 const clinicId = computed(() => {
   return userStore.clinicId || 'clinic_001';
@@ -253,6 +258,38 @@ function resetForm() {
     formRef.value.restoreValidation();
   }
 }
+
+// 執行搜尋
+async function performSearch() {
+  if (!searchQuery.value.trim()) {
+    searchResults.value = [];
+    return;
+  }
+
+  isSearching.value = true;
+  try {
+    const query = searchQuery.value.toLowerCase();
+    searchResults.value = patients.value.filter(patient => {
+      const nameMatch = patient.name?.toLowerCase().includes(query);
+      const phoneMatch = patient.phone?.includes(searchQuery.value);
+      const idMatch = patient.idNumber?.includes(searchQuery.value);
+      const dateMatch = patient.birthDate?.toString().includes(searchQuery.value);
+
+      return nameMatch || phoneMatch || idMatch || dateMatch;
+    });
+  } catch (error) {
+    console.error('搜尋失敗:', error);
+    message.error('搜尋失敗');
+  } finally {
+    isSearching.value = false;
+  }
+}
+
+// 清除搜尋
+function clearSearch() {
+  searchQuery.value = '';
+  searchResults.value = [];
+}
 </script>
 
 <template>
@@ -285,10 +322,28 @@ function resetForm() {
           </n-space>
         </div>
 
+        <div class="search-bar" style="margin: 16px 0; padding: 12px; background-color: #f5f5f5; border-radius: 4px;">
+          <n-space>
+            <n-input
+              v-model:value="searchQuery"
+              placeholder="輸入患者資訊搜尋：身分證號、姓名、電話或生日"
+              clearable
+              @keyup.enter="performSearch"
+              style="flex: 1;"
+            />
+            <n-button type="primary" @click="performSearch" :loading="isSearching">
+              搜尋
+            </n-button>
+            <n-button secondary @click="clearSearch">
+              清除
+            </n-button>
+          </n-space>
+        </div>
+
         <n-card>
           <n-data-table
             :columns="columns"
-            :data="patients"
+            :data="searchResults.length > 0 ? searchResults : patients"
             :loading="loading"
             :pagination="pagination"
             :row-key="(row) => row.id"
