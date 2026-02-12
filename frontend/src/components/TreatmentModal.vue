@@ -8,65 +8,80 @@
     @positive-click="handleSubmit"
     @negative-click="showModal = false"
   >
-    <n-form ref="formRef" :model="formValue" :rules="rules">
-      <n-form-item label="患者 *" path="patientId">
-        <n-select
-          v-model:value="formValue.patientId"
-          :options="patientOptions"
-          placeholder="選擇患者"
+    <n-tabs type="line" animated>
+      <!-- 基本資訊標籤頁 -->
+      <n-tab-pane name="basic" tab="基本資訊">
+        <n-form ref="formRef" :model="formValue" :rules="rules">
+          <n-form-item label="患者 *" path="patientId">
+            <n-select
+              v-model:value="formValue.patientId"
+              :options="patientOptions"
+              placeholder="選擇患者"
+            />
+          </n-form-item>
+
+          <n-form-item label="療程名稱 *" path="name">
+            <n-input v-model:value="formValue.name" placeholder="請輸入療程名稱" />
+          </n-form-item>
+
+          <n-form-item label="建議售價" path="suggestedPrice">
+            <n-input-number
+              v-model:value="formValue.suggestedPrice"
+              :disabled="true"
+              prefix="¥"
+            />
+          </n-form-item>
+
+          <n-form-item label="實際售價 *" path="totalPrice">
+            <n-input-number
+              v-model:value="formValue.totalPrice"
+              prefix="¥"
+              placeholder="請輸入實際售價"
+            />
+          </n-form-item>
+
+          <n-form-item label="總次數 *" path="totalSessions">
+            <n-input-number
+              v-model:value="formValue.totalSessions"
+              placeholder="請輸入療程總次數"
+              :min="1"
+              :max="10"
+            />
+          </n-form-item>
+
+          <n-form-item label="預期完成日期 *" path="expectedEndDate">
+            <n-date-picker
+              v-model:value="formValue.expectedEndDate"
+              type="date"
+              placeholder="選擇預期完成日期"
+            />
+          </n-form-item>
+
+          <n-form-item label="預約提醒" path="enableReminder">
+            <n-checkbox v-model:checked="formValue.enableReminder">
+              啟用預約提醒
+            </n-checkbox>
+          </n-form-item>
+
+          <n-form-item label="備註" path="notes">
+            <n-input
+              v-model:value="formValue.notes"
+              type="textarea"
+              placeholder="請輸入療程備註"
+              :rows="3"
+            />
+          </n-form-item>
+        </n-form>
+      </n-tab-pane>
+
+      <!-- 次數管理標籤頁 -->
+      <n-tab-pane name="sessions" tab="次數管理">
+        <treatment-sessions-manager
+          :total-sessions="formValue.totalSessions || 1"
+          :clinic-id="clinicId"
         />
-      </n-form-item>
-
-      <n-form-item label="療程名稱 *" path="name">
-        <n-input v-model:value="formValue.name" placeholder="請輸入療程名稱" />
-      </n-form-item>
-
-      <n-form-item label="建議售價" path="suggestedPrice">
-        <n-input-number
-          v-model:value="formValue.suggestedPrice"
-          :disabled="true"
-          prefix="¥"
-        />
-      </n-form-item>
-
-      <n-form-item label="實際售價 *" path="totalPrice">
-        <n-input-number
-          v-model:value="formValue.totalPrice"
-          prefix="¥"
-          placeholder="請輸入實際售價"
-        />
-      </n-form-item>
-
-      <n-form-item label="總次數 *" path="totalSessions">
-        <n-input-number
-          v-model:value="formValue.totalSessions"
-          placeholder="請輸入療程總次數"
-        />
-      </n-form-item>
-
-      <n-form-item label="預期完成日期 *" path="expectedEndDate">
-        <n-date-picker
-          v-model:value="formValue.expectedEndDate"
-          type="date"
-          placeholder="選擇預期完成日期"
-        />
-      </n-form-item>
-
-      <n-form-item label="預約提醒" path="enableReminder">
-        <n-checkbox v-model:checked="formValue.enableReminder">
-          啟用預約提醒
-        </n-checkbox>
-      </n-form-item>
-
-      <n-form-item label="備註" path="notes">
-        <n-input
-          v-model:value="formValue.notes"
-          type="textarea"
-          placeholder="請輸入療程備註"
-          :rows="3"
-        />
-      </n-form-item>
-    </n-form>
+      </n-tab-pane>
+    </n-tabs>
   </n-modal>
 </template>
 
@@ -81,11 +96,15 @@ import {
   NDatePicker,
   NSelect,
   NCheckbox,
+  NTabs,
+  NTabPane,
   useMessage,
 } from 'naive-ui';
 import type { FormInst, FormRules } from 'naive-ui';
 import type { Treatment } from '@/types';
 import { patientsApi } from '@/services/api';
+import { useUserStore } from '@/stores/user';
+import TreatmentSessionsManager from './TreatmentSessionsManager.vue';
 
 interface FormData {
   patientId: string;
@@ -113,9 +132,11 @@ const emit = defineEmits<{
   confirm: [data: FormData];
 }>();
 
+const userStore = useUserStore();
 const message = useMessage();
 const formRef = ref<FormInst | null>(null);
 const patientOptions = ref<any[]>([]);
+const clinicId = computed(() => userStore.clinicId || 'clinic_001');
 
 const formValue = ref({
   patientId: '',
