@@ -34,8 +34,14 @@ export class TreatmentCourseTemplate {
     precision: 10,
     scale: 2,
     transformer: {
-      to: (value: Decimal | number) => value,
-      from: (value: string) => new Decimal(value),
+      to: (value: Decimal | number | null): string | null => {
+        if (value === null || value === undefined) return null;
+        return value instanceof Decimal ? value.toString() : String(value);
+      },
+      from: (value: string | null): Decimal | null => {
+        if (value === null || value === undefined) return null;
+        return new Decimal(value);
+      },
     },
   })
   totalPrice: Decimal;
