@@ -1,0 +1,57 @@
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  Index,
+} from 'typeorm';
+import Decimal from 'decimal.js';
+
+interface StageConfig {
+  stageName: string;
+  sessionStart: number;
+  sessionEnd: number;
+}
+
+@Entity('treatment_course_templates')
+@Index(['clinicId', 'isActive'])
+export class TreatmentCourseTemplate {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ type: 'varchar', length: 255 })
+  name: string;
+
+  @Column({ type: 'text', nullable: true })
+  description: string;
+
+  @Column({ type: 'int' })
+  totalSessions: number;
+
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    transformer: {
+      to: (value: Decimal | number) => value,
+      from: (value: string) => new Decimal(value),
+    },
+  })
+  totalPrice: Decimal;
+
+  @Column({ type: 'json' })
+  stageConfig: StageConfig[];
+
+  @Column({ type: 'varchar', length: 32 })
+  clinicId: string;
+
+  @Column({ type: 'boolean', default: true })
+  isActive: boolean = true;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+}

@@ -6,6 +6,7 @@ import { Patient } from "../patients/entities/patient.entity";
 import { Treatment } from "../treatments/entities/treatment.entity";
 import { TreatmentSession } from "../treatments/entities/treatment-session.entity";
 import { TreatmentTemplate } from "../treatment-templates/entities/treatment-template.entity";
+import { TreatmentCourseTemplate } from "../treatments/entities/treatment-course-template.entity";
 import { RevenueRecord } from "../revenue/entities/revenue-record.entity";
 import { RevenueRule } from "../revenue/entities/revenue-rule.entity";
 import { RevenueAdjustment } from "../revenue/entities/revenue-adjustment.entity";
@@ -23,6 +24,7 @@ export const databaseConfig: TypeOrmModuleOptions = {
     Treatment,
     TreatmentSession,
     TreatmentTemplate,
+    TreatmentCourseTemplate,
     RevenueRecord,
     RevenueRule,
     RevenueAdjustment,
