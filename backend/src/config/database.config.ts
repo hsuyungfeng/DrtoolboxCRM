@@ -8,6 +8,9 @@ import { TreatmentSession } from "../treatments/entities/treatment-session.entit
 import { RevenueRecord } from "../revenue/entities/revenue-record.entity";
 import { RevenueRule } from "../revenue/entities/revenue-rule.entity";
 import { RevenueAdjustment } from "../revenue/entities/revenue-adjustment.entity";
+import { PointsConfig } from "../points/entities/points-config.entity";
+import { PointsBalance } from "../points/entities/points-balance.entity";
+import { PointsTransaction } from "../points/entities/points-transaction.entity";
 
 export const databaseConfig: TypeOrmModuleOptions = {
   type: "sqlite",
@@ -21,6 +24,9 @@ export const databaseConfig: TypeOrmModuleOptions = {
     RevenueRecord,
     RevenueRule,
     RevenueAdjustment,
+    PointsConfig,
+    PointsBalance,
+    PointsTransaction,
   ],
   synchronize: process.env.NODE_ENV !== "production",
   logging: process.env.NODE_ENV !== "production",

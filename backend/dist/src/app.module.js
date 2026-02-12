@@ -18,6 +18,7 @@ const treatments_module_1 = require("./treatments/treatments.module");
 const staff_module_1 = require("./staff/staff.module");
 const revenue_module_1 = require("./revenue/revenue.module");
 const auth_module_1 = require("./auth/auth.module");
+const points_module_1 = require("./points/points.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -31,6 +32,7 @@ exports.AppModule = AppModule = __decorate([
             treatments_module_1.TreatmentsModule,
             staff_module_1.StaffModule,
             revenue_module_1.RevenueModule,
+            points_module_1.PointsModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

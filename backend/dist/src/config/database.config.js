@@ -10,6 +10,9 @@ const treatment_session_entity_1 = require("../treatments/entities/treatment-ses
 const revenue_record_entity_1 = require("../revenue/entities/revenue-record.entity");
 const revenue_rule_entity_1 = require("../revenue/entities/revenue-rule.entity");
 const revenue_adjustment_entity_1 = require("../revenue/entities/revenue-adjustment.entity");
+const points_config_entity_1 = require("../points/entities/points-config.entity");
+const points_balance_entity_1 = require("../points/entities/points-balance.entity");
+const points_transaction_entity_1 = require("../points/entities/points-transaction.entity");
 exports.databaseConfig = {
     type: "sqlite",
     database: (0, path_1.join)(process.cwd(), "database.sqlite"),
@@ -22,6 +25,9 @@ exports.databaseConfig = {
         revenue_record_entity_1.RevenueRecord,
         revenue_rule_entity_1.RevenueRule,
         revenue_adjustment_entity_1.RevenueAdjustment,
+        points_config_entity_1.PointsConfig,
+        points_balance_entity_1.PointsBalance,
+        points_transaction_entity_1.PointsTransaction,
     ],
     synchronize: process.env.NODE_ENV !== "production",
     logging: process.env.NODE_ENV !== "production",
