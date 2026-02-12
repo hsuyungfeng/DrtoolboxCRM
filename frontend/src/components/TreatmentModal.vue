@@ -87,6 +87,17 @@ import type { FormInst, FormRules } from 'naive-ui';
 import type { Treatment } from '@/types';
 import { patientsApi } from '@/services/api';
 
+interface FormData {
+  patientId: string;
+  name: string;
+  suggestedPrice: number;
+  totalPrice: number;
+  totalSessions: number;
+  expectedEndDate: number | null;
+  enableReminder: boolean;
+  notes: string;
+}
+
 interface Props {
   show: boolean;
   title: string;
@@ -99,7 +110,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   'update:show': [value: boolean];
-  confirm: [data: any];
+  confirm: [data: FormData];
 }>();
 
 const message = useMessage();
@@ -177,14 +188,18 @@ async function handleSubmit() {
     if (!formRef.value) return;
     await formRef.value.validate();
 
-    emit('confirm', {
+    const submitData: FormData = {
       patientId: formValue.value.patientId,
       name: formValue.value.name,
+      suggestedPrice: formValue.value.suggestedPrice,
       totalPrice: formValue.value.totalPrice,
       totalSessions: formValue.value.totalSessions,
-      expectedEndDate: formValue.value.expectedEndDate ? new Date(formValue.value.expectedEndDate) : null,
+      expectedEndDate: formValue.value.expectedEndDate,
+      enableReminder: formValue.value.enableReminder,
       notes: formValue.value.notes,
-    });
+    };
+
+    emit('confirm', submitData);
   } catch (error) {
     message.error('表單驗證失敗');
   }

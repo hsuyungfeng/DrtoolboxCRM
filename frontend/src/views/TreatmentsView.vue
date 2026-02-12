@@ -1,5 +1,7 @@
 <template>
-  <div class="treatments-view">
+  <n-message-provider>
+    <n-dialog-provider>
+      <div class="treatments-view">
     <div class="page-header">
       <h1>療程管理</h1>
       <n-space>
@@ -50,19 +52,34 @@
       :treatment="editingTreatment"
       @confirm="handleEdit"
     />
-  </div>
+      </div>
+    </n-dialog-provider>
+  </n-message-provider>
 </template>
 
 <script setup lang="ts">
 import { ref, h, onMounted, computed } from 'vue';
-import { NButton, NTag, NSpace, NIcon, NDataTable, NCard } from 'naive-ui';
+import { NButton, NTag, NSpace, NIcon, NDataTable, NCard, NMessageProvider, NDialogProvider, useMessage, useDialog } from 'naive-ui';
 import type { DataTableColumns } from 'naive-ui';
 import type { Treatment } from '@/types';
 import { treatmentsApi } from '@/services/api';
 import { useUserStore } from '@/stores/user';
 import TreatmentModal from '@/components/TreatmentModal.vue';
 
+interface FormData {
+  patientId: string;
+  name: string;
+  suggestedPrice: number;
+  totalPrice: number;
+  totalSessions: number;
+  expectedEndDate: number | null;
+  enableReminder: boolean;
+  notes: string;
+}
+
 const userStore = useUserStore();
+const message = useMessage();
+const dialog = useDialog();
 const loading = ref(false);
 const treatments = ref<Treatment[]>([]);
 const showCreateModal = ref(false);
@@ -136,34 +153,65 @@ function editTreatment(treatment: Treatment) {
   showEditModal.value = true;
 }
 
-async function handleCreate(formData: any) {
+async function handleCreate(formData: FormData) {
   try {
-    await treatmentsApi.create({ ...formData, clinicId: clinicId.value });
+    const createData = {
+      patientId: formData.patientId,
+      name: formData.name,
+      totalPrice: formData.totalPrice,
+      totalSessions: formData.totalSessions,
+      expectedEndDate: formData.expectedEndDate ? new Date(formData.expectedEndDate).toISOString() : undefined,
+      notes: formData.notes,
+      clinicId: clinicId.value,
+    };
+    await treatmentsApi.create(createData);
     showCreateModal.value = false;
+    message.success('新增療程成功');
     await loadTreatments();
   } catch (error) {
     console.error('新增療程失敗:', error);
+    message.error('新增療程失敗，請重試');
   }
 }
 
-async function handleEdit(formData: any) {
+async function handleEdit(formData: FormData) {
   if (!editingTreatment.value) return;
   try {
-    await treatmentsApi.update(editingTreatment.value.id, formData);
+    const updateData = {
+      patientId: formData.patientId,
+      name: formData.name,
+      totalPrice: formData.totalPrice,
+      totalSessions: formData.totalSessions,
+      expectedEndDate: formData.expectedEndDate ? new Date(formData.expectedEndDate).toISOString() : undefined,
+      notes: formData.notes,
+    };
+    await treatmentsApi.update(editingTreatment.value.id, updateData);
     showEditModal.value = false;
+    message.success('編輯療程成功');
     await loadTreatments();
   } catch (error) {
     console.error('編輯療程失敗:', error);
+    message.error('編輯療程失敗，請重試');
   }
 }
 
 async function deleteTreatment(id: string) {
-  try {
-    await treatmentsApi.delete(id);
-    await loadTreatments();
-  } catch (error) {
-    console.error('刪除療程失敗:', error);
-  }
+  dialog.warning({
+    title: '刪除療程',
+    content: '確定要刪除該療程嗎？此操作無法撤銷。',
+    positiveText: '確定',
+    negativeText: '取消',
+    onPositiveClick: async () => {
+      try {
+        await treatmentsApi.delete(id);
+        message.success('刪除療程成功');
+        await loadTreatments();
+      } catch (error) {
+        console.error('刪除療程失敗:', error);
+        message.error('刪除療程失敗，請重試');
+      }
+    },
+  });
 }
 </script>
 

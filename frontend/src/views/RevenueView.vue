@@ -1,0 +1,961 @@
+<template>
+  <div class="revenue-view">
+    <div class="page-header">
+      <h1>分潤管理</h1>
+      <n-space>
+        <n-button type="primary" @click="showCreateRuleModal = true">
+          <template #icon>
+            <n-icon>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+              </svg>
+            </n-icon>
+          </template>
+          新增規則
+        </n-button>
+        <n-button secondary>
+          <template #icon>
+            <n-icon>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 8h-1V3H6v5H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zM8 5h8v3H8V5zm8 14H8v-4h8v4zm2-4v-2H6v2H4v-4c0-.55.45-1 1-1h14c.55 0 1 .45 1 1v4h-2z"/>
+              </svg>
+            </n-icon>
+          </template>
+          導出報表
+        </n-button>
+      </n-space>
+    </div>
+
+    <n-card>
+      <n-tabs type="line" animated>
+        <n-tab-pane name="records" tab="分潤記錄">
+          <n-data-table
+            :columns="recordColumns"
+            :data="revenueRecords"
+            :loading="loadingRecords"
+            :pagination="pagination"
+            :row-key="(row) => row.id"
+          />
+        </n-tab-pane>
+        <n-tab-pane name="rules" tab="分潤規則">
+          <n-data-table
+             :columns="ruleColumns"
+             :data="revenueRules"
+             :loading="loadingRules"
+             :pagination="pagination"
+             :row-key="(row) => row.id"
+           />
+         </n-tab-pane>
+         <n-tab-pane name="adjustments" tab="分潤調整">
+           <n-data-table
+             :columns="adjustmentColumns"
+             :data="revenueAdjustments"
+             :loading="loadingAdjustments"
+             :pagination="pagination"
+             :row-key="(row) => row.id"
+           />
+         </n-tab-pane>
+      </n-tabs>
+    </n-card>
+
+    <!-- 新增規則模態框 -->
+    <n-modal
+      v-model:show="showCreateRuleModal"
+      preset="dialog"
+      title="新增分潤規則"
+      positive-text="確認"
+      negative-text="取消"
+      @positive-click="handleCreateRule"
+    >
+      <n-form ref="ruleFormRef" :model="ruleFormValue" :rules="ruleRules">
+        <n-form-item label="角色" path="role">
+          <n-select
+            v-model:value="ruleFormValue.role"
+            :options="roleOptions"
+            placeholder="請選擇適用角色"
+          />
+        </n-form-item>
+        <n-form-item label="規則類型" path="ruleType">
+          <n-select
+            v-model:value="ruleFormValue.ruleType"
+            :options="ruleTypeOptions"
+            placeholder="請選擇規則類型"
+          />
+        </n-form-item>
+        <n-form-item label="生效日期" path="effectiveFrom">
+          <n-date-picker
+            v-model:value="ruleFormValue.effectiveFrom"
+            type="date"
+            style="width: 100%"
+            placeholder="請選擇生效日期"
+          />
+        </n-form-item>
+        <n-form-item label="失效日期" path="effectiveTo">
+          <n-date-picker
+            v-model:value="ruleFormValue.effectiveTo"
+            type="date"
+            style="width: 100%"
+            placeholder="請選擇失效日期（可選）"
+            clearable
+          />
+        </n-form-item>
+        
+        <n-form-item label="描述" path="description">
+          <n-input
+            v-model:value="ruleFormValue.description"
+            type="textarea"
+            placeholder="請輸入規則描述（可選）"
+            :autosize="{ minRows: 2, maxRows: 5 }"
+          />
+        </n-form-item>
+        
+        <!-- 動態規則參數字段 -->
+        <n-form-item v-if="showPercentageField" label="百分比 (%)" path="rulePayload.percentage">
+          <n-input-number
+            v-model:value="ruleFormValue.rulePayload.percentage"
+            :min="0"
+            :max="100"
+            :step="0.1"
+            placeholder="請輸入百分比"
+            style="width: 100%"
+          />
+        </n-form-item>
+        
+        <n-form-item v-if="showFixedField" label="固定金額" path="rulePayload.amount">
+          <n-input-number
+            v-model:value="ruleFormValue.rulePayload.amount"
+            :min="0"
+            :step="100"
+            placeholder="請輸入固定金額"
+            style="width: 100%"
+          />
+        </n-form-item>
+        
+        <n-form-item v-if="showTieredFields" label="階梯設定" path="rulePayload.tiers">
+          <div style="width: 100%">
+            <div v-for="(tier, index) in ruleFormValue.rulePayload.tiers" :key="index" style="margin-bottom: 12px; display: flex; gap: 8px;">
+              <n-input-number
+                v-model:value="tier.threshold"
+                :min="0"
+                :step="1000"
+                placeholder="門檻金額"
+                style="flex: 1"
+              />
+              <n-input-number
+                v-model:value="tier.percentage"
+                :min="0"
+                :max="100"
+                :step="0.1"
+                placeholder="百分比 (%)"
+                style="flex: 1"
+              />
+              <n-button
+                size="small"
+                @click="removeTier(index)"
+                :disabled="ruleFormValue.rulePayload.tiers.length <= 1"
+              >
+                移除
+              </n-button>
+            </div>
+            <n-button @click="addTier" size="small">添加階梯</n-button>
+          </div>
+        </n-form-item>
+        
+        <n-form-item label="是否啟用" path="isActive">
+          <n-switch v-model:value="ruleFormValue.isActive" />
+        </n-form-item>
+      </n-form>
+    </n-modal>
+    
+    <!-- 編輯規則模態框 -->
+    <n-modal
+      v-model:show="showEditRuleModal"
+      preset="dialog"
+      title="編輯分潤規則"
+      positive-text="確認"
+      negative-text="取消"
+      @positive-click="handleUpdateRule"
+    >
+      <n-form ref="ruleFormRef" :model="ruleFormValue" :rules="ruleRules">
+        <n-form-item label="角色" path="role">
+          <n-select
+            v-model:value="ruleFormValue.role"
+            :options="roleOptions"
+            placeholder="請選擇適用角色"
+          />
+        </n-form-item>
+        <n-form-item label="規則類型" path="ruleType">
+          <n-select
+            v-model:value="ruleFormValue.ruleType"
+            :options="ruleTypeOptions"
+            placeholder="請選擇規則類型"
+          />
+        </n-form-item>
+        <n-form-item label="生效日期" path="effectiveFrom">
+          <n-date-picker
+            v-model:value="ruleFormValue.effectiveFrom"
+            type="date"
+            style="width: 100%"
+            placeholder="請選擇生效日期"
+          />
+        </n-form-item>
+        <n-form-item label="失效日期" path="effectiveTo">
+          <n-date-picker
+            v-model:value="ruleFormValue.effectiveTo"
+            type="date"
+            style="width: 100%"
+            placeholder="請選擇失效日期（可選）"
+            clearable
+          />
+        </n-form-item>
+        
+        <n-form-item label="描述" path="description">
+          <n-input
+            v-model:value="ruleFormValue.description"
+            type="textarea"
+            placeholder="請輸入規則描述（可選）"
+            :autosize="{ minRows: 2, maxRows: 5 }"
+          />
+        </n-form-item>
+        
+        <!-- 動態規則參數字段 -->
+        <n-form-item v-if="showPercentageField" label="百分比 (%)" path="rulePayload.percentage">
+          <n-input-number
+            v-model:value="ruleFormValue.rulePayload.percentage"
+            :min="0"
+            :max="100"
+            :step="0.1"
+            placeholder="請輸入百分比"
+            style="width: 100%"
+          />
+        </n-form-item>
+        
+        <n-form-item v-if="showFixedField" label="固定金額" path="rulePayload.amount">
+          <n-input-number
+            v-model:value="ruleFormValue.rulePayload.amount"
+            :min="0"
+            :step="100"
+            placeholder="請輸入固定金額"
+            style="width: 100%"
+          />
+        </n-form-item>
+        
+        <n-form-item v-if="showTieredFields" label="階梯設定" path="rulePayload.tiers">
+          <div style="width: 100%">
+            <div v-for="(tier, index) in ruleFormValue.rulePayload.tiers" :key="index" style="margin-bottom: 12px; display: flex; gap: 8px;">
+              <n-input-number
+                v-model:value="tier.threshold"
+                :min="0"
+                :step="1000"
+                placeholder="門檻金額"
+                style="flex: 1"
+              />
+              <n-input-number
+                v-model:value="tier.percentage"
+                :min="0"
+                :max="100"
+                :step="0.1"
+                placeholder="百分比 (%)"
+                style="flex: 1"
+              />
+              <n-button
+                size="small"
+                @click="removeTier(index)"
+                :disabled="ruleFormValue.rulePayload.tiers.length <= 1"
+              >
+                移除
+              </n-button>
+            </div>
+            <n-button @click="addTier" size="small">添加階梯</n-button>
+          </div>
+        </n-form-item>
+        
+        <n-form-item label="是否啟用" path="isActive">
+          <n-switch v-model:value="ruleFormValue.isActive" />
+        </n-form-item>
+      </n-form>
+    </n-modal>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, h, onMounted, computed } from 'vue';
+import {
+  NButton, NTag, NSpace, NIcon, NDataTable, NCard, NModal,
+  NForm, NFormItem, NSelect, NDatePicker, NSwitch, NTabs, NTabPane,
+  NInput, NInputNumber, useDialog, useMessage,
+} from 'naive-ui';
+import type { DataTableColumns, FormInst, FormRules, SelectOption } from 'naive-ui';
+import type { RevenueRecord, RevenueRule, RevenueAdjustment } from '@/types';
+import { revenueApi, revenueAdjustmentApi } from '@/services/api';
+
+const loadingRecords = ref(false);
+const loadingRules = ref(false);
+const revenueRecords = ref<RevenueRecord[]>([]);
+const revenueRules = ref<RevenueRule[]>([]);
+const revenueAdjustments = ref<RevenueAdjustment[]>([]);
+const loadingAdjustments = ref(false);
+const showCreateRuleModal = ref(false);
+const showEditRuleModal = ref(false);
+const editingRuleId = ref<string | null>(null);
+
+const ruleFormRef = ref<FormInst | null>(null);
+const ruleFormValue = ref({
+  role: '',
+  ruleType: 'percentage' as RevenueRule['ruleType'],
+  effectiveFrom: Date.now(),
+  effectiveTo: undefined as number | undefined,
+  isActive: true,
+  description: '',
+  rulePayload: {
+    percentage: 0,
+    amount: 0,
+    tiers: [
+      { threshold: 0, percentage: 0 }
+    ]
+  },
+});
+
+// 根據規則類型動態顯示 rulePayload 字段
+const showPercentageField = computed(() => ruleFormValue.value.ruleType === 'percentage');
+const showFixedField = computed(() => ruleFormValue.value.ruleType === 'fixed');
+const showTieredFields = computed(() => ruleFormValue.value.ruleType === 'tiered');
+
+const roleOptions: SelectOption[] = [
+  { label: '醫生', value: 'doctor' },
+  { label: '治療師', value: 'therapist' },
+  { label: '助理', value: 'assistant' },
+  { label: '顧問', value: 'consultant' },
+  { label: '管理員', value: 'admin' },
+];
+
+const ruleTypeOptions: SelectOption[] = [
+  { label: '百分比', value: 'percentage' },
+  { label: '固定金額', value: 'fixed' },
+  { label: '階梯式', value: 'tiered' },
+];
+
+const ruleRules: FormRules = {
+  role: [
+    { required: true, message: '請選擇角色', trigger: 'blur' },
+  ],
+  ruleType: [
+    { required: true, message: '請選擇規則類型', trigger: 'blur' },
+  ],
+  effectiveFrom: [
+    { required: true, type: 'number', message: '請選擇生效日期', trigger: 'blur' },
+  ],
+  description: [
+    { max: 255, message: '描述最多255個字符', trigger: 'blur' },
+  ],
+  'rulePayload.percentage': [
+    {
+      validator: (_rule, value) => {
+        if (ruleFormValue.value.ruleType === 'percentage') {
+          return value > 0 && value <= 100;
+        }
+        return true;
+      },
+      message: '百分比必須在0到100之間',
+      trigger: 'blur'
+    }
+  ],
+  'rulePayload.amount': [
+    {
+      validator: (_rule, value) => {
+        if (ruleFormValue.value.ruleType === 'fixed') {
+          return value > 0;
+        }
+        return true;
+      },
+      message: '金額必須大於0',
+      trigger: 'blur'
+    }
+  ],
+};
+
+const pagination = {
+  pageSize: 10,
+};
+
+const recordColumns: DataTableColumns<RevenueRecord> = [
+  {
+    title: '療程 ID',
+    key: 'treatmentId',
+    width: 120,
+    render(row) {
+      return h('span', { style: 'font-family: monospace;' }, row.treatmentId.substring(0, 8) + '...');
+    },
+  },
+  {
+    title: '員工 ID',
+    key: 'staffId',
+    width: 120,
+    render(row) {
+      return h('span', { style: 'font-family: monospace;' }, row.staffId.substring(0, 8) + '...');
+    },
+  },
+  {
+    title: '角色',
+    key: 'role',
+    render(row) {
+      const roleMap = {
+        doctor: { text: '醫生', type: 'info' as const },
+        therapist: { text: '治療師', type: 'success' as const },
+        assistant: { text: '助理', type: 'warning' as const },
+        consultant: { text: '顧問', type: 'default' as const },
+        admin: { text: '管理員', type: 'error' as const },
+      };
+      const role = roleMap[row.role as keyof typeof roleMap] || { text: row.role, type: 'default' as const };
+      return h(NTag, { type: role.type }, { default: () => role.text });
+    },
+  },
+  {
+    title: '金額',
+    key: 'amount',
+    render(row) {
+      return h('span', { style: 'font-weight: bold;' }, `$${row.amount.toLocaleString()}`);
+    },
+  },
+  {
+    title: '計算類型',
+    key: 'calculationType',
+    render(row) {
+      const typeMap = {
+        treatment: { text: '療程', type: 'info' as const },
+        session: { text: '次數', type: 'success' as const },
+      };
+      const type = typeMap[row.calculationType];
+      return h(NTag, { type: type.type }, { default: () => type.text });
+    },
+  },
+  {
+    title: '狀態',
+    key: 'status',
+    render(row) {
+      const statusMap = {
+        pending: { text: '待計算', type: 'default' as const },
+        calculated: { text: '已計算', type: 'warning' as const },
+        locked: { text: '已鎖定', type: 'success' as const },
+        adjusted: { text: '已調整', type: 'error' as const },
+      };
+      const status = statusMap[row.status];
+      return h(NTag, { type: status.type }, { default: () => status.text });
+    },
+  },
+  {
+    title: '計算時間',
+    key: 'calculatedAt',
+    render(row) {
+      return new Date(row.calculatedAt).toLocaleDateString();
+    },
+  },
+  {
+    title: '鎖定時間',
+    key: 'lockedAt',
+    render(row) {
+      return row.lockedAt ? new Date(row.lockedAt).toLocaleDateString() : '-';
+    },
+  },
+  {
+    title: '操作',
+    key: 'actions',
+    render(row) {
+      return h(NSpace, {}, [
+        h(NButton, {
+          size: 'small',
+          onClick: () => viewRecord(row.id),
+        }, { default: () => '查看' }),
+        h(NButton, {
+          size: 'small',
+          type: 'warning',
+          disabled: row.status === 'locked',
+          onClick: () => lockRecord(row.id),
+        }, { default: () => '鎖定' }),
+      ]);
+    },
+  },
+];
+
+const ruleColumns: DataTableColumns<RevenueRule> = [
+  {
+    title: '角色',
+    key: 'role',
+    render(row) {
+      const roleMap = {
+        doctor: { text: '醫生', type: 'info' as const },
+        therapist: { text: '治療師', type: 'success' as const },
+        assistant: { text: '助理', type: 'warning' as const },
+        consultant: { text: '顧問', type: 'default' as const },
+        admin: { text: '管理員', type: 'error' as const },
+      };
+      const role = roleMap[row.role as keyof typeof roleMap] || { text: row.role, type: 'default' as const };
+      return h(NTag, { type: role.type }, { default: () => role.text });
+    },
+  },
+  {
+    title: '規則類型',
+    key: 'ruleType',
+    render(row) {
+      const typeMap = {
+        percentage: { text: '百分比', type: 'info' as const },
+        fixed: { text: '固定金額', type: 'success' as const },
+        tiered: { text: '階梯式', type: 'warning' as const },
+      };
+      const type = typeMap[row.ruleType];
+      return h(NTag, { type: type.type }, { default: () => type.text });
+    },
+  },
+  {
+    title: '生效時間',
+    key: 'effectiveFrom',
+    render(row) {
+      return new Date(row.effectiveFrom).toLocaleDateString();
+    },
+  },
+  {
+    title: '失效時間',
+    key: 'effectiveTo',
+    render(row) {
+      return row.effectiveTo ? new Date(row.effectiveTo).toLocaleDateString() : '-';
+    },
+  },
+  {
+    title: '狀態',
+    key: 'isActive',
+    render(row) {
+      return h(NTag, {
+        type: row.isActive ? 'success' : 'default',
+      }, { default: () => row.isActive ? '啟用中' : '已停用' });
+    },
+  },
+  {
+    title: '創建時間',
+    key: 'createdAt',
+    render(row) {
+      return new Date(row.createdAt).toLocaleDateString();
+    },
+  },
+  {
+    title: '操作',
+    key: 'actions',
+    render(row) {
+      return h(NSpace, {}, [
+        h(NButton, {
+          size: 'small',
+          onClick: () => viewRule(row.id),
+        }, { default: () => '查看' }),
+        h(NButton, {
+          size: 'small',
+          type: 'warning',
+          onClick: () => editRule(row.id),
+        }, { default: () => '編輯' }),
+        h(NButton, {
+          size: 'small',
+          type: 'error',
+          onClick: () => deleteRule(row.id),
+        }, { default: () => '刪除' }),
+      ]);
+    },
+  },
+];
+
+const adjustmentColumns: DataTableColumns<RevenueAdjustment> = [
+  {
+    title: '分潤記錄 ID',
+    key: 'revenueRecordId',
+    width: 120,
+    render(row) {
+      return h('span', { style: 'font-family: monospace;' }, row.revenueRecordId.substring(0, 8) + '...');
+    },
+  },
+  {
+    title: '員工 ID',
+    key: 'staffId',
+    width: 120,
+    render(row) {
+      return h('span', { style: 'font-family: monospace;' }, row.staffId.substring(0, 8) + '...');
+    },
+  },
+  {
+    title: '調整類型',
+    key: 'adjustmentType',
+    render(row) {
+      const typeMap = {
+        increase: { text: '增加', type: 'success' as const },
+        decrease: { text: '減少', type: 'error' as const },
+      };
+      const type = typeMap[row.adjustmentType];
+      return h(NTag, { type: type.type }, { default: () => type.text });
+    },
+  },
+  {
+    title: '金額',
+    key: 'amount',
+    render(row) {
+      return h('span', { style: 'font-weight: bold;' }, `$${row.amount.toLocaleString()}`);
+    },
+  },
+  {
+    title: '原因',
+    key: 'reason',
+    width: 200,
+  },
+  {
+    title: '狀態',
+    key: 'status',
+    render(row) {
+      const statusMap = {
+        pending: { text: '待審核', type: 'warning' as const },
+        approved: { text: '已批准', type: 'success' as const },
+        rejected: { text: '已拒絕', type: 'error' as const },
+      };
+      const status = statusMap[row.status];
+      return h(NTag, { type: status.type }, { default: () => status.text });
+    },
+  },
+  {
+    title: '審核人',
+    key: 'reviewedBy',
+    render(row) {
+      return row.reviewedBy ? h('span', row.reviewedBy) : h('span', '-');
+    },
+  },
+  {
+    title: '審核時間',
+    key: 'reviewedAt',
+    render(row) {
+      return row.reviewedAt ? new Date(row.reviewedAt).toLocaleDateString() : '-';
+    },
+  },
+  {
+    title: '創建時間',
+    key: 'createdAt',
+    render(row) {
+      return new Date(row.createdAt).toLocaleDateString();
+    },
+  },
+  {
+    title: '操作',
+    key: 'actions',
+    render(row) {
+      return h(NSpace, {}, [
+        h(NButton, {
+          size: 'small',
+          onClick: () => viewAdjustment(row.id),
+        }, { default: () => '查看' }),
+        h(NButton, {
+          size: 'small',
+          type: 'warning',
+          disabled: row.status !== 'pending',
+          onClick: () => reviewAdjustment(row.id),
+        }, { default: () => '審核' }),
+      ]);
+    },
+  },
+];
+
+// 生命周期
+onMounted(async () => {
+  await loadRevenueData();
+});
+
+// 方法
+// 階梯式規則輔助方法
+function addTier() {
+  ruleFormValue.value.rulePayload.tiers.push({ threshold: 0, percentage: 0 });
+}
+
+function removeTier(index: number) {
+  ruleFormValue.value.rulePayload.tiers.splice(index, 1);
+}
+
+async function loadRevenueData() {
+  try {
+    loadingRecords.value = true;
+    loadingRules.value = true;
+    loadingAdjustments.value = true;
+    const clinicId = 'clinic_001';
+    revenueRecords.value = await revenueApi.getRecords(clinicId);
+    revenueRules.value = await revenueApi.getRules(clinicId);
+    revenueAdjustments.value = await revenueAdjustmentApi.getAdjustments(clinicId);
+  } catch (error) {
+    console.error('加載分潤數據失敗:', error);
+  } finally {
+    loadingRecords.value = false;
+    loadingRules.value = false;
+    loadingAdjustments.value = false;
+  }
+}
+
+function viewRecord(id: string) {
+  // TODO: 實現查看分潤記錄詳情
+  console.log('查看分潤記錄:', id);
+}
+
+async function lockRecord(id: string) {
+  try {
+    await revenueApi.lockRecord(id);
+    await loadRevenueData();
+  } catch (error) {
+    console.error('鎖定分潤記錄失敗:', error);
+  }
+}
+
+function viewRule(id: string) {
+  // TODO: 實現查看分潤規則詳情
+  console.log('查看分潤規則:', id);
+}
+
+async function editRule(id: string) {
+  try {
+    const clinicId = 'clinic_001';
+    const rule = await revenueApi.getRuleById(id, clinicId);
+    
+    // 填充表單數據
+    ruleFormValue.value = {
+      role: rule.role,
+      ruleType: rule.ruleType,
+      effectiveFrom: new Date(rule.effectiveFrom).getTime(),
+      effectiveTo: rule.effectiveTo ? new Date(rule.effectiveTo).getTime() : undefined,
+      isActive: rule.isActive,
+      description: rule.description || '',
+      rulePayload: {
+        percentage: rule.rulePayload?.percentage || 0,
+        amount: rule.rulePayload?.amount || 0,
+        tiers: rule.rulePayload?.tiers || [{ threshold: 0, percentage: 0 }]
+      },
+    };
+    
+    editingRuleId.value = id;
+    showEditRuleModal.value = true;
+  } catch (error) {
+    console.error('加載分潤規則失敗:', error);
+  }
+}
+
+async function deleteRule(id: string) {
+  try {
+    if (window.confirm('確定要刪除此分潤規則嗎？此操作無法復原。')) {
+      await revenueApi.deleteRule(id);
+      await loadRevenueData();
+    }
+  } catch (error) {
+    console.error('刪除分潤規則失敗:', error);
+  }
+}
+
+async function handleCreateRule() {
+  try {
+    // 表單驗證
+    if (ruleFormRef.value) {
+      await ruleFormRef.value.validate();
+    }
+    
+    // 構建規則數據
+    const ruleData: any = {
+      role: ruleFormValue.value.role,
+      ruleType: ruleFormValue.value.ruleType,
+      effectiveFrom: new Date(ruleFormValue.value.effectiveFrom).toISOString().split('T')[0],
+      isActive: ruleFormValue.value.isActive,
+      description: ruleFormValue.value.description,
+      clinicId: 'clinic_001', // 暫時硬編碼，實際應從 userStore 獲取
+    };
+
+    // 添加失效日期（如果有）
+    if (ruleFormValue.value.effectiveTo) {
+      ruleData.effectiveTo = new Date(ruleFormValue.value.effectiveTo).toISOString().split('T')[0];
+    }
+
+    // 根據規則類型構建 rulePayload
+    switch (ruleFormValue.value.ruleType) {
+      case 'percentage':
+        ruleData.rulePayload = {
+          percentage: ruleFormValue.value.rulePayload.percentage
+        };
+        break;
+      case 'fixed':
+        ruleData.rulePayload = {
+          amount: ruleFormValue.value.rulePayload.amount
+        };
+        break;
+      case 'tiered':
+        ruleData.rulePayload = {
+          tiers: ruleFormValue.value.rulePayload.tiers.map((tier: any) => ({
+            threshold: tier.threshold,
+            percentage: tier.percentage
+          }))
+        };
+        break;
+    }
+
+    console.log('創建分潤規則:', ruleData);
+    await revenueApi.createRule(ruleData);
+    showCreateRuleModal.value = false;
+    await loadRevenueData();
+    
+    // 重置表單
+    ruleFormValue.value = {
+      role: '',
+      ruleType: 'percentage',
+      effectiveFrom: Date.now(),
+      effectiveTo: undefined,
+      isActive: true,
+      description: '',
+      rulePayload: {
+        percentage: 0,
+        amount: 0,
+        tiers: [
+          { threshold: 0, percentage: 0 }
+        ]
+      },
+    };
+  } catch (error) {
+    console.error('創建分潤規則失敗:', error);
+  }
+}
+
+async function handleUpdateRule() {
+  try {
+    // 表單驗證
+    if (ruleFormRef.value) {
+      await ruleFormRef.value.validate();
+    }
+    
+    if (!editingRuleId.value) {
+      console.error('沒有編輯規則 ID');
+      return;
+    }
+    
+    // 構建規則數據
+    const ruleData: any = {
+      role: ruleFormValue.value.role,
+      ruleType: ruleFormValue.value.ruleType,
+      effectiveFrom: new Date(ruleFormValue.value.effectiveFrom).toISOString().split('T')[0],
+      isActive: ruleFormValue.value.isActive,
+      description: ruleFormValue.value.description,
+      clinicId: 'clinic_001', // 暫時硬編碼，實際應從 userStore 獲取
+    };
+
+    // 添加失效日期（如果有）
+    if (ruleFormValue.value.effectiveTo) {
+      ruleData.effectiveTo = new Date(ruleFormValue.value.effectiveTo).toISOString().split('T')[0];
+    }
+
+    // 根據規則類型構建 rulePayload
+    switch (ruleFormValue.value.ruleType) {
+      case 'percentage':
+        ruleData.rulePayload = {
+          percentage: ruleFormValue.value.rulePayload.percentage
+        };
+        break;
+      case 'fixed':
+        ruleData.rulePayload = {
+          amount: ruleFormValue.value.rulePayload.amount
+        };
+        break;
+      case 'tiered':
+        ruleData.rulePayload = {
+          tiers: ruleFormValue.value.rulePayload.tiers.map((tier: any) => ({
+            threshold: tier.threshold,
+            percentage: tier.percentage
+          }))
+        };
+        break;
+    }
+
+    console.log('更新分潤規則:', ruleData);
+    await revenueApi.updateRule(editingRuleId.value, ruleData);
+    showEditRuleModal.value = false;
+    editingRuleId.value = null;
+    await loadRevenueData();
+    
+    // 重置表單
+    ruleFormValue.value = {
+      role: '',
+      ruleType: 'percentage',
+      effectiveFrom: Date.now(),
+      effectiveTo: undefined,
+      isActive: true,
+      description: '',
+      rulePayload: {
+        percentage: 0,
+        amount: 0,
+        tiers: [
+          { threshold: 0, percentage: 0 }
+        ]
+      },
+    };
+  } catch (error) {
+    console.error('更新分潤規則失敗:', error);
+  }
+}
+
+function viewAdjustment(id: string) {
+  // TODO: 實現查看分潤調整詳情
+  console.log('查看分潤調整:', id);
+}
+
+async function reviewAdjustment(id: string) {
+  const dialog = useDialog();
+  const message = useMessage();
+  
+  try {
+    // 獲取調整詳情
+    const clinicId = 'clinic_001';
+    const adjustment = await revenueAdjustmentApi.getAdjustmentById(id, clinicId);
+    
+    // 顯示審核對話框
+    dialog.info({
+      title: '分潤調整審核',
+      content: `確定要審核此分潤調整嗎？\n\n` +
+               `調整類型：${adjustment.adjustmentType === 'increase' ? '增加' : '減少'}\n` +
+               `金額：$${adjustment.amount.toLocaleString()}\n` +
+               `原因：${adjustment.reason}`,
+      positiveText: '批准',
+      negativeText: '拒絕',
+      onPositiveClick: async () => {
+        try {
+          await revenueAdjustmentApi.reviewAdjustment(id, { status: 'approved' });
+          message.success('調整已批准');
+          await loadRevenueData();
+        } catch (error) {
+          console.error('批准調整失敗:', error);
+          message.error('批准失敗');
+        }
+      },
+      onNegativeClick: async () => {
+        try {
+          await revenueAdjustmentApi.reviewAdjustment(id, { status: 'rejected' });
+          message.success('調整已拒絕');
+          await loadRevenueData();
+        } catch (error) {
+          console.error('拒絕調整失敗:', error);
+          message.error('拒絕失敗');
+        }
+      },
+    });
+  } catch (error) {
+    console.error('審核分潤調整失敗:', error);
+    message.error('加載調整詳情失敗');
+  }
+}
+</script>
+
+<style scoped>
+.revenue-view {
+  padding: 24px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+h1 {
+  margin: 0;
+  color: #333;
+}
+</style>

@@ -58,6 +58,12 @@ export class Treatment {
   @Column({ type: "varchar", length: 32 })
   clinicId: string;
 
+  @Column({ type: "decimal", precision: 10, scale: 2, default: 0 })
+  pointsRedeemed: number; // 使用的點數抵扣金額
+
+  @Column({ type: "decimal", precision: 20, scale: 2, nullable: true })
+  finalPrice: number; // 最終價格 (totalPrice - pointsRedeemed)
+
   @CreateDateColumn()
   createdAt: Date;
 

@@ -1,0 +1,106 @@
+{
+  "app": {
+    "title": "Medical CRM System",
+    "description": "Doctor Customer Relationship Management System",
+    "copyright": "Copyright © 2025 Medical CRM"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "search": "Search",
+    "refresh": "Refresh",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "loading": "Loading...",
+    "noData": "No Data",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Info"
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "username": "Username",
+    "password": "Password",
+    "rememberMe": "Remember Me",
+    "forgotPassword": "Forgot Password?",
+    "register": "Register"
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "patients": "Patients",
+    "treatments": "Treatments",
+    "staff": "Staff",
+    "revenue": "Revenue",
+    "settings": "Settings"
+  },
+  "patients": {
+    "title": "Patient Management",
+    "addPatient": "Add Patient",
+    "name": "Name",
+    "phone": "Phone",
+    "email": "Email",
+    "gender": "Gender",
+    "birthDate": "Birth Date",
+    "address": "Address",
+    "medicalHistory": "Medical History",
+    "actions": "Actions",
+    "male": "Male",
+    "female": "Female",
+    "other": "Other"
+  },
+  "treatments": {
+    "title": "Treatment Management",
+    "addTreatment": "Add Treatment",
+    "name": "Treatment Name",
+    "description": "Description",
+    "price": "Price",
+    "sessions": "Sessions",
+    "completedSessions": "Completed Sessions",
+    "status": "Status",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "active": "Active",
+    "completed": "Completed",
+    "cancelled": "Cancelled"
+  },
+  "staff": {
+    "title": "Staff Management",
+    "addStaff": "Add Staff",
+    "name": "Name",
+    "role": "Role",
+    "phone": "Phone",
+    "email": "Email",
+    "doctor": "Doctor",
+    "therapist": "Therapist",
+    "nurse": "Nurse",
+    "administrator": "Administrator",
+    "specialty": "Specialty"
+  },
+  "revenue": {
+    "title": "Revenue Management",
+    "rules": "Revenue Rules",
+    "records": "Revenue Records",
+    "adjustments": "Revenue Adjustments",
+    "amount": "Amount",
+    "percentage": "Percentage",
+    "fixed": "Fixed Amount",
+    "tiered": "Tiered",
+    "staff": "Staff",
+    "date": "Date",
+    "locked": "Locked",
+    "unlocked": "Unlocked",
+    "lock": "Lock",
+    "unlock": "Unlock"
+  },
+  "clinic": {
+    "clinicId": "Clinic ID",
+    "selectClinic": "Select Clinic",
+    "switchClinic": "Switch Clinic"
+  }
+}
