@@ -48,6 +48,18 @@ export class CreateTreatmentSessionDto {
   @IsBoolean()
   revenueCalculated?: boolean;
 
+  @IsOptional()
+  @IsDateString()
+  actualStartTime?: Date; // 實際開始時間
+
+  @IsOptional()
+  @IsDateString()
+  actualEndTime?: Date; // 實際結束時間
+
+  @IsOptional()
+  @IsString()
+  executedBy?: string; // 執行人員 ID
+
   @IsString()
   clinicId: string;
 }

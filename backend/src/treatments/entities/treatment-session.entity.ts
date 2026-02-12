@@ -45,6 +45,15 @@ export class TreatmentSession {
   @Column({ type: "boolean", default: false })
   revenueCalculated: boolean;
 
+  @Column({ type: "timestamp", nullable: true })
+  actualStartTime: Date; // 實際開始時間
+
+  @Column({ type: "timestamp", nullable: true })
+  actualEndTime: Date; // 實際結束時間
+
+  @Column({ type: "varchar", length: 32, nullable: true })
+  executedBy: string; // 執行人員 ID
+
   @Column({ type: "varchar", length: 32 })
   clinicId: string;
 
