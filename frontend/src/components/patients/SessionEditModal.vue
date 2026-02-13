@@ -10,12 +10,12 @@ import {
   NSelect,
   NButton,
   NAlert,
-  NMessageProvider,
   useMessage,
   NInputNumber,
 } from 'naive-ui';
 import type { TreatmentCourseSession, Staff, StaffAssignment } from '@/types';
 import { staffApi } from '@/services/api';
+import { COMPLETION_STATUSES } from '@/constants/treatment';
 
 interface Props {
   show: boolean;
@@ -35,6 +35,8 @@ const message = useMessage();
 const loading = ref(false);
 const staffList = ref<Staff[]>([]);
 const ppfValidationError = ref<string | null>(null);
+const timeRangeValidationError = ref<string | null>(null);
+const duplicateStaffValidationError = ref<string | null>(null);
 
 // 表單資料
 const formData = ref({
@@ -61,6 +63,36 @@ const totalPpf = computed(() => {
   return formData.value.staffAssignments.reduce((sum, item) => sum + (item.ppfPercentage || 0), 0);
 });
 
+// 驗證時間範圍
+function validateTimeRange() {
+  if (!formData.value.actualStartTime || !formData.value.actualEndTime) {
+    timeRangeValidationError.value = null;
+    return true;
+  }
+
+  if (formData.value.actualEndTime <= formData.value.actualStartTime) {
+    timeRangeValidationError.value = '結束時間必須在開始時間之後';
+    return false;
+  }
+
+  timeRangeValidationError.value = null;
+  return true;
+}
+
+// 驗證重複員工
+function validateNoDuplicateStaff() {
+  const staffIds = formData.value.staffAssignments.map(s => s.staffId);
+  const uniqueStaffIds = new Set(staffIds);
+
+  if (staffIds.length !== uniqueStaffIds.size) {
+    duplicateStaffValidationError.value = '不能添加相同的員工兩次';
+    return false;
+  }
+
+  duplicateStaffValidationError.value = null;
+  return true;
+}
+
 // 驗證PPF百分比
 function validatePpf() {
   if (formData.value.staffAssignments.length === 0) {
@@ -76,13 +108,6 @@ function validatePpf() {
   ppfValidationError.value = null;
   return true;
 }
-
-// 狀態選項
-const completionStatusOptions = [
-  { label: '待執行', value: 'pending' },
-  { label: '已完成', value: 'completed' },
-  { label: '已取消', value: 'cancelled' },
-];
 
 // 生命周期
 onMounted(async () => {
@@ -153,6 +178,12 @@ function addStaffAssignment() {
     return;
   }
 
+  // 檢查是否已經添加了相同的員工
+  if (formData.value.staffAssignments.some(s => s.staffId === newStaffAssignment.value.staffId)) {
+    message.warning('該員工已經被添加，不能重複添加');
+    return;
+  }
+
   const selectedStaff = staffList.value.find(
     (s) => s.id === newStaffAssignment.value.staffId
   );
@@ -188,7 +219,12 @@ function updateStaffPpf(index: number, newValue: number | null) {
 
 // 保存會話
 async function handleSave() {
-  if (!validatePpf()) {
+  // 執行所有驗證
+  const isTimeValid = validateTimeRange();
+  const isDuplicateStaffValid = validateNoDuplicateStaff();
+  const isPpfValid = validatePpf();
+
+  if (!isTimeValid || !isDuplicateStaffValid || !isPpfValid) {
     return;
   }
 
@@ -232,8 +268,7 @@ function handleClose() {
 </script>
 
 <template>
-  <n-message-provider>
-    <n-modal
+  <n-modal
       :show="show"
       preset="dialog"
       title="編輯會話"
@@ -277,6 +312,13 @@ function handleClose() {
         <div class="form-section">
           <h3 class="section-title">實際執行時間</h3>
 
+          <n-alert
+            v-if="timeRangeValidationError"
+            type="error"
+            :title="timeRangeValidationError"
+            class="validation-alert"
+          />
+
           <div class="form-row">
             <n-form-item label="開始時間" path="actualStartTime">
               <n-time-picker
@@ -303,7 +345,7 @@ function handleClose() {
           <n-form-item label="完成狀態" path="completionStatus">
             <n-select
               v-model:value="formData.completionStatus"
-              :options="completionStatusOptions"
+              :options="COMPLETION_STATUSES"
               clearable
             />
           </n-form-item>
@@ -335,6 +377,13 @@ function handleClose() {
         <!-- 員工分派部分 -->
         <div class="form-section">
           <h3 class="section-title">員工分派與PPF分配</h3>
+
+          <n-alert
+            v-if="duplicateStaffValidationError"
+            type="error"
+            :title="duplicateStaffValidationError"
+            class="validation-alert"
+          />
 
           <n-alert
             v-if="ppfValidationError"
@@ -413,7 +462,6 @@ function handleClose() {
         </div>
       </n-form>
     </n-modal>
-  </n-message-provider>
 </template>
 
 <style scoped>
@@ -448,6 +496,10 @@ function handleClose() {
 }
 
 .ppf-alert {
+  margin-bottom: 16px;
+}
+
+.validation-alert {
   margin-bottom: 16px;
 }
 

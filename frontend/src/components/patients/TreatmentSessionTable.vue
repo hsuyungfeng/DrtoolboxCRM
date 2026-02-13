@@ -12,6 +12,8 @@ import {
 import type { TreatmentCourse, TreatmentCourseSession } from '@/types';
 import treatmentCoursesApi from '@/services/treatments-api';
 import SessionEditModal from './SessionEditModal.vue';
+import { getStatusText, getStatusType, formatDate, formatTime } from '@/utils/formatters';
+import { TREATMENT_STAGE_DEFINITIONS } from '@/constants/treatment';
 
 interface Props {
   courseId: string;
@@ -26,13 +28,6 @@ const loading = ref(false);
 const courseSessions = ref<TreatmentCourseSession[]>([]);
 const editingSession = ref<TreatmentCourseSession | null>(null);
 const showEditModal = ref(false);
-
-// 療程階段
-const TREATMENT_STAGES = [
-  { key: 'basic', name: '基礎治療', sessions: [1, 2, 3] },
-  { key: 'advanced', name: '進階治療', sessions: [4, 5, 6, 7] },
-  { key: 'maintenance', name: '維護', sessions: [8, 9, 10] },
-];
 
 // 生命周期
 onMounted(async () => {
@@ -64,42 +59,6 @@ function getSessionsForStage(stageNumbers: number[]): TreatmentCourseSession[] {
   );
 }
 
-// 取得會話狀態文本
-function getStatusText(status: string): string {
-  const statusMap: Record<string, string> = {
-    pending: '待執行',
-    completed: '已完成',
-    cancelled: '已取消',
-  };
-  return statusMap[status] || status;
-}
-
-// 取得會話狀態顏色
-function getStatusType(status: string): 'success' | 'warning' | 'error' | 'default' {
-  const statusTypeMap: Record<string, 'success' | 'warning' | 'error' | 'default'> = {
-    pending: 'warning',
-    completed: 'success',
-    cancelled: 'error',
-  };
-  return statusTypeMap[status] || 'default';
-}
-
-// 取得會話狀態圖示
-function getStatusIcon(status: string): string {
-  const statusIconMap: Record<string, string> = {
-    pending: '⏳',
-    completed: '✅',
-    cancelled: '❌',
-  };
-  return statusIconMap[status] || '❓';
-}
-
-
-// 格式化日期
-function formatDate(dateString?: string): string {
-  if (!dateString) return '-';
-  return new Date(dateString).toLocaleDateString('zh-TW');
-}
 
 // 編輯會話
 function editSession(session: TreatmentCourseSession) {
@@ -147,7 +106,7 @@ async function saveSessionUpdate(updatedSession: TreatmentCourseSession) {
       <div v-else class="stages-container">
         <n-collapse>
           <n-collapse-item
-            v-for="stage in TREATMENT_STAGES"
+            v-for="stage in TREATMENT_STAGE_DEFINITIONS"
             :key="stage.key"
             :title="`${stage.name} (${getSessionsForStage(stage.sessions).length} 次)`"
             :name="stage.key"
@@ -172,40 +131,18 @@ async function saveSessionUpdate(updatedSession: TreatmentCourseSession) {
                     </td>
                     <td class="col-date">{{ formatDate(session.scheduledDate) }}</td>
                     <td class="col-time">
-                      {{
-                        session.scheduledTime
-                          ? new Date(session.scheduledTime).toLocaleTimeString('zh-TW', {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })
-                          : '-'
-                      }}
+                      {{ formatTime(session.scheduledTime) }}
                     </td>
                     <td class="col-actual">
                       <div v-if="session.actualStartTime || session.actualEndTime">
-                        {{
-                          session.actualStartTime
-                            ? new Date(session.actualStartTime).toLocaleTimeString('zh-TW', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })
-                            : '-'
-                        }}
+                        {{ formatTime(session.actualStartTime) }}
                         -
-                        {{
-                          session.actualEndTime
-                            ? new Date(session.actualEndTime).toLocaleTimeString('zh-TW', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })
-                            : '-'
-                        }}
+                        {{ formatTime(session.actualEndTime) }}
                       </div>
                       <div v-else>-</div>
                     </td>
                     <td class="col-status">
                       <n-tag :type="getStatusType(session.completionStatus)">
-                        {{ getStatusIcon(session.completionStatus) }}
                         {{ getStatusText(session.completionStatus) }}
                       </n-tag>
                     </td>

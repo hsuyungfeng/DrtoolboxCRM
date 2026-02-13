@@ -8,12 +8,12 @@ import {
   NProgress,
   NEmpty,
   NIcon,
-  NMessageProvider,
   useMessage,
 } from 'naive-ui';
 import type { TreatmentCourse, TreatmentTemplate } from '@/types';
 import treatmentCoursesApi from '@/services/treatments-api';
 import TreatmentSessionTable from './TreatmentSessionTable.vue';
+import { getCourseStatusText, getCourseStatusType, formatDate, formatCurrency } from '@/utils/formatters';
 
 interface Props {
   patientId: string;
@@ -112,42 +112,10 @@ function viewCourseDetails(courseId: string) {
 function closeCourseDetails() {
   selectedCourseId.value = null;
 }
-
-// 取得療程狀態的中文文本
-function getStatusText(status: string): string {
-  const statusMap: Record<string, string> = {
-    active: '進行中',
-    completed: '已完成',
-    abandoned: '已放棄',
-  };
-  return statusMap[status] || status;
-}
-
-// 取得療程狀態的顏色
-function getStatusType(status: string): 'success' | 'warning' | 'error' | 'default' {
-  const statusTypeMap: Record<string, 'success' | 'warning' | 'error' | 'default'> = {
-    active: 'warning',
-    completed: 'success',
-    abandoned: 'error',
-  };
-  return statusTypeMap[status] || 'default';
-}
-
-// 格式化金額
-function formatCurrency(value: string | number): string {
-  const num = typeof value === 'string' ? parseFloat(value) : value;
-  return `$${num.toFixed(2)}`;
-}
-
-// 格式化日期
-function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString('zh-TW');
-}
 </script>
 
 <template>
-  <n-message-provider>
-    <div class="treatment-history-tab">
+  <div class="treatment-history-tab">
       <!-- 頂部操作欄 -->
       <div class="tab-header">
         <n-space>
@@ -197,12 +165,12 @@ function formatDate(dateString: string): string {
                   <div class="header-title">
                     <div class="course-name">{{ course.templateName || '未知療程' }}</div>
                     <n-tag
-                      :type="getStatusType(course.status)"
+                      :type="getCourseStatusType(course.status)"
                       size="small"
                       round
                       style="margin-left: 8px"
                     >
-                      {{ getStatusText(course.status) }}
+                      {{ getCourseStatusText(course.status) }}
                     </n-tag>
                   </div>
                 </div>
@@ -323,7 +291,6 @@ function formatDate(dateString: string): string {
         </div>
       </n-modal>
     </div>
-  </n-message-provider>
 </template>
 
 <style scoped>

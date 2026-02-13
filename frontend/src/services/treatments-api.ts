@@ -10,7 +10,7 @@ export const treatmentCoursesApi = {
    * 取得患者的所有療程套餐
    */
   getPatientCourses: (patientId: string, clinicId: string) =>
-    http.get<TreatmentCourse[]>('/patients', {
+    http.get<TreatmentCourse[]>('/treatments/courses', {
       params: {
         patientId,
         clinicId,

@@ -50,6 +50,31 @@ export class TreatmentCourseController {
   }
 
   /**
+   * 查詢患者的所有療程套餐
+   * GET /treatments/courses
+   *
+   * @param patientId 患者 ID (query parameter)
+   * @param clinicId 診所 ID (query parameter)
+   * @returns 患者的所有療程套餐
+   * @throws BadRequestException 當必要參數缺失時
+   */
+  @Get()
+  async getPatientCourses(
+    @Query("patientId") patientId: string,
+    @Query("clinicId") clinicId: string,
+  ) {
+    if (!patientId || patientId.trim() === "") {
+      throw new BadRequestException("patientId 不能為空");
+    }
+
+    if (!clinicId || clinicId.trim() === "") {
+      throw new BadRequestException("clinicId 不能為空");
+    }
+
+    return await this.courseService.getPatientCourses(patientId, clinicId);
+  }
+
+  /**
    * 查詢特定療程套餐
    * GET /treatments/courses/:courseId
    *
