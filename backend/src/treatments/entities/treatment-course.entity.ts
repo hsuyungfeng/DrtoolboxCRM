@@ -7,13 +7,14 @@ import {
   ManyToOne,
   OneToMany,
   Index,
+  JoinColumn,
 } from 'typeorm';
 import Decimal from 'decimal.js';
 import { Patient } from '../../patients/entities/patient.entity';
 import { TreatmentSession } from './treatment-session.entity';
 
 @Entity('treatment_courses')
-@Index(['patientId', 'clinicId'])
+@Index(['clinicId', 'patientId'])
 @Index(['clinicId', 'status'])
 export class TreatmentCourse {
   @PrimaryGeneratedColumn('uuid')
@@ -96,7 +97,8 @@ export class TreatmentCourse {
   updatedAt: Date;
 
   // 關聯
-  @ManyToOne(() => Patient, { eager: false })
+  @ManyToOne(() => Patient, { eager: false, onDelete: 'RESTRICT' })
+  @JoinColumn({ name: 'patientId' })
   patient: Patient;
 
   @OneToMany(() => TreatmentSession, (session) => session.treatmentCourse)
