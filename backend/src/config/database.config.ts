@@ -5,6 +5,7 @@ import { TreatmentStaffAssignment } from "../staff/entities/treatment-staff-assi
 import { Patient } from "../patients/entities/patient.entity";
 import { Treatment } from "../treatments/entities/treatment.entity";
 import { TreatmentSession } from "../treatments/entities/treatment-session.entity";
+import { StaffAssignment } from "../treatments/entities/staff-assignment.entity";
 import { TreatmentTemplate } from "../treatment-templates/entities/treatment-template.entity";
 import { TreatmentCourseTemplate } from "../treatments/entities/treatment-course-template.entity";
 import { TreatmentCourse } from "../treatments/entities/treatment-course.entity";
@@ -24,6 +25,7 @@ export const databaseConfig: TypeOrmModuleOptions = {
     Patient,
     Treatment,
     TreatmentSession,
+    StaffAssignment,
     TreatmentTemplate,
     TreatmentCourseTemplate,
     TreatmentCourse,

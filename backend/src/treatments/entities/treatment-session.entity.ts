@@ -5,12 +5,14 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
+  OneToMany,
   JoinColumn,
   Index,
 } from "typeorm";
 import Decimal from "decimal.js";
 import { Treatment } from "./treatment.entity";
 import { TreatmentCourse } from "./treatment-course.entity";
+import { StaffAssignment } from "./staff-assignment.entity";
 
 @Entity("treatment_sessions")
 @Index(['treatmentCourseId', 'sessionNumber'])
@@ -108,4 +110,8 @@ export class TreatmentSession {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  // 關聯
+  @OneToMany(() => StaffAssignment, (assignment) => assignment.session)
+  staffAssignments: StaffAssignment[];
 }
