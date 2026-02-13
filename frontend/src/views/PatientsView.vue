@@ -2,18 +2,19 @@
 
 <script setup lang="ts">
 import { ref, h, onMounted, computed } from 'vue';
-import { 
-  NButton, 
-  NTag, 
-  NSpace, 
-  NIcon, 
-  NDataTable, 
-  NCard, 
-  NModal, 
-  NForm, 
-  NFormItem, 
-  NInput, 
-  NRadioGroup, 
+import { useRouter } from 'vue-router';
+import {
+  NButton,
+  NTag,
+  NSpace,
+  NIcon,
+  NDataTable,
+  NCard,
+  NModal,
+  NForm,
+  NFormItem,
+  NInput,
+  NRadioGroup,
   NRadio,
   NDialogProvider,
   useDialog,
@@ -29,6 +30,7 @@ import { useUserStore } from '@/stores/user';
 const dialog = useDialog();
 const message = useMessage();
 const userStore = useUserStore();
+const router = useRouter();
 
 const loading = ref(false);
 const patients = ref<Patient[]>([]);
@@ -164,8 +166,7 @@ async function loadPatients() {
 
 // 查看患者詳情
 function viewPatient(id: string) {
-  // TODO: 跳轉到患者詳情頁面
-  message.info(`查看患者 ${id}`);
+  router.push({ name: 'PatientDetail', params: { id } });
 }
 
 // 編輯患者

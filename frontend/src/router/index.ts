@@ -15,6 +15,12 @@ const routes: Array<RouteRecordRaw> = [
     meta: { title: '患者管理' },
   },
   {
+    path: '/patients/:id',
+    name: 'PatientDetail',
+    component: () => import('@/views/PatientDetailView.vue'),
+    meta: { title: '患者詳情' },
+  },
+  {
     path: '/treatments',
     name: 'Treatments',
     component: () => import('@/views/TreatmentsView.vue'),

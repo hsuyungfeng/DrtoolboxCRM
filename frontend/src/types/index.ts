@@ -194,3 +194,72 @@ export interface Clinic {
   createdAt: string;
   updatedAt?: string;
 }
+
+/**
+ * 療程套餐模板類型
+ */
+export interface TreatmentTemplate {
+  id: string;
+  name: string;
+  description?: string;
+  defaultPrice: number;
+  defaultSessions: number;
+  clinicId: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * 員工分派類型
+ */
+export interface StaffAssignment {
+  id?: string;
+  staffId: string;
+  staffName?: string;
+  staffRole: string;
+  ppfPercentage: number;
+}
+
+/**
+ * 療程套餐類型
+ */
+export interface TreatmentCourse {
+  id: string;
+  patientId: string;
+  patient?: Patient;
+  templateId: string;
+  templateName?: string;
+  status: 'active' | 'completed' | 'abandoned';
+  purchaseDate: string;
+  purchaseAmount: string | number;
+  pointsRedeemed: string | number;
+  actualPayment: string | number;
+  completedAt?: string;
+  clinicId: string;
+  sessions?: TreatmentCourseSession[];
+  createdAt: string;
+  updatedAt?: string;
+}
+
+/**
+ * 療程套餐會話類型
+ */
+export interface TreatmentCourseSession {
+  id: string;
+  treatmentCourseId: string;
+  sessionNumber: number;
+  scheduledDate?: string;
+  scheduledTime?: string;
+  actualStartTime?: string;
+  actualEndTime?: string;
+  completionStatus: 'pending' | 'completed' | 'cancelled';
+  status: string;
+  therapistNotes?: string;
+  patientFeedback?: string;
+  durationMinutes?: number;
+  clinicId: string;
+  staffAssignments?: StaffAssignment[];
+  createdAt: string;
+  updatedAt?: string;
+}
