@@ -1,40 +1,40 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test, TestingModule } from "@nestjs/testing";
+import { BadRequestException, NotFoundException } from "@nestjs/common";
 import {
-  BadRequestException,
-  NotFoundException,
-} from '@nestjs/common';
-import { TreatmentCourseController, StaffSessionController } from './treatment-course.controller';
-import { TreatmentCourseService } from '../services/treatment-course.service';
-import { TreatmentSessionService } from '../services/treatment-session.service';
-import { TreatmentCourseTemplateService } from '../services/treatment-course-template.service';
-import { CreateTreatmentCourseDto } from '../dto/create-treatment-course.dto';
-import { UpdateTreatmentSessionDto } from '../dto/update-treatment-session.dto';
-import Decimal from 'decimal.js';
+  TreatmentCourseController,
+  StaffSessionController,
+} from "./treatment-course.controller";
+import { TreatmentCourseService } from "../services/treatment-course.service";
+import { TreatmentSessionService } from "../services/treatment-session.service";
+import { TreatmentCourseTemplateService } from "../services/treatment-course-template.service";
+import { CreateTreatmentCourseDto } from "../dto/create-treatment-course.dto";
+import { UpdateTreatmentSessionDto } from "../dto/update-treatment-session.dto";
+import Decimal from "decimal.js";
 
-describe('TreatmentCourseController', () => {
+describe("TreatmentCourseController", () => {
   let controller: TreatmentCourseController;
   let courseService: TreatmentCourseService;
   let sessionService: TreatmentSessionService;
   let templateService: TreatmentCourseTemplateService;
 
   // 模擬數據
-  const mockCourseId = 'course-123';
-  const mockSessionId = 'session-123';
-  const mockTemplateId = 'template-123';
-  const mockPatientId = 'patient-123';
-  const mockStaffId = 'staff-123';
-  const mockClinicId = 'clinic-123';
+  const mockCourseId = "course-123";
+  const mockSessionId = "session-123";
+  const mockTemplateId = "template-123";
+  const mockPatientId = "patient-123";
+  const mockStaffId = "staff-123";
+  const mockClinicId = "clinic-123";
 
   const mockCourse = {
     id: mockCourseId,
     patientId: mockPatientId,
     templateId: mockTemplateId,
     clinicId: mockClinicId,
-    status: 'active',
+    status: "active",
     purchaseDate: new Date(),
-    purchaseAmount: new Decimal('5000'),
-    pointsRedeemed: new Decimal('0'),
-    actualPayment: new Decimal('5000'),
+    purchaseAmount: new Decimal("5000"),
+    pointsRedeemed: new Decimal("0"),
+    actualPayment: new Decimal("5000"),
     sessions: [],
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -43,8 +43,8 @@ describe('TreatmentCourseController', () => {
   const mockTemplate = {
     id: mockTemplateId,
     clinicId: mockClinicId,
-    name: '美容療程套餐',
-    totalPrice: new Decimal('5000'),
+    name: "美容療程套餐",
+    totalPrice: new Decimal("5000"),
     totalSessions: 10,
     isActive: true,
     stageConfig: [],
@@ -57,12 +57,12 @@ describe('TreatmentCourseController', () => {
     treatmentCourseId: mockCourseId,
     clinicId: mockClinicId,
     sessionNumber: 1,
-    completionStatus: 'pending',
+    completionStatus: "pending",
     scheduledDate: new Date(),
     actualStartTime: null,
     actualEndTime: null,
-    therapistNotes: '',
-    patientFeedback: '',
+    therapistNotes: "",
+    patientFeedback: "",
     staffAssignments: [],
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -70,7 +70,7 @@ describe('TreatmentCourseController', () => {
 
   const mockCompletedSession = {
     ...mockSession,
-    completionStatus: 'completed',
+    completionStatus: "completed",
     actualStartTime: new Date(),
     actualEndTime: new Date(),
   };
@@ -102,16 +102,20 @@ describe('TreatmentCourseController', () => {
       ],
     }).compile();
 
-    controller = module.get<TreatmentCourseController>(TreatmentCourseController);
+    controller = module.get<TreatmentCourseController>(
+      TreatmentCourseController,
+    );
     courseService = module.get<TreatmentCourseService>(TreatmentCourseService);
-    sessionService = module.get<TreatmentSessionService>(TreatmentSessionService);
+    sessionService = module.get<TreatmentSessionService>(
+      TreatmentSessionService,
+    );
     templateService = module.get<TreatmentCourseTemplateService>(
       TreatmentCourseTemplateService,
     );
   });
 
-  describe('POST /treatments/courses - createCourse', () => {
-    it('should create a course successfully', async () => {
+  describe("POST /treatments/courses - createCourse", () => {
+    it("should create a course successfully", async () => {
       const createDto: CreateTreatmentCourseDto = {
         patientId: mockPatientId,
         templateId: mockTemplateId,
@@ -119,7 +123,7 @@ describe('TreatmentCourseController', () => {
         pointsToRedeem: 0,
       };
 
-      jest.spyOn(courseService, 'createCourse').mockResolvedValue(mockCourse);
+      jest.spyOn(courseService, "createCourse").mockResolvedValue(mockCourse);
 
       const result = await controller.createCourse(createDto);
 
@@ -127,32 +131,32 @@ describe('TreatmentCourseController', () => {
       expect(courseService.createCourse).toHaveBeenCalledWith(createDto);
     });
 
-    it('should fail when patientId is missing', async () => {
+    it("should fail when patientId is missing", async () => {
       const createDto: CreateTreatmentCourseDto = {
-        patientId: '',
+        patientId: "",
         templateId: mockTemplateId,
         clinicId: mockClinicId,
       };
 
       jest
-        .spyOn(courseService, 'createCourse')
-        .mockRejectedValue(new BadRequestException('patientId 不能為空'));
+        .spyOn(courseService, "createCourse")
+        .mockRejectedValue(new BadRequestException("patientId 不能為空"));
 
       await expect(controller.createCourse(createDto)).rejects.toThrow(
         BadRequestException,
       );
     });
 
-    it('should fail when templateId is invalid', async () => {
+    it("should fail when templateId is invalid", async () => {
       const createDto: CreateTreatmentCourseDto = {
         patientId: mockPatientId,
-        templateId: 'invalid-id',
+        templateId: "invalid-id",
         clinicId: mockClinicId,
       };
 
       jest
-        .spyOn(courseService, 'createCourse')
-        .mockRejectedValue(new NotFoundException('課程模板不存在'));
+        .spyOn(courseService, "createCourse")
+        .mockRejectedValue(new NotFoundException("課程模板不存在"));
 
       await expect(controller.createCourse(createDto)).rejects.toThrow(
         NotFoundException,
@@ -160,9 +164,9 @@ describe('TreatmentCourseController', () => {
     });
   });
 
-  describe('GET /treatments/courses/:courseId - getCourseById', () => {
-    it('should retrieve a course by ID successfully', async () => {
-      jest.spyOn(courseService, 'getCourseById').mockResolvedValue(mockCourse);
+  describe("GET /treatments/courses/:courseId - getCourseById", () => {
+    it("should retrieve a course by ID successfully", async () => {
+      jest.spyOn(courseService, "getCourseById").mockResolvedValue(mockCourse);
 
       const result = await controller.getCourseById(mockCourseId, mockClinicId);
 
@@ -173,33 +177,33 @@ describe('TreatmentCourseController', () => {
       );
     });
 
-    it('should fail when courseId is not found', async () => {
+    it("should fail when courseId is not found", async () => {
       jest
-        .spyOn(courseService, 'getCourseById')
-        .mockRejectedValue(new NotFoundException('療程不存在'));
+        .spyOn(courseService, "getCourseById")
+        .mockRejectedValue(new NotFoundException("療程不存在"));
 
       await expect(
-        controller.getCourseById('non-existent', mockClinicId),
+        controller.getCourseById("non-existent", mockClinicId),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('should fail when clinicId mismatches', async () => {
+    it("should fail when clinicId mismatches", async () => {
       jest
-        .spyOn(courseService, 'getCourseById')
-        .mockRejectedValue(new NotFoundException('療程不存在'));
+        .spyOn(courseService, "getCourseById")
+        .mockRejectedValue(new NotFoundException("療程不存在"));
 
       await expect(
-        controller.getCourseById(mockCourseId, 'wrong-clinic'),
+        controller.getCourseById(mockCourseId, "wrong-clinic"),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('GET /treatments/templates - getActiveTemplates', () => {
-    it('should retrieve active templates successfully', async () => {
+  describe("GET /treatments/templates - getActiveTemplates", () => {
+    it("should retrieve active templates successfully", async () => {
       const templates = [mockTemplate];
 
       jest
-        .spyOn(templateService, 'getActiveTemplates')
+        .spyOn(templateService, "getActiveTemplates")
         .mockResolvedValue(templates);
 
       const result = await controller.getActiveTemplates(mockClinicId);
@@ -210,20 +214,18 @@ describe('TreatmentCourseController', () => {
       );
     });
 
-    it('should fail when clinicId is missing', async () => {
+    it("should fail when clinicId is missing", async () => {
       jest
-        .spyOn(templateService, 'getActiveTemplates')
-        .mockRejectedValue(
-          new BadRequestException('clinicId 不能為空'),
-        );
+        .spyOn(templateService, "getActiveTemplates")
+        .mockRejectedValue(new BadRequestException("clinicId 不能為空"));
 
-      await expect(controller.getActiveTemplates('')).rejects.toThrow(
+      await expect(controller.getActiveTemplates("")).rejects.toThrow(
         BadRequestException,
       );
     });
 
-    it('should return empty array when no templates found', async () => {
-      jest.spyOn(templateService, 'getActiveTemplates').mockResolvedValue([]);
+    it("should return empty array when no templates found", async () => {
+      jest.spyOn(templateService, "getActiveTemplates").mockResolvedValue([]);
 
       const result = await controller.getActiveTemplates(mockClinicId);
 
@@ -231,18 +233,18 @@ describe('TreatmentCourseController', () => {
     });
   });
 
-  describe('PUT /treatments/sessions/:sessionId - completeSession', () => {
-    it('should complete a session successfully', async () => {
+  describe("PUT /treatments/sessions/:sessionId - completeSession", () => {
+    it("should complete a session successfully", async () => {
       const updateDto: UpdateTreatmentSessionDto = {
         actualStartTime: new Date(),
         actualEndTime: new Date(),
-        completionStatus: 'completed',
-        therapistNotes: '治療順利完成',
-        patientFeedback: '效果不錯',
+        completionStatus: "completed",
+        therapistNotes: "治療順利完成",
+        patientFeedback: "效果不錯",
       };
 
       jest
-        .spyOn(sessionService, 'completeSession')
+        .spyOn(sessionService, "completeSession")
         .mockResolvedValue(mockCompletedSession);
 
       const result = await controller.completeSession(
@@ -259,15 +261,15 @@ describe('TreatmentCourseController', () => {
       );
     });
 
-    it('should complete session with staff assignments', async () => {
+    it("should complete session with staff assignments", async () => {
       const updateDto: UpdateTreatmentSessionDto = {
         actualStartTime: new Date(),
         actualEndTime: new Date(),
-        completionStatus: 'completed',
+        completionStatus: "completed",
         staffAssignments: [
           {
             staffId: mockStaffId,
-            role: 'therapist',
+            role: "therapist",
             ppfPercentage: 50,
           },
         ],
@@ -279,7 +281,7 @@ describe('TreatmentCourseController', () => {
       };
 
       jest
-        .spyOn(sessionService, 'completeSession')
+        .spyOn(sessionService, "completeSession")
         .mockResolvedValue(sessionWithAssignments);
 
       const result = await controller.completeSession(
@@ -296,29 +298,29 @@ describe('TreatmentCourseController', () => {
       );
     });
 
-    it('should fail when session is not found', async () => {
+    it("should fail when session is not found", async () => {
       const updateDto: UpdateTreatmentSessionDto = {
-        completionStatus: 'completed',
+        completionStatus: "completed",
       };
 
       jest
-        .spyOn(sessionService, 'completeSession')
-        .mockRejectedValue(new NotFoundException('療程次數不存在'));
+        .spyOn(sessionService, "completeSession")
+        .mockRejectedValue(new NotFoundException("療程次數不存在"));
 
       await expect(
-        controller.completeSession('non-existent', updateDto, mockClinicId),
+        controller.completeSession("non-existent", updateDto, mockClinicId),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('should fail when session is already completed', async () => {
+    it("should fail when session is already completed", async () => {
       const updateDto: UpdateTreatmentSessionDto = {
-        completionStatus: 'completed',
+        completionStatus: "completed",
       };
 
       jest
-        .spyOn(sessionService, 'completeSession')
+        .spyOn(sessionService, "completeSession")
         .mockRejectedValue(
-          new BadRequestException('療程次數已完成，無法再次完成'),
+          new BadRequestException("療程次數已完成，無法再次完成"),
         );
 
       await expect(
@@ -327,9 +329,8 @@ describe('TreatmentCourseController', () => {
     });
   });
 
-
-  describe('Integration Tests', () => {
-    it('should handle multiple course operations in sequence', async () => {
+  describe("Integration Tests", () => {
+    it("should handle multiple course operations in sequence", async () => {
       // Create course
       const createDto: CreateTreatmentCourseDto = {
         patientId: mockPatientId,
@@ -337,12 +338,12 @@ describe('TreatmentCourseController', () => {
         clinicId: mockClinicId,
       };
 
-      jest.spyOn(courseService, 'createCourse').mockResolvedValue(mockCourse);
+      jest.spyOn(courseService, "createCourse").mockResolvedValue(mockCourse);
       const createdCourse = await controller.createCourse(createDto);
       expect(createdCourse).toEqual(mockCourse);
 
       // Retrieve course
-      jest.spyOn(courseService, 'getCourseById').mockResolvedValue(mockCourse);
+      jest.spyOn(courseService, "getCourseById").mockResolvedValue(mockCourse);
       const retrievedCourse = await controller.getCourseById(
         mockCourseId,
         mockClinicId,
@@ -350,10 +351,10 @@ describe('TreatmentCourseController', () => {
       expect(retrievedCourse).toEqual(mockCourse);
     });
 
-    it('should retrieve templates and create course in sequence', async () => {
+    it("should retrieve templates and create course in sequence", async () => {
       // Get templates
       jest
-        .spyOn(templateService, 'getActiveTemplates')
+        .spyOn(templateService, "getActiveTemplates")
         .mockResolvedValue([mockTemplate]);
       const templates = await controller.getActiveTemplates(mockClinicId);
       expect(templates).toHaveLength(1);
@@ -365,35 +366,35 @@ describe('TreatmentCourseController', () => {
         clinicId: mockClinicId,
       };
 
-      jest.spyOn(courseService, 'createCourse').mockResolvedValue(mockCourse);
+      jest.spyOn(courseService, "createCourse").mockResolvedValue(mockCourse);
       const course = await controller.createCourse(createDto);
       expect(course.templateId).toEqual(mockTemplateId);
     });
   });
 });
 
-describe('StaffSessionController', () => {
+describe("StaffSessionController", () => {
   let controller: StaffSessionController;
   let sessionService: TreatmentSessionService;
 
-  const mockCourseId = 'course-123';
-  const mockSessionId = 'session-123';
-  const mockTemplateId = 'template-123';
-  const mockPatientId = 'patient-123';
-  const mockStaffId = 'staff-123';
-  const mockClinicId = 'clinic-123';
+  const mockCourseId = "course-123";
+  const mockSessionId = "session-123";
+  const mockTemplateId = "template-123";
+  const mockPatientId = "patient-123";
+  const mockStaffId = "staff-123";
+  const mockClinicId = "clinic-123";
 
   const mockSession = {
     id: mockSessionId,
     treatmentCourseId: mockCourseId,
     clinicId: mockClinicId,
     sessionNumber: 1,
-    completionStatus: 'pending',
+    completionStatus: "pending",
     scheduledDate: new Date(),
     actualStartTime: null,
     actualEndTime: null,
-    therapistNotes: '',
-    patientFeedback: '',
+    therapistNotes: "",
+    patientFeedback: "",
     staffAssignments: [],
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -401,7 +402,7 @@ describe('StaffSessionController', () => {
 
   const mockCompletedSession = {
     ...mockSession,
-    completionStatus: 'completed',
+    completionStatus: "completed",
     actualStartTime: new Date(),
     actualEndTime: new Date(),
   };
@@ -420,15 +421,17 @@ describe('StaffSessionController', () => {
     }).compile();
 
     controller = module.get<StaffSessionController>(StaffSessionController);
-    sessionService = module.get<TreatmentSessionService>(TreatmentSessionService);
+    sessionService = module.get<TreatmentSessionService>(
+      TreatmentSessionService,
+    );
   });
 
-  describe('GET /staff/:staffId/sessions - getStaffSessions', () => {
-    it('should retrieve all staff sessions successfully', async () => {
+  describe("GET /staff/:staffId/sessions - getStaffSessions", () => {
+    it("should retrieve all staff sessions successfully", async () => {
       const sessions = [mockSession, mockCompletedSession];
 
       jest
-        .spyOn(sessionService, 'getStaffSessions')
+        .spyOn(sessionService, "getStaffSessions")
         .mockResolvedValue(sessions);
 
       const result = await controller.getStaffSessions(
@@ -444,34 +447,34 @@ describe('StaffSessionController', () => {
       );
     });
 
-    it('should retrieve staff sessions filtered by status', async () => {
+    it("should retrieve staff sessions filtered by status", async () => {
       const sessions = [mockCompletedSession];
 
       jest
-        .spyOn(sessionService, 'getStaffSessions')
+        .spyOn(sessionService, "getStaffSessions")
         .mockResolvedValue(sessions);
 
       const result = await controller.getStaffSessions(
         mockStaffId,
         mockClinicId,
-        'completed',
+        "completed",
       );
 
       expect(result).toEqual(sessions);
       expect(sessionService.getStaffSessions).toHaveBeenCalledWith(
         mockStaffId,
         mockClinicId,
-        expect.objectContaining({ status: 'completed' }),
+        expect.objectContaining({ status: "completed" }),
       );
     });
 
-    it('should retrieve staff sessions filtered by date range', async () => {
-      const startDate = '2026-01-01';
-      const endDate = '2026-02-13';
+    it("should retrieve staff sessions filtered by date range", async () => {
+      const startDate = "2026-01-01";
+      const endDate = "2026-02-13";
       const sessions = [mockSession];
 
       jest
-        .spyOn(sessionService, 'getStaffSessions')
+        .spyOn(sessionService, "getStaffSessions")
         .mockResolvedValue(sessions);
 
       const result = await controller.getStaffSessions(
@@ -493,20 +496,18 @@ describe('StaffSessionController', () => {
       );
     });
 
-    it('should fail when clinicId is missing', async () => {
+    it("should fail when clinicId is missing", async () => {
       jest
-        .spyOn(sessionService, 'getStaffSessions')
-        .mockRejectedValue(
-          new BadRequestException('clinicId 不能為空'),
-        );
+        .spyOn(sessionService, "getStaffSessions")
+        .mockRejectedValue(new BadRequestException("clinicId 不能為空"));
 
       await expect(
-        controller.getStaffSessions(mockStaffId, ''),
+        controller.getStaffSessions(mockStaffId, ""),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('should return empty array when no sessions found', async () => {
-      jest.spyOn(sessionService, 'getStaffSessions').mockResolvedValue([]);
+    it("should return empty array when no sessions found", async () => {
+      jest.spyOn(sessionService, "getStaffSessions").mockResolvedValue([]);
 
       const result = await controller.getStaffSessions(
         mockStaffId,

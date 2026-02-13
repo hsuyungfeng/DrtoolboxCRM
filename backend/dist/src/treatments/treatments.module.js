@@ -38,7 +38,12 @@ exports.TreatmentsModule = TreatmentsModule = __decorate([
             ]),
             points_module_1.PointsModule,
         ],
-        controllers: [treatment_controller_1.TreatmentController, treatment_session_controller_1.TreatmentSessionController, treatment_course_controller_1.TreatmentCourseController, treatment_course_controller_1.StaffSessionController],
+        controllers: [
+            treatment_controller_1.TreatmentController,
+            treatment_session_controller_1.TreatmentSessionController,
+            treatment_course_controller_1.TreatmentCourseController,
+            treatment_course_controller_1.StaffSessionController,
+        ],
         providers: [
             treatment_service_1.TreatmentService,
             treatment_session_service_1.TreatmentSessionService,

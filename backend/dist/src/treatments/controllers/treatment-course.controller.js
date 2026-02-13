@@ -33,58 +33,58 @@ let TreatmentCourseController = class TreatmentCourseController {
         return await this.courseService.createCourse(createDto);
     }
     async getCourseById(courseId, clinicId) {
-        if (!clinicId || clinicId.trim() === '') {
-            throw new common_1.BadRequestException('clinicId 不能為空');
+        if (!clinicId || clinicId.trim() === "") {
+            throw new common_1.BadRequestException("clinicId 不能為空");
         }
         return await this.courseService.getCourseById(courseId, clinicId);
     }
     async getActiveTemplates(clinicId) {
-        if (!clinicId || clinicId.trim() === '') {
-            throw new common_1.BadRequestException('clinicId 不能為空');
+        if (!clinicId || clinicId.trim() === "") {
+            throw new common_1.BadRequestException("clinicId 不能為空");
         }
         return await this.templateService.getActiveTemplates(clinicId);
     }
     async completeSession(sessionId, updateDto, clinicId) {
-        if (!clinicId || clinicId.trim() === '') {
-            throw new common_1.BadRequestException('clinicId 不能為空');
+        if (!clinicId || clinicId.trim() === "") {
+            throw new common_1.BadRequestException("clinicId 不能為空");
         }
         return await this.sessionService.completeSession(sessionId, updateDto, clinicId);
     }
 };
 exports.TreatmentCourseController = TreatmentCourseController;
 __decorate([
-    (0, common_1.Post)('courses'),
+    (0, common_1.Post)("courses"),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [create_treatment_course_dto_1.CreateTreatmentCourseDto]),
     __metadata("design:returntype", Promise)
 ], TreatmentCourseController.prototype, "createCourse", null);
 __decorate([
-    (0, common_1.Get)('courses/:courseId'),
-    __param(0, (0, common_1.Param)('courseId')),
-    __param(1, (0, common_1.Query)('clinicId')),
+    (0, common_1.Get)("courses/:courseId"),
+    __param(0, (0, common_1.Param)("courseId")),
+    __param(1, (0, common_1.Query)("clinicId")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], TreatmentCourseController.prototype, "getCourseById", null);
 __decorate([
-    (0, common_1.Get)('templates'),
-    __param(0, (0, common_1.Query)('clinicId')),
+    (0, common_1.Get)("templates"),
+    __param(0, (0, common_1.Query)("clinicId")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], TreatmentCourseController.prototype, "getActiveTemplates", null);
 __decorate([
-    (0, common_1.Put)('sessions/:sessionId'),
-    __param(0, (0, common_1.Param)('sessionId')),
+    (0, common_1.Put)("sessions/:sessionId"),
+    __param(0, (0, common_1.Param)("sessionId")),
     __param(1, (0, common_1.Body)()),
-    __param(2, (0, common_1.Query)('clinicId')),
+    __param(2, (0, common_1.Query)("clinicId")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, update_treatment_session_dto_1.UpdateTreatmentSessionDto, String]),
     __metadata("design:returntype", Promise)
 ], TreatmentCourseController.prototype, "completeSession", null);
 exports.TreatmentCourseController = TreatmentCourseController = __decorate([
-    (0, common_1.Controller)('treatments'),
+    (0, common_1.Controller)("treatments"),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __metadata("design:paramtypes", [treatment_course_service_1.TreatmentCourseService,
         treatment_session_service_1.TreatmentSessionService,
@@ -96,8 +96,8 @@ let StaffSessionController = class StaffSessionController {
         this.sessionService = sessionService;
     }
     async getStaffSessions(staffId, clinicId, status, startDate, endDate) {
-        if (!clinicId || clinicId.trim() === '') {
-            throw new common_1.BadRequestException('clinicId 不能為空');
+        if (!clinicId || clinicId.trim() === "") {
+            throw new common_1.BadRequestException("clinicId 不能為空");
         }
         const filter = {};
         if (status) {
@@ -114,18 +114,18 @@ let StaffSessionController = class StaffSessionController {
 };
 exports.StaffSessionController = StaffSessionController;
 __decorate([
-    (0, common_1.Get)(':staffId/sessions'),
-    __param(0, (0, common_1.Param)('staffId')),
-    __param(1, (0, common_1.Query)('clinicId')),
-    __param(2, (0, common_1.Query)('status')),
-    __param(3, (0, common_1.Query)('startDate')),
-    __param(4, (0, common_1.Query)('endDate')),
+    (0, common_1.Get)(":staffId/sessions"),
+    __param(0, (0, common_1.Param)("staffId")),
+    __param(1, (0, common_1.Query)("clinicId")),
+    __param(2, (0, common_1.Query)("status")),
+    __param(3, (0, common_1.Query)("startDate")),
+    __param(4, (0, common_1.Query)("endDate")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], StaffSessionController.prototype, "getStaffSessions", null);
 exports.StaffSessionController = StaffSessionController = __decorate([
-    (0, common_1.Controller)('staff'),
+    (0, common_1.Controller)("staff"),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __metadata("design:paramtypes", [treatment_session_service_1.TreatmentSessionService])
 ], StaffSessionController);

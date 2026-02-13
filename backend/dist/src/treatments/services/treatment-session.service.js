@@ -83,8 +83,7 @@ let TreatmentSessionService = class TreatmentSessionService {
                 session.patientFeedback = updateDto.patientFeedback;
             }
             session.completionStatus = "completed";
-            if (updateDto.staffAssignments &&
-                updateDto.staffAssignments.length > 0) {
+            if (updateDto.staffAssignments && updateDto.staffAssignments.length > 0) {
                 this.ppfCalculationService.validateStaffAssignments(updateDto.staffAssignments);
                 await manager.delete(staff_assignment_entity_1.StaffAssignment, { sessionId });
                 const newAssignments = [];
@@ -138,7 +137,7 @@ let TreatmentSessionService = class TreatmentSessionService {
             where: { staffId },
             relations: ["session", "session.treatmentCourse"],
         });
-        let sessions = assignments
+        const sessions = assignments
             .map((a) => a.session)
             .filter((s) => s &&
             s.clinicId === clinicId &&

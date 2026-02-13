@@ -1,8 +1,8 @@
-import { TreatmentCourseService } from '../services/treatment-course.service';
-import { TreatmentSessionService } from '../services/treatment-session.service';
-import { TreatmentCourseTemplateService } from '../services/treatment-course-template.service';
-import { CreateTreatmentCourseDto } from '../dto/create-treatment-course.dto';
-import { UpdateTreatmentSessionDto } from '../dto/update-treatment-session.dto';
+import { TreatmentCourseService } from "../services/treatment-course.service";
+import { TreatmentSessionService } from "../services/treatment-session.service";
+import { TreatmentCourseTemplateService } from "../services/treatment-course-template.service";
+import { CreateTreatmentCourseDto } from "../dto/create-treatment-course.dto";
+import { UpdateTreatmentSessionDto } from "../dto/update-treatment-session.dto";
 export declare class TreatmentCourseController {
     private readonly courseService;
     private readonly sessionService;
@@ -16,5 +16,5 @@ export declare class TreatmentCourseController {
 export declare class StaffSessionController {
     private readonly sessionService;
     constructor(sessionService: TreatmentSessionService);
-    getStaffSessions(staffId: string, clinicId: string, status?: 'pending' | 'completed' | 'cancelled', startDate?: string, endDate?: string): Promise<import("../entities/treatment-session.entity").TreatmentSession[]>;
+    getStaffSessions(staffId: string, clinicId: string, status?: "pending" | "completed" | "cancelled", startDate?: string, endDate?: string): Promise<import("../entities/treatment-session.entity").TreatmentSession[]>;
 }

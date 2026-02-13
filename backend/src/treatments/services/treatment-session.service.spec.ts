@@ -2,10 +2,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
 import { Repository, DataSource } from "typeorm";
 import { EventEmitter2 } from "@nestjs/event-emitter";
-import {
-  NotFoundException,
-  BadRequestException,
-} from "@nestjs/common";
+import { NotFoundException, BadRequestException } from "@nestjs/common";
 import { TreatmentSessionService } from "./treatment-session.service";
 import { TreatmentSession } from "../entities/treatment-session.entity";
 import { TreatmentCourse } from "../entities/treatment-course.entity";
@@ -63,11 +60,9 @@ describe("TreatmentSessionService - Task 8", () => {
     };
 
     const mockDataSourceInstance = {
-      transaction: jest
-        .fn()
-        .mockImplementation(async (callback: any) => {
-          return callback(mockTransactionManager);
-        }),
+      transaction: jest.fn().mockImplementation(async (callback: any) => {
+        return callback(mockTransactionManager);
+      }),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -239,28 +234,28 @@ describe("TreatmentSessionService - Task 8", () => {
       };
 
       const mockTransactionManager = {
-        findOne: jest
-          .fn()
-          .mockResolvedValue(sessionWithRelations),
+        findOne: jest.fn().mockResolvedValue(sessionWithRelations),
         find: jest
           .fn()
-          .mockResolvedValue([{ ...mockSession, completionStatus: "completed" }]),
+          .mockResolvedValue([
+            { ...mockSession, completionStatus: "completed" },
+          ]),
         delete: jest.fn().mockResolvedValue({ affected: 0 }),
-        save: jest
-          .fn()
-          .mockImplementation((entity) =>
-            Promise.resolve({
-              ...entity,
-              completionStatus: "completed",
-              actualStartTime: startTime,
-              actualEndTime: endTime,
-            }),
-          ),
+        save: jest.fn().mockImplementation((entity) =>
+          Promise.resolve({
+            ...entity,
+            completionStatus: "completed",
+            actualStartTime: startTime,
+            actualEndTime: endTime,
+          }),
+        ),
       };
 
-      (dataSource.transaction as jest.Mock).mockImplementation(async (callback: any) => {
-        return callback(mockTransactionManager);
-      });
+      (dataSource.transaction as jest.Mock).mockImplementation(
+        async (callback: any) => {
+          return callback(mockTransactionManager);
+        },
+      );
 
       const result = await service.completeSession(
         mockSessionId,
@@ -278,9 +273,11 @@ describe("TreatmentSessionService - Task 8", () => {
         findOne: jest.fn().mockResolvedValue(null),
       };
 
-      (dataSource.transaction as jest.Mock).mockImplementation(async (callback: any) => {
-        return callback(mockTransactionManager);
-      });
+      (dataSource.transaction as jest.Mock).mockImplementation(
+        async (callback: any) => {
+          return callback(mockTransactionManager);
+        },
+      );
 
       await expect(
         service.completeSession(mockSessionId, {}, mockClinicId),
@@ -295,14 +292,14 @@ describe("TreatmentSessionService - Task 8", () => {
       };
 
       const mockTransactionManager = {
-        findOne: jest
-          .fn()
-          .mockResolvedValue(completedSession),
+        findOne: jest.fn().mockResolvedValue(completedSession),
       };
 
-      (dataSource.transaction as jest.Mock).mockImplementation(async (callback: any) => {
-        return callback(mockTransactionManager);
-      });
+      (dataSource.transaction as jest.Mock).mockImplementation(
+        async (callback: any) => {
+          return callback(mockTransactionManager);
+        },
+      );
 
       await expect(
         service.completeSession(mockSessionId, {}, mockClinicId),
@@ -317,14 +314,14 @@ describe("TreatmentSessionService - Task 8", () => {
       };
 
       const mockTransactionManager = {
-        findOne: jest
-          .fn()
-          .mockResolvedValue(cancelledSession),
+        findOne: jest.fn().mockResolvedValue(cancelledSession),
       };
 
-      (dataSource.transaction as jest.Mock).mockImplementation(async (callback: any) => {
-        return callback(mockTransactionManager);
-      });
+      (dataSource.transaction as jest.Mock).mockImplementation(
+        async (callback: any) => {
+          return callback(mockTransactionManager);
+        },
+      );
 
       await expect(
         service.completeSession(mockSessionId, {}, mockClinicId),
@@ -335,7 +332,11 @@ describe("TreatmentSessionService - Task 8", () => {
   describe("completeSession - Staff Assignments", () => {
     it("應該成功創建員工分配並計算 PPF", async () => {
       const staffAssignments = [
-        { staffId: mockStaffId1, staffRole: "主治", ppfPercentage: new Decimal("100") },
+        {
+          staffId: mockStaffId1,
+          staffRole: "主治",
+          ppfPercentage: new Decimal("100"),
+        },
       ];
 
       const startTime = new Date("2026-02-15T10:00:00");
@@ -379,20 +380,20 @@ describe("TreatmentSessionService - Task 8", () => {
           .mockResolvedValueOnce(courseWithSessions),
         find: jest.fn().mockResolvedValue([]),
         delete: jest.fn().mockResolvedValue({ affected: 0 }),
-        save: jest
-          .fn()
-          .mockImplementation((entity) =>
-            Promise.resolve({
-              ...entity,
-              completionStatus: "completed",
-              staffAssignments: createdAssignments,
-            }),
-          ),
+        save: jest.fn().mockImplementation((entity) =>
+          Promise.resolve({
+            ...entity,
+            completionStatus: "completed",
+            staffAssignments: createdAssignments,
+          }),
+        ),
       };
 
-      (dataSource.transaction as jest.Mock).mockImplementation(async (callback: any) => {
-        return callback(mockTransactionManager);
-      });
+      (dataSource.transaction as jest.Mock).mockImplementation(
+        async (callback: any) => {
+          return callback(mockTransactionManager);
+        },
+      );
 
       ppfCalculationService.validateStaffAssignments = jest
         .fn()
@@ -414,8 +415,16 @@ describe("TreatmentSessionService - Task 8", () => {
 
     it("應該在 PPF 百分比無效時拋出 BadRequestException", async () => {
       const staffAssignments = [
-        { staffId: mockStaffId1, staffRole: "主治", ppfPercentage: new Decimal("60") },
-        { staffId: mockStaffId2, staffRole: "協助", ppfPercentage: new Decimal("30") },
+        {
+          staffId: mockStaffId1,
+          staffRole: "主治",
+          ppfPercentage: new Decimal("60"),
+        },
+        {
+          staffId: mockStaffId2,
+          staffRole: "協助",
+          ppfPercentage: new Decimal("30"),
+        },
       ];
 
       const updateDto = {
@@ -425,18 +434,18 @@ describe("TreatmentSessionService - Task 8", () => {
       };
 
       const mockTransactionManager = {
-        findOne: jest
-          .fn()
-          .mockResolvedValue({
-            ...mockSession,
-            treatmentCourse: mockTreatmentCourse,
-          }),
+        findOne: jest.fn().mockResolvedValue({
+          ...mockSession,
+          treatmentCourse: mockTreatmentCourse,
+        }),
         delete: jest.fn().mockResolvedValue({ affected: 0 }),
       };
 
-      (dataSource.transaction as jest.Mock).mockImplementation(async (callback: any) => {
-        return callback(mockTransactionManager);
-      });
+      (dataSource.transaction as jest.Mock).mockImplementation(
+        async (callback: any) => {
+          return callback(mockTransactionManager);
+        },
+      );
 
       ppfCalculationService.validateStaffAssignments = jest
         .fn()
@@ -451,7 +460,11 @@ describe("TreatmentSessionService - Task 8", () => {
 
     it("應該刪除舊的員工分配並創建新的", async () => {
       const staffAssignments = [
-        { staffId: mockStaffId1, staffRole: "主治", ppfPercentage: new Decimal("100") },
+        {
+          staffId: mockStaffId1,
+          staffRole: "主治",
+          ppfPercentage: new Decimal("100"),
+        },
       ];
 
       const updateDto = {
@@ -490,20 +503,20 @@ describe("TreatmentSessionService - Task 8", () => {
           .mockResolvedValueOnce(courseWithSessions),
         find: jest.fn().mockResolvedValue([]),
         delete: jest.fn().mockResolvedValue({ affected: 1 }),
-        save: jest
-          .fn()
-          .mockImplementation((entity) =>
-            Promise.resolve({
-              ...entity,
-              completionStatus: "completed",
-              staffAssignments: createdAssignments,
-            }),
-          ),
+        save: jest.fn().mockImplementation((entity) =>
+          Promise.resolve({
+            ...entity,
+            completionStatus: "completed",
+            staffAssignments: createdAssignments,
+          }),
+        ),
       };
 
-      (dataSource.transaction as jest.Mock).mockImplementation(async (callback: any) => {
-        return callback(mockTransactionManager);
-      });
+      (dataSource.transaction as jest.Mock).mockImplementation(
+        async (callback: any) => {
+          return callback(mockTransactionManager);
+        },
+      );
 
       ppfCalculationService.validateStaffAssignments = jest
         .fn()
@@ -524,8 +537,16 @@ describe("TreatmentSessionService - Task 8", () => {
 
     it("應該為多個員工正確計算 PPF", async () => {
       const staffAssignments = [
-        { staffId: mockStaffId1, staffRole: "主治", ppfPercentage: new Decimal("60") },
-        { staffId: mockStaffId2, staffRole: "協助", ppfPercentage: new Decimal("40") },
+        {
+          staffId: mockStaffId1,
+          staffRole: "主治",
+          ppfPercentage: new Decimal("60"),
+        },
+        {
+          staffId: mockStaffId2,
+          staffRole: "協助",
+          ppfPercentage: new Decimal("40"),
+        },
       ];
 
       const updateDto = {
@@ -537,10 +558,7 @@ describe("TreatmentSessionService - Task 8", () => {
       const courseWithSessions = {
         ...mockTreatmentCourse,
         actualPayment: new Decimal("10000"),
-        sessions: [
-          mockSession,
-          { ...mockSession, id: "s2" },
-        ],
+        sessions: [mockSession, { ...mockSession, id: "s2" }],
       };
 
       const sessionWithRelations = {
@@ -575,20 +593,20 @@ describe("TreatmentSessionService - Task 8", () => {
           .mockResolvedValueOnce(courseWithSessions),
         find: jest.fn().mockResolvedValue([]),
         delete: jest.fn().mockResolvedValue({ affected: 0 }),
-        save: jest
-          .fn()
-          .mockImplementation((entity) =>
-            Promise.resolve({
-              ...entity,
-              completionStatus: "completed",
-              staffAssignments: createdAssignments,
-            }),
-          ),
+        save: jest.fn().mockImplementation((entity) =>
+          Promise.resolve({
+            ...entity,
+            completionStatus: "completed",
+            staffAssignments: createdAssignments,
+          }),
+        ),
       };
 
-      (dataSource.transaction as jest.Mock).mockImplementation(async (callback: any) => {
-        return callback(mockTransactionManager);
-      });
+      (dataSource.transaction as jest.Mock).mockImplementation(
+        async (callback: any) => {
+          return callback(mockTransactionManager);
+        },
+      );
 
       ppfCalculationService.validateStaffAssignments = jest
         .fn()
@@ -625,34 +643,30 @@ describe("TreatmentSessionService - Task 8", () => {
       };
 
       const mockTransactionManager = {
-        findOne: jest
-          .fn()
-          .mockResolvedValueOnce(sessionWithRelations),
+        findOne: jest.fn().mockResolvedValueOnce(sessionWithRelations),
         find: jest
           .fn()
-          .mockResolvedValue([{ ...mockSession, completionStatus: "completed" }]),
+          .mockResolvedValue([
+            { ...mockSession, completionStatus: "completed" },
+          ]),
         delete: jest.fn().mockResolvedValue({ affected: 0 }),
-        save: jest
-          .fn()
-          .mockImplementation((entity) =>
-            Promise.resolve({
-              ...entity,
-              completionStatus: "completed",
-              id: mockSessionId,
-              treatmentCourseId: mockCourseId,
-            }),
-          ),
+        save: jest.fn().mockImplementation((entity) =>
+          Promise.resolve({
+            ...entity,
+            completionStatus: "completed",
+            id: mockSessionId,
+            treatmentCourseId: mockCourseId,
+          }),
+        ),
       };
 
-      (dataSource.transaction as jest.Mock).mockImplementation(async (callback: any) => {
-        return callback(mockTransactionManager);
-      });
-
-      await service.completeSession(
-        mockSessionId,
-        updateDto,
-        mockClinicId,
+      (dataSource.transaction as jest.Mock).mockImplementation(
+        async (callback: any) => {
+          return callback(mockTransactionManager);
+        },
       );
+
+      await service.completeSession(mockSessionId, updateDto, mockClinicId);
 
       expect(eventEmitter.emit).toHaveBeenCalledWith(
         "session.completed",
@@ -693,34 +707,28 @@ describe("TreatmentSessionService - Task 8", () => {
           .fn()
           .mockResolvedValueOnce(sessionWithRelations)
           .mockResolvedValueOnce(courseWithSessions),
-        find: jest
-          .fn()
-          .mockResolvedValue([
-            { ...mockSession, completionStatus: "completed" },
-            { ...mockSession, id: "s2", completionStatus: "completed" },
-            { ...mockSession, id: "s3", completionStatus: "completed" },
-          ]),
+        find: jest.fn().mockResolvedValue([
+          { ...mockSession, completionStatus: "completed" },
+          { ...mockSession, id: "s2", completionStatus: "completed" },
+          { ...mockSession, id: "s3", completionStatus: "completed" },
+        ]),
         delete: jest.fn().mockResolvedValue({ affected: 0 }),
-        save: jest
-          .fn()
-          .mockImplementation((entity) =>
-            Promise.resolve({
-              ...entity,
-              status: "completed",
-              completedAt: new Date(),
-            }),
-          ),
+        save: jest.fn().mockImplementation((entity) =>
+          Promise.resolve({
+            ...entity,
+            status: "completed",
+            completedAt: new Date(),
+          }),
+        ),
       };
 
-      (dataSource.transaction as jest.Mock).mockImplementation(async (callback: any) => {
-        return callback(mockTransactionManager);
-      });
-
-      await service.completeSession(
-        mockSessionId,
-        updateDto,
-        mockClinicId,
+      (dataSource.transaction as jest.Mock).mockImplementation(
+        async (callback: any) => {
+          return callback(mockTransactionManager);
+        },
       );
+
+      await service.completeSession(mockSessionId, updateDto, mockClinicId);
 
       expect(mockTransactionManager.save).toHaveBeenCalled();
     });
@@ -748,40 +756,32 @@ describe("TreatmentSessionService - Task 8", () => {
       };
 
       const mockTransactionManager = {
-        findOne: jest
-          .fn()
-          .mockResolvedValueOnce(sessionWithRelations),
-        find: jest
-          .fn()
-          .mockResolvedValue([
-            { ...mockSession, completionStatus: "completed" },
-            { ...mockSession, id: "s2", completionStatus: "pending" },
-          ]),
+        findOne: jest.fn().mockResolvedValueOnce(sessionWithRelations),
+        find: jest.fn().mockResolvedValue([
+          { ...mockSession, completionStatus: "completed" },
+          { ...mockSession, id: "s2", completionStatus: "pending" },
+        ]),
         delete: jest.fn().mockResolvedValue({ affected: 0 }),
-        save: jest
-          .fn()
-          .mockImplementation((entity) =>
-            Promise.resolve({
-              ...entity,
-              completionStatus: "completed",
-            }),
-          ),
+        save: jest.fn().mockImplementation((entity) =>
+          Promise.resolve({
+            ...entity,
+            completionStatus: "completed",
+          }),
+        ),
       };
 
-      (dataSource.transaction as jest.Mock).mockImplementation(async (callback: any) => {
-        return callback(mockTransactionManager);
-      });
-
-      await service.completeSession(
-        mockSessionId,
-        updateDto,
-        mockClinicId,
+      (dataSource.transaction as jest.Mock).mockImplementation(
+        async (callback: any) => {
+          return callback(mockTransactionManager);
+        },
       );
+
+      await service.completeSession(mockSessionId, updateDto, mockClinicId);
 
       // Course should not be updated since not all sessions are complete
       const saveCalls = mockTransactionManager.save.mock.calls;
       const courseSaveCalls = saveCalls.filter(
-        (call) => call[1]?.id === mockCourseId || (call[0]?.id === mockCourseId),
+        (call) => call[1]?.id === mockCourseId || call[0]?.id === mockCourseId,
       );
       expect(courseSaveCalls.length).toBe(0);
     });
@@ -819,33 +819,25 @@ describe("TreatmentSessionService - Task 8", () => {
       }));
 
       const mockTransactionManager = {
-        findOne: jest
-          .fn()
-          .mockResolvedValueOnce(sessionWithRelations),
-        find: jest
-          .fn()
-          .mockResolvedValue(allCompletedSessions),
+        findOne: jest.fn().mockResolvedValueOnce(sessionWithRelations),
+        find: jest.fn().mockResolvedValue(allCompletedSessions),
         delete: jest.fn().mockResolvedValue({ affected: 0 }),
-        save: jest
-          .fn()
-          .mockImplementation((entity) =>
-            Promise.resolve({
-              ...entity,
-              status: "completed",
-              completedAt: new Date(),
-            }),
-          ),
+        save: jest.fn().mockImplementation((entity) =>
+          Promise.resolve({
+            ...entity,
+            status: "completed",
+            completedAt: new Date(),
+          }),
+        ),
       };
 
-      (dataSource.transaction as jest.Mock).mockImplementation(async (callback: any) => {
-        return callback(mockTransactionManager);
-      });
-
-      await service.completeSession(
-        "session-9",
-        updateDto,
-        mockClinicId,
+      (dataSource.transaction as jest.Mock).mockImplementation(
+        async (callback: any) => {
+          return callback(mockTransactionManager);
+        },
       );
+
+      await service.completeSession("session-9", updateDto, mockClinicId);
 
       expect(mockTransactionManager.save).toHaveBeenCalled();
     });
@@ -855,17 +847,15 @@ describe("TreatmentSessionService - Task 8", () => {
     it("應該返回員工的所有 sessions", async () => {
       const staffAssignments = [
         { sessionId: "session-1", session: mockSession },
-        { sessionId: "session-2", session: { ...mockSession, id: "session-2" } },
+        {
+          sessionId: "session-2",
+          session: { ...mockSession, id: "session-2" },
+        },
       ];
 
-      assignmentRepository.find = jest
-        .fn()
-        .mockResolvedValue(staffAssignments);
+      assignmentRepository.find = jest.fn().mockResolvedValue(staffAssignments);
 
-      const result = await service.getStaffSessions(
-        mockStaffId1,
-        mockClinicId,
-      );
+      const result = await service.getStaffSessions(mockStaffId1, mockClinicId);
 
       expect(result).toHaveLength(2);
       expect(assignmentRepository.find).toHaveBeenCalled();
@@ -879,9 +869,7 @@ describe("TreatmentSessionService - Task 8", () => {
         },
       ];
 
-      assignmentRepository.find = jest
-        .fn()
-        .mockResolvedValue(staffAssignments);
+      assignmentRepository.find = jest.fn().mockResolvedValue(staffAssignments);
 
       const result = await service.getStaffSessions(
         mockStaffId1,
@@ -903,9 +891,7 @@ describe("TreatmentSessionService - Task 8", () => {
         },
       ];
 
-      assignmentRepository.find = jest
-        .fn()
-        .mockResolvedValue(staffAssignments);
+      assignmentRepository.find = jest.fn().mockResolvedValue(staffAssignments);
 
       const result = await service.getStaffSessions(
         mockStaffId1,
@@ -919,10 +905,7 @@ describe("TreatmentSessionService - Task 8", () => {
     it("應該在沒有 sessions 時返回空陣列", async () => {
       assignmentRepository.find = jest.fn().mockResolvedValue([]);
 
-      const result = await service.getStaffSessions(
-        mockStaffId1,
-        mockClinicId,
-      );
+      const result = await service.getStaffSessions(mockStaffId1, mockClinicId);
 
       expect(result).toEqual([]);
     });
@@ -935,22 +918,25 @@ describe("TreatmentSessionService - Task 8", () => {
         },
         {
           sessionId: "session-2",
-          session: { ...mockSession, id: "session-2", scheduledDate: new Date("2026-02-15") },
+          session: {
+            ...mockSession,
+            id: "session-2",
+            scheduledDate: new Date("2026-02-15"),
+          },
         },
         {
           sessionId: "session-3",
-          session: { ...mockSession, id: "session-3", scheduledDate: new Date("2026-02-20") },
+          session: {
+            ...mockSession,
+            id: "session-3",
+            scheduledDate: new Date("2026-02-20"),
+          },
         },
       ];
 
-      assignmentRepository.find = jest
-        .fn()
-        .mockResolvedValue(staffAssignments);
+      assignmentRepository.find = jest.fn().mockResolvedValue(staffAssignments);
 
-      const result = await service.getStaffSessions(
-        mockStaffId1,
-        mockClinicId,
-      );
+      const result = await service.getStaffSessions(mockStaffId1, mockClinicId);
 
       expect(result[0].scheduledDate).toEqual(new Date("2026-02-20"));
       expect(result[1].scheduledDate).toEqual(new Date("2026-02-15"));

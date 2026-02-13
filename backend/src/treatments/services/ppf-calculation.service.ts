@@ -58,10 +58,7 @@ export class PPFCalculationService {
    * @param ppfPercentage PPF 百分比 (Decimal)
    * @returns 該員工的 PPF 金額 (Decimal)
    */
-  calculateStaffPPF(
-    paymentAmount: Decimal,
-    ppfPercentage: Decimal,
-  ): Decimal {
+  calculateStaffPPF(paymentAmount: Decimal, ppfPercentage: Decimal): Decimal {
     // 確保輸入是 Decimal 型別
     const amount =
       paymentAmount instanceof Decimal

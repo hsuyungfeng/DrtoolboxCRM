@@ -122,10 +122,7 @@ export class TreatmentSessionService {
       session.completionStatus = "completed";
 
       // Step 3: 處理員工分配 (如果提供)
-      if (
-        updateDto.staffAssignments &&
-        updateDto.staffAssignments.length > 0
-      ) {
+      if (updateDto.staffAssignments && updateDto.staffAssignments.length > 0) {
         // 驗證百分比總和
         this.ppfCalculationService.validateStaffAssignments(
           updateDto.staffAssignments,
@@ -158,16 +155,16 @@ export class TreatmentSessionService {
         }
 
         const totalSessions = courseWithSessions.sessions?.length || 1;
-        const paymentPerSession = courseWithSessions.actualPayment.dividedBy(
-          totalSessions,
-        );
+        const paymentPerSession =
+          courseWithSessions.actualPayment.dividedBy(totalSessions);
 
         // 使用 PPFCalculationService 計算 PPF
-        const assignmentsWithPPF = await this.ppfCalculationService.distributeToStaff(
-          sessionId,
-          paymentPerSession,
-          newAssignments,
-        );
+        const assignmentsWithPPF =
+          await this.ppfCalculationService.distributeToStaff(
+            sessionId,
+            paymentPerSession,
+            newAssignments,
+          );
 
         session.staffAssignments = assignmentsWithPPF;
       }
@@ -226,7 +223,7 @@ export class TreatmentSessionService {
     });
 
     // 提取 sessions 並應用診所和過濾條件
-    let sessions = assignments
+    const sessions = assignments
       .map((a) => a.session)
       .filter(
         (s) =>
@@ -267,9 +264,7 @@ export class TreatmentSessionService {
       );
     }
 
-    const session = this.sessionRepository.create(
-      createTreatmentSessionDto,
-    );
+    const session = this.sessionRepository.create(createTreatmentSessionDto);
     return await this.sessionRepository.save(session);
   }
 
