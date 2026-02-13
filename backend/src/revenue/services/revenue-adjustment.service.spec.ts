@@ -134,9 +134,7 @@ describe("RevenueAdjustmentService", () => {
       recordRepo.findOne = jest
         .fn()
         .mockResolvedValue({ ...mockRevenueRecord });
-      adjustmentRepo.create = jest
-        .fn()
-        .mockReturnValue({ ...mockAdjustment });
+      adjustmentRepo.create = jest.fn().mockReturnValue({ ...mockAdjustment });
 
       const result = await service.create(createDto, mockClinicId);
 
@@ -189,9 +187,7 @@ describe("RevenueAdjustmentService", () => {
       recordRepo.findOne = jest
         .fn()
         .mockResolvedValue({ ...mockRevenueRecord });
-      adjustmentRepo.create = jest
-        .fn()
-        .mockReturnValue({ ...mockAdjustment });
+      adjustmentRepo.create = jest.fn().mockReturnValue({ ...mockAdjustment });
       (queryRunner.manager.save as jest.Mock).mockRejectedValueOnce(
         new Error("DB Error"),
       );
@@ -270,9 +266,9 @@ describe("RevenueAdjustmentService", () => {
       adjustmentRepo.findOne = jest
         .fn()
         .mockResolvedValue({ ...mockAdjustment });
-      adjustmentRepo.save = jest.fn().mockImplementation((entity) =>
-        Promise.resolve(entity),
-      );
+      adjustmentRepo.save = jest
+        .fn()
+        .mockImplementation((entity) => Promise.resolve(entity));
 
       const result = await service.update(
         mockAdjustmentId,
@@ -332,9 +328,9 @@ describe("RevenueAdjustmentService", () => {
         reviewStatus: null, // 未審核
       };
       adjustmentRepo.findOne = jest.fn().mockResolvedValue(pendingAdjustment);
-      adjustmentRepo.save = jest.fn().mockImplementation((entity) =>
-        Promise.resolve(entity),
-      );
+      adjustmentRepo.save = jest
+        .fn()
+        .mockImplementation((entity) => Promise.resolve(entity));
 
       const result = await service.review(mockAdjustmentId, mockClinicId, {
         status: "approved",
@@ -353,9 +349,9 @@ describe("RevenueAdjustmentService", () => {
         reviewStatus: null,
       };
       adjustmentRepo.findOne = jest.fn().mockResolvedValue(pendingAdjustment);
-      adjustmentRepo.save = jest.fn().mockImplementation((entity) =>
-        Promise.resolve(entity),
-      );
+      adjustmentRepo.save = jest
+        .fn()
+        .mockImplementation((entity) => Promise.resolve(entity));
 
       const result = await service.review(mockAdjustmentId, mockClinicId, {
         status: "rejected",

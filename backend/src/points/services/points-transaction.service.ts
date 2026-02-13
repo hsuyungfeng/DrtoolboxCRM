@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
-import { PointsTransaction } from '../entities/points-transaction.entity';
-import { PointsBalance } from '../entities/points-balance.entity';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository, DataSource } from "typeorm";
+import { PointsTransaction } from "../entities/points-transaction.entity";
+import { PointsBalance } from "../entities/points-balance.entity";
 
 @Injectable()
 export class PointsTransactionService {
@@ -60,7 +60,7 @@ export class PointsTransactionService {
         customerType,
         clinicId,
       },
-      order: { createdAt: 'DESC' },
+      order: { createdAt: "DESC" },
       take: limit,
     });
   }
@@ -82,9 +82,7 @@ export class PointsTransactionService {
     });
 
     if (!balance) {
-      throw new NotFoundException(
-        `點數餘額不存在 - 客戶 ${customerId}`,
-      );
+      throw new NotFoundException(`點數餘額不存在 - 客戶 ${customerId}`);
     }
 
     return balance;

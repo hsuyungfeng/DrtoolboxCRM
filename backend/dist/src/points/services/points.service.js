@@ -25,9 +25,9 @@ let PointsService = PointsService_1 = class PointsService {
     }
     async awardPoints(customerId, amount, source, clinicId, referralId, maxRetries = 3) {
         if (amount <= 0) {
-            throw new common_1.BadRequestException('獎勵點數必須大於 0');
+            throw new common_1.BadRequestException("獎勵點數必須大於 0");
         }
-        let lastError = new Error('Unknown error');
+        let lastError = new Error("Unknown error");
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
                 const balance = await this.transactionService.getOrCreateBalance(customerId, this.getCustomerTypeFromId(customerId), clinicId);
@@ -64,9 +64,9 @@ let PointsService = PointsService_1 = class PointsService {
     }
     async redeemPoints(customerId, amount, clinicId, treatmentId, maxRetries = 3) {
         if (amount <= 0) {
-            throw new common_1.BadRequestException('兌換點數必須大於 0');
+            throw new common_1.BadRequestException("兌換點數必須大於 0");
         }
-        let lastError = new Error('Unknown error');
+        let lastError = new Error("Unknown error");
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
                 const latestBalance = await this.transactionService.getBalance(customerId, this.getCustomerTypeFromId(customerId), clinicId);
@@ -80,9 +80,9 @@ let PointsService = PointsService_1 = class PointsService {
                 const transaction = await this.transactionService.updateBalanceAndCreateTransaction(latestBalance, {
                     customerId,
                     customerType: latestBalance.customerType,
-                    type: 'redeem',
+                    type: "redeem",
                     amount: -amount,
-                    source: 'treatment',
+                    source: "treatment",
                     clinicId,
                     treatmentId,
                 });
@@ -113,29 +113,29 @@ let PointsService = PointsService_1 = class PointsService {
         if (error instanceof typeorm_1.OptimisticLockVersionMismatchError) {
             return true;
         }
-        return (error.message.includes('version') ||
-            error.message.includes('mismatch') ||
-            error.message.includes('optimistic lock'));
+        return (error.message.includes("version") ||
+            error.message.includes("mismatch") ||
+            error.message.includes("optimistic lock"));
     }
     sleep(ms) {
         return new Promise((resolve) => setTimeout(resolve, ms));
     }
     getCustomerTypeFromId(customerId) {
-        if (customerId.startsWith('staff-')) {
-            return 'staff';
+        if (customerId.startsWith("staff-")) {
+            return "staff";
         }
-        return 'patient';
+        return "patient";
     }
     getTransactionTypeBySource(source) {
         switch (source) {
-            case 'referral':
-                return 'earn_referral';
-            case 'treatment':
-                return 'earn_treatment';
-            case 'manual':
-                return 'manual_adjust';
+            case "referral":
+                return "earn_referral";
+            case "treatment":
+                return "earn_treatment";
+            case "manual":
+                return "manual_adjust";
             default:
-                return 'earn_referral';
+                return "earn_referral";
         }
     }
 };

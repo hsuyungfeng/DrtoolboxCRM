@@ -24,12 +24,10 @@ let HttpExceptionFilter = class HttpExceptionFilter {
             details: this.extractDetails(exceptionResponse),
             errors: this.extractValidationErrors(exceptionResponse),
         };
-        response
-            .status(status)
-            .json(errorResponse);
+        response.status(status).json(errorResponse);
     }
     extractMessage(exceptionResponse) {
-        if (typeof exceptionResponse === 'string') {
+        if (typeof exceptionResponse === "string") {
             return exceptionResponse;
         }
         if (exceptionResponse?.message) {
@@ -37,7 +35,7 @@ let HttpExceptionFilter = class HttpExceptionFilter {
                 ? exceptionResponse.message[0]
                 : exceptionResponse.message;
         }
-        return 'Internal server error';
+        return "Internal server error";
     }
     extractErrorCode(exception, exceptionResponse) {
         if (exceptionResponse?.errorCode) {
@@ -46,25 +44,25 @@ let HttpExceptionFilter = class HttpExceptionFilter {
         const status = exception.getStatus();
         switch (status) {
             case common_1.HttpStatus.BAD_REQUEST:
-                return 'BAD_REQUEST';
+                return "BAD_REQUEST";
             case common_1.HttpStatus.UNAUTHORIZED:
-                return 'UNAUTHORIZED';
+                return "UNAUTHORIZED";
             case common_1.HttpStatus.FORBIDDEN:
-                return 'FORBIDDEN';
+                return "FORBIDDEN";
             case common_1.HttpStatus.NOT_FOUND:
-                return 'NOT_FOUND';
+                return "NOT_FOUND";
             case common_1.HttpStatus.CONFLICT:
-                return 'CONFLICT';
+                return "CONFLICT";
             case common_1.HttpStatus.UNPROCESSABLE_ENTITY:
-                return 'VALIDATION_ERROR';
+                return "VALIDATION_ERROR";
             case common_1.HttpStatus.INTERNAL_SERVER_ERROR:
-                return 'INTERNAL_SERVER_ERROR';
+                return "INTERNAL_SERVER_ERROR";
             default:
                 return `HTTP_${status}`;
         }
     }
     extractDetails(exceptionResponse) {
-        if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
+        if (typeof exceptionResponse === "object" && exceptionResponse !== null) {
             const { message, errorCode, errors, ...details } = exceptionResponse;
             return Object.keys(details).length > 0 ? details : undefined;
         }
@@ -73,8 +71,8 @@ let HttpExceptionFilter = class HttpExceptionFilter {
     extractValidationErrors(exceptionResponse) {
         if (exceptionResponse?.errors && Array.isArray(exceptionResponse.errors)) {
             return exceptionResponse.errors.map((error) => ({
-                field: error.field || error.property || 'unknown',
-                message: error.message || 'Validation error',
+                field: error.field || error.property || "unknown",
+                message: error.message || "Validation error",
                 constraint: error.constraint,
             }));
         }

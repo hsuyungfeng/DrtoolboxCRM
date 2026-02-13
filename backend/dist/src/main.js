@@ -11,33 +11,33 @@ async function bootstrap() {
     app.useGlobalFilters(new http_exception_filter_1.HttpExceptionFilter(), new all_exceptions_filter_1.AllExceptionsFilter());
     app.enableCors({
         origin: process.env.CORS_ORIGIN || true,
-        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+        methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         credentials: true,
     });
-    app.setGlobalPrefix('api');
+    app.setGlobalPrefix("api");
     const clinicMiddleware = new clinic_auth_middleware_1.ClinicAuthMiddleware();
     app.use((req, res, next) => {
-        if (req.path.startsWith('/api/docs') || req.path === '/api/health') {
+        if (req.path.startsWith("/api/docs") || req.path === "/api/health") {
             return next();
         }
         return clinicMiddleware.use(req, res, next);
     });
     const config = new swagger_1.DocumentBuilder()
-        .setTitle('Doctor CRM API')
-        .setDescription('醫療診所客戶關係管理系統 API 文檔')
-        .setVersion('1.0')
-        .addTag('patients', '患者管理')
-        .addTag('treatments', '療程管理')
-        .addTag('staff', '員工管理')
-        .addTag('revenue', '分潤管理')
+        .setTitle("Doctor CRM API")
+        .setDescription("醫療診所客戶關係管理系統 API 文檔")
+        .setVersion("1.0")
+        .addTag("patients", "患者管理")
+        .addTag("treatments", "療程管理")
+        .addTag("staff", "員工管理")
+        .addTag("revenue", "分潤管理")
         .build();
     const document = swagger_1.SwaggerModule.createDocument(app, config);
-    swagger_1.SwaggerModule.setup('api/docs', app, document, {
-        customSiteTitle: 'Doctor CRM API Docs',
+    swagger_1.SwaggerModule.setup("api/docs", app, document, {
+        customSiteTitle: "Doctor CRM API Docs",
         swaggerOptions: {
             persistAuthorization: true,
-            tagsSorter: 'alpha',
-            operationsSorter: 'alpha',
+            tagsSorter: "alpha",
+            operationsSorter: "alpha",
         },
     });
     await app.listen(process.env.PORT ?? 3000);

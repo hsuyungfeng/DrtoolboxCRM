@@ -9,17 +9,17 @@ import {
   BadRequestException,
   UseGuards,
   Request,
-} from '@nestjs/common';
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
-import { ReferralService, ReferralStats } from '../services/referral.service';
-import { Referral } from '../entities/referral.entity';
-import { CreateReferralDto } from '../dto/create-referral.dto';
-import { ConvertReferralDto } from '../dto/convert-referral.dto';
+} from "@nestjs/common";
+import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
+import { ReferralService, ReferralStats } from "../services/referral.service";
+import { Referral } from "../entities/referral.entity";
+import { CreateReferralDto } from "../dto/create-referral.dto";
+import { ConvertReferralDto } from "../dto/convert-referral.dto";
 
 /**
  * ReferralController - 推薦 REST API
  */
-@Controller('referrals')
+@Controller("referrals")
 @UseGuards(JwtAuthGuard)
 export class ReferralController {
   constructor(private readonly referralService: ReferralService) {}
@@ -43,10 +43,10 @@ export class ReferralController {
    * GET /referrals/by-referrer/:referrerId/:referrerType
    * 按推薦人查詢推薦記錄
    */
-  @Get('by-referrer/:referrerId/:referrerType')
+  @Get("by-referrer/:referrerId/:referrerType")
   async getReferralsByReferrer(
-    @Param('referrerId') referrerId: string,
-    @Param('referrerType') referrerType: string,
+    @Param("referrerId") referrerId: string,
+    @Param("referrerType") referrerType: string,
     @Request() req: any,
   ): Promise<Referral[]> {
     const clinicId = req.user?.clinicId;
@@ -61,9 +61,9 @@ export class ReferralController {
    * GET /referrals/by-patient/:patientId
    * 按患者查詢推薦記錄
    */
-  @Get('by-patient/:patientId')
+  @Get("by-patient/:patientId")
   async getReferralByPatient(
-    @Param('patientId') patientId: string,
+    @Param("patientId") patientId: string,
     @Request() req: any,
   ): Promise<Referral | null> {
     const clinicId = req.user?.clinicId;
@@ -74,9 +74,9 @@ export class ReferralController {
    * PUT /referrals/:id/convert
    * 轉化推薦（標記為已轉化並獎勵點數）
    */
-  @Put(':id/convert')
+  @Put(":id/convert")
   async convert(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @Body() convertReferralDto: ConvertReferralDto,
     @Request() req: any,
   ): Promise<Referral> {
@@ -84,15 +84,22 @@ export class ReferralController {
     // 驗證診所 ID 一致性
     this.validateClinicId(convertReferralDto.clinicId, clinicId);
 
-    return await this.referralService.convertReferral(id, convertReferralDto.treatmentId, clinicId);
+    return await this.referralService.convertReferral(
+      id,
+      convertReferralDto.treatmentId,
+      clinicId,
+    );
   }
 
   /**
    * DELETE /referrals/:id
    * 取消推薦
    */
-  @Delete(':id')
-  async delete(@Param('id') id: string, @Request() req: any): Promise<Referral> {
+  @Delete(":id")
+  async delete(
+    @Param("id") id: string,
+    @Request() req: any,
+  ): Promise<Referral> {
     const clinicId = req.user?.clinicId;
     return await this.referralService.deleteReferral(id, clinicId);
   }
@@ -101,7 +108,7 @@ export class ReferralController {
    * GET /referrals/stats
    * 獲取推薦統計數據
    */
-  @Get('stats')
+  @Get("stats")
   async getStats(@Request() req: any): Promise<ReferralStats> {
     const clinicId = req.user?.clinicId;
     return await this.referralService.getReferralStats(clinicId);
@@ -113,7 +120,7 @@ export class ReferralController {
    */
   private validateClinicId(dtoClinicId: string, userClinicId: string): void {
     if (dtoClinicId !== userClinicId) {
-      throw new BadRequestException('診所 ID 不匹配，無權限操作其他診所的數據');
+      throw new BadRequestException("診所 ID 不匹配，無權限操作其他診所的數據");
     }
   }
 }

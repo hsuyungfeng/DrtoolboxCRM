@@ -39,13 +39,13 @@ export class RevenueAdjustment {
   @Column({ type: "json", nullable: true })
   metadata: any;
 
-  @Column({ 
-    type: "varchar", 
-    length: 20, 
+  @Column({
+    type: "varchar",
+    length: 20,
     nullable: true,
-    default: 'pending',
+    default: "pending",
   })
-  reviewStatus: 'pending' | 'approved' | 'rejected';
+  reviewStatus: "pending" | "approved" | "rejected";
 
   @Column({ type: "text", nullable: true })
   reviewNotes: string | null;

@@ -1,22 +1,22 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { NotFoundException } from '@nestjs/common';
-import { PointsConfigService } from './points-config.service';
-import { PointsConfig } from '../entities/points-config.entity';
+import { Test, TestingModule } from "@nestjs/testing";
+import { getRepositoryToken } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { NotFoundException } from "@nestjs/common";
+import { PointsConfigService } from "./points-config.service";
+import { PointsConfig } from "../entities/points-config.entity";
 
-describe('PointsConfigService', () => {
+describe("PointsConfigService", () => {
   let service: PointsConfigService;
   let configRepo: jest.Mocked<Repository<PointsConfig>>;
 
-  const mockClinicId = 'clinic-001';
+  const mockClinicId = "clinic-001";
   const mockConfig: Partial<PointsConfig> = {
-    id: 'config-001',
+    id: "config-001",
     clinicId: mockClinicId,
-    configKey: 'referral_points_reward',
+    configKey: "referral_points_reward",
     configValue: 100,
-    description: '推薦客戶成功轉診獲得的點數',
-    unit: 'points',
+    description: "推薦客戶成功轉診獲得的點數",
+    unit: "points",
     isActive: true,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -46,14 +46,14 @@ describe('PointsConfigService', () => {
     );
   });
 
-  describe('loadConfig', () => {
-    it('應該根據 configKey 和 clinicId 取得配置', async () => {
+  describe("loadConfig", () => {
+    it("應該根據 configKey 和 clinicId 取得配置", async () => {
       // Arrange
       configRepo.findOne.mockResolvedValue(mockConfig as PointsConfig);
 
       // Act
       const result = await service.loadConfig(
-        'referral_points_reward',
+        "referral_points_reward",
         mockClinicId,
       );
 
@@ -61,24 +61,24 @@ describe('PointsConfigService', () => {
       expect(result).toEqual(mockConfig);
       expect(configRepo.findOne).toHaveBeenCalledWith({
         where: {
-          configKey: 'referral_points_reward',
+          configKey: "referral_points_reward",
           clinicId: mockClinicId,
           isActive: true,
         },
       });
     });
 
-    it('應該在配置不存在時拋出 NotFoundException', async () => {
+    it("應該在配置不存在時拋出 NotFoundException", async () => {
       // Arrange
       configRepo.findOne.mockResolvedValue(null);
 
       // Act & Assert
       await expect(
-        service.loadConfig('non_existent_key', mockClinicId),
+        service.loadConfig("non_existent_key", mockClinicId),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('應該只返回 isActive 為 true 的配置', async () => {
+    it("應該只返回 isActive 為 true 的配置", async () => {
       // Arrange
       const inactiveConfig: Partial<PointsConfig> = {
         ...mockConfig,
@@ -88,20 +88,20 @@ describe('PointsConfigService', () => {
 
       // Act & Assert
       await expect(
-        service.loadConfig('referral_points_reward', mockClinicId),
+        service.loadConfig("referral_points_reward", mockClinicId),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('getAll', () => {
-    it('應該取得診所的所有活躍配置', async () => {
+  describe("getAll", () => {
+    it("應該取得診所的所有活躍配置", async () => {
       // Arrange
       const configs = [
-        { ...mockConfig, configKey: 'referral_points_reward' },
+        { ...mockConfig, configKey: "referral_points_reward" },
         {
           ...mockConfig,
-          id: 'config-002',
-          configKey: 'points_to_currency_rate',
+          id: "config-002",
+          configKey: "points_to_currency_rate",
           configValue: 0.1,
         },
       ] as PointsConfig[];
@@ -114,11 +114,11 @@ describe('PointsConfigService', () => {
       expect(result).toEqual(configs);
       expect(configRepo.find).toHaveBeenCalledWith({
         where: { clinicId: mockClinicId, isActive: true },
-        order: { createdAt: 'DESC' },
+        order: { createdAt: "DESC" },
       });
     });
 
-    it('應該返回空陣列當沒有配置時', async () => {
+    it("應該返回空陣列當沒有配置時", async () => {
       // Arrange
       configRepo.find.mockResolvedValue([]);
 
@@ -130,19 +130,19 @@ describe('PointsConfigService', () => {
     });
   });
 
-  describe('createConfig', () => {
-    it('應該建立新配置', async () => {
+  describe("createConfig", () => {
+    it("應該建立新配置", async () => {
       // Arrange
       const createDto = {
-        configKey: 'max_redeem_percentage',
+        configKey: "max_redeem_percentage",
         configValue: 50,
-        description: '最多兌現：本次交易的 50%',
-        unit: 'percentage',
+        description: "最多兌現：本次交易的 50%",
+        unit: "percentage",
         clinicId: mockClinicId,
       };
 
       const savedConfig: Partial<PointsConfig> = {
-        id: 'config-003',
+        id: "config-003",
         ...createDto,
         isActive: true,
         createdAt: new Date(),
@@ -175,13 +175,13 @@ describe('PointsConfigService', () => {
     });
   });
 
-  describe('updateConfig', () => {
-    it('應該更新存在的配置', async () => {
+  describe("updateConfig", () => {
+    it("應該更新存在的配置", async () => {
       // Arrange
-      const configId = 'config-001';
+      const configId = "config-001";
       const updateData = {
         configValue: 150,
-        description: '更新後的描述',
+        description: "更新後的描述",
       };
 
       configRepo.findOne.mockResolvedValue(mockConfig as PointsConfig);
@@ -189,7 +189,11 @@ describe('PointsConfigService', () => {
       configRepo.save.mockResolvedValue(updatedConfig as PointsConfig);
 
       // Act
-      const result = await service.updateConfig(configId, mockClinicId, updateData);
+      const result = await service.updateConfig(
+        configId,
+        mockClinicId,
+        updateData,
+      );
 
       // Assert
       expect(result).toEqual(updatedConfig);
@@ -202,21 +206,23 @@ describe('PointsConfigService', () => {
       expect(configRepo.save).toHaveBeenCalled();
     });
 
-    it('應該在配置不存在時拋出 NotFoundException', async () => {
+    it("應該在配置不存在時拋出 NotFoundException", async () => {
       // Arrange
       configRepo.findOne.mockResolvedValue(null);
 
       // Act & Assert
       await expect(
-        service.updateConfig('non_existent', mockClinicId, { configValue: 100 }),
+        service.updateConfig("non_existent", mockClinicId, {
+          configValue: 100,
+        }),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('disableConfig', () => {
-    it('應該停用配置', async () => {
+  describe("disableConfig", () => {
+    it("應該停用配置", async () => {
       // Arrange
-      const configId = 'config-001';
+      const configId = "config-001";
       configRepo.findOne.mockResolvedValue(mockConfig as PointsConfig);
       const disabledConfig = { ...mockConfig, isActive: false };
       configRepo.save.mockResolvedValue(disabledConfig as PointsConfig);
@@ -235,25 +241,25 @@ describe('PointsConfigService', () => {
       expect(configRepo.save).toHaveBeenCalled();
     });
 
-    it('應該在配置不存在時拋出 NotFoundException', async () => {
+    it("應該在配置不存在時拋出 NotFoundException", async () => {
       // Arrange
       configRepo.findOne.mockResolvedValue(null);
 
       // Act & Assert
-      await expect(service.disableConfig('non_existent', mockClinicId)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.disableConfig("non_existent", mockClinicId),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('getConfigByKey', () => {
-    it('應該根據 configKey 取得配置值', async () => {
+  describe("getConfigByKey", () => {
+    it("應該根據 configKey 取得配置值", async () => {
       // Arrange
       configRepo.findOne.mockResolvedValue(mockConfig as PointsConfig);
 
       // Act
       const result = await service.getConfigByKey(
-        'referral_points_reward',
+        "referral_points_reward",
         mockClinicId,
       );
 
@@ -261,13 +267,13 @@ describe('PointsConfigService', () => {
       expect(result).toBe(mockConfig.configValue);
     });
 
-    it('應該在配置不存在時拋出 NotFoundException', async () => {
+    it("應該在配置不存在時拋出 NotFoundException", async () => {
       // Arrange
       configRepo.findOne.mockResolvedValue(null);
 
       // Act & Assert
       await expect(
-        service.getConfigByKey('non_existent_key', mockClinicId),
+        service.getConfigByKey("non_existent_key", mockClinicId),
       ).rejects.toThrow(NotFoundException);
     });
   });

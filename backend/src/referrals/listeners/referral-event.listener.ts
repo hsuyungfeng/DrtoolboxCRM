@@ -1,6 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { OnEvent } from '@nestjs/event-emitter';
-import { ReferralService } from '../services/referral.service';
+import { Injectable, Logger } from "@nestjs/common";
+import { OnEvent } from "@nestjs/event-emitter";
+import { ReferralService } from "../services/referral.service";
 
 /**
  * 治療創建事件有效載荷
@@ -27,27 +27,32 @@ export class ReferralEventListener {
    *
    * @param event 治療創建事件
    */
-  @OnEvent('treatment.created')
+  @OnEvent("treatment.created")
   async handleTreatmentCreated(event: TreatmentCreatedEvent): Promise<void> {
     const { treatmentId, patientId, clinicId } = event;
 
     try {
       // 檢查患者是否有推薦記錄
-      const referral = await this.referralService.getReferralByPatient(patientId, clinicId);
+      const referral = await this.referralService.getReferralByPatient(
+        patientId,
+        clinicId,
+      );
 
       // 如果沒有推薦記錄或推薦已被處理，則跳過
-      if (!referral || referral.status !== 'pending') {
-        this.logger.debug(
-          `患者 ${patientId} 無待處理的推薦記錄，跳過轉化邏輯`
-        );
+      if (!referral || referral.status !== "pending") {
+        this.logger.debug(`患者 ${patientId} 無待處理的推薦記錄，跳過轉化邏輯`);
         return;
       }
 
       // 轉化推薦記錄
-      await this.referralService.convertReferral(referral.id, treatmentId, clinicId);
+      await this.referralService.convertReferral(
+        referral.id,
+        treatmentId,
+        clinicId,
+      );
 
       this.logger.log(
-        `成功自動轉化推薦 ${referral.id}（患者：${patientId}，治療：${treatmentId}）`
+        `成功自動轉化推薦 ${referral.id}（患者：${patientId}，治療：${treatmentId}）`,
       );
     } catch (error) {
       this.logger.error(

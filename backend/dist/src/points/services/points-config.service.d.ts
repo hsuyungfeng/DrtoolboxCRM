@@ -1,5 +1,5 @@
-import { Repository } from 'typeorm';
-import { PointsConfig } from '../entities/points-config.entity';
+import { Repository } from "typeorm";
+import { PointsConfig } from "../entities/points-config.entity";
 export declare class PointsConfigService {
     private configRepository;
     constructor(configRepository: Repository<PointsConfig>);

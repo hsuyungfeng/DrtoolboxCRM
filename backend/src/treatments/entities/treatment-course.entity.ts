@@ -8,32 +8,32 @@ import {
   OneToMany,
   Index,
   JoinColumn,
-} from 'typeorm';
-import Decimal from 'decimal.js';
-import { Patient } from '../../patients/entities/patient.entity';
-import { TreatmentSession } from './treatment-session.entity';
+} from "typeorm";
+import Decimal from "decimal.js";
+import { Patient } from "../../patients/entities/patient.entity";
+import { TreatmentSession } from "./treatment-session.entity";
 
-@Entity('treatment_courses')
-@Index(['clinicId', 'patientId'])
-@Index(['clinicId', 'status'])
+@Entity("treatment_courses")
+@Index(["clinicId", "patientId"])
+@Index(["clinicId", "status"])
 export class TreatmentCourse {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column({ type: 'varchar', length: 32 })
+  @Column({ type: "varchar", length: 32 })
   patientId: string;
 
-  @Column({ type: 'varchar', length: 32 })
+  @Column({ type: "varchar", length: 32 })
   templateId: string;
 
-  @Column({ type: 'varchar', length: 50, default: 'active' })
-  status: 'active' | 'completed' | 'abandoned' = 'active';
+  @Column({ type: "varchar", length: 50, default: "active" })
+  status: "active" | "completed" | "abandoned" = "active";
 
-  @Column({ type: 'date' })
+  @Column({ type: "date" })
   purchaseDate: Date;
 
   @Column({
-    type: 'decimal',
+    type: "decimal",
     precision: 10,
     scale: 2,
     transformer: {
@@ -50,7 +50,7 @@ export class TreatmentCourse {
   purchaseAmount: Decimal;
 
   @Column({
-    type: 'decimal',
+    type: "decimal",
     precision: 10,
     scale: 2,
     default: 0,
@@ -68,7 +68,7 @@ export class TreatmentCourse {
   pointsRedeemed: Decimal;
 
   @Column({
-    type: 'decimal',
+    type: "decimal",
     precision: 10,
     scale: 2,
     transformer: {
@@ -84,10 +84,10 @@ export class TreatmentCourse {
   })
   actualPayment: Decimal;
 
-  @Column({ type: 'varchar', length: 32 })
+  @Column({ type: "varchar", length: 32 })
   clinicId: string;
 
-  @Column({ type: 'datetime', nullable: true })
+  @Column({ type: "datetime", nullable: true })
   completedAt: Date;
 
   @CreateDateColumn()
@@ -97,8 +97,8 @@ export class TreatmentCourse {
   updatedAt: Date;
 
   // 關聯
-  @ManyToOne(() => Patient, { eager: false, onDelete: 'RESTRICT' })
-  @JoinColumn({ name: 'patientId' })
+  @ManyToOne(() => Patient, { eager: false, onDelete: "RESTRICT" })
+  @JoinColumn({ name: "patientId" })
   patient: Patient;
 
   @OneToMany(() => TreatmentSession, (session) => session.treatmentCourse)

@@ -22,13 +22,15 @@ export class TreatmentService {
 
     // 發送 treatment.created 事件，觸發推薦轉化邏輯
     try {
-      this.eventEmitter.emit('treatment.created', {
+      this.eventEmitter.emit("treatment.created", {
         treatmentId: savedTreatment.id,
         patientId: savedTreatment.patientId,
         clinicId: savedTreatment.clinicId,
       });
     } catch (error) {
-      this.logger.warn(`Failed to emit treatment.created event: ${error.message}`);
+      this.logger.warn(
+        `Failed to emit treatment.created event: ${error.message}`,
+      );
       // 不拋出異常，防止治療創建失敗
     }
 

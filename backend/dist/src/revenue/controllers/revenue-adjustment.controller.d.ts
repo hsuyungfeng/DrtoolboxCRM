@@ -1,7 +1,7 @@
-import { RevenueAdjustmentService } from '../services/revenue-adjustment.service';
-import { CreateRevenueAdjustmentDto } from '../dto/create-revenue-adjustment.dto';
-import { UpdateRevenueAdjustmentDto } from '../dto/update-revenue-adjustment.dto';
-import { RevenueAdjustment } from '../entities/revenue-adjustment.entity';
+import { RevenueAdjustmentService } from "../services/revenue-adjustment.service";
+import { CreateRevenueAdjustmentDto } from "../dto/create-revenue-adjustment.dto";
+import { UpdateRevenueAdjustmentDto } from "../dto/update-revenue-adjustment.dto";
+import { RevenueAdjustment } from "../entities/revenue-adjustment.entity";
 export declare class RevenueAdjustmentController {
     private readonly adjustmentService;
     constructor(adjustmentService: RevenueAdjustmentService);
@@ -11,7 +11,7 @@ export declare class RevenueAdjustmentController {
     update(id: string, updateDto: UpdateRevenueAdjustmentDto, clinicId: string): Promise<RevenueAdjustment>;
     remove(id: string, clinicId: string): Promise<void>;
     review(id: string, clinicId: string, reviewData: {
-        status: 'approved' | 'rejected';
+        status: "approved" | "rejected";
         notes?: string;
         reviewedBy: string;
     }): Promise<RevenueAdjustment>;

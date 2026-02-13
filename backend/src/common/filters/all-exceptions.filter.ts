@@ -4,9 +4,9 @@ import {
   ArgumentsHost,
   HttpStatus,
   Logger,
-} from '@nestjs/common';
-import { Request, Response } from 'express';
-import { ApiErrorResponse } from '../interfaces/api-error-response.interface';
+} from "@nestjs/common";
+import { Request, Response } from "express";
+import { ApiErrorResponse } from "../interfaces/api-error-response.interface";
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -22,7 +22,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     // 構建錯誤響應
     const status = this.getStatusCode(exception);
-    const isProduction = process.env.NODE_ENV === 'production';
+    const isProduction = process.env.NODE_ENV === "production";
 
     const errorResponse: ApiErrorResponse = {
       statusCode: status,
@@ -34,9 +34,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     };
 
     // 設置響應頭和狀態碼
-    response
-      .status(status)
-      .json(errorResponse);
+    response.status(status).json(errorResponse);
   }
 
   /**
@@ -52,7 +50,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       Query: ${JSON.stringify(request.query)}
       Params: ${JSON.stringify(request.params)}
       IP: ${request.ip}
-      User-Agent: ${request.get('user-agent')}
+      User-Agent: ${request.get("user-agent")}
     `;
 
     this.logger.error(errorMessage);
@@ -63,7 +61,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
    */
   private getStatusCode(exception: any): number {
     // 如果是 TypeORM 或其他數據庫錯誤
-    if (exception?.code?.startsWith('SQLITE_') || exception?.code === '23505') {
+    if (exception?.code?.startsWith("SQLITE_") || exception?.code === "23505") {
       return HttpStatus.CONFLICT; // 數據衝突
     }
 
@@ -77,11 +75,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
   private getMessage(exception: any, isProduction: boolean): string {
     // 在生產環境中隱藏詳細錯誤信息
     if (isProduction) {
-      return 'An internal server error occurred. Please contact support.';
+      return "An internal server error occurred. Please contact support.";
     }
 
     // 在開發環境中提供詳細錯誤信息
-    return exception.message || 'Internal server error';
+    return exception.message || "Internal server error";
   }
 
   /**
@@ -91,31 +89,34 @@ export class AllExceptionsFilter implements ExceptionFilter {
     // 根據錯誤類型返回對應的錯誤代碼
     if (exception?.name) {
       switch (exception.name) {
-        case 'TypeError':
-          return 'TYPE_ERROR';
-        case 'RangeError':
-          return 'RANGE_ERROR';
-        case 'SyntaxError':
-          return 'SYNTAX_ERROR';
-        case 'ReferenceError':
-          return 'REFERENCE_ERROR';
+        case "TypeError":
+          return "TYPE_ERROR";
+        case "RangeError":
+          return "RANGE_ERROR";
+        case "SyntaxError":
+          return "SYNTAX_ERROR";
+        case "ReferenceError":
+          return "REFERENCE_ERROR";
         default:
-          return 'UNKNOWN_ERROR';
+          return "UNKNOWN_ERROR";
       }
     }
 
     // 如果是數據庫錯誤
-    if (exception?.code?.startsWith('SQLITE_')) {
-      return 'DATABASE_ERROR';
+    if (exception?.code?.startsWith("SQLITE_")) {
+      return "DATABASE_ERROR";
     }
 
-    return 'INTERNAL_SERVER_ERROR';
+    return "INTERNAL_SERVER_ERROR";
   }
 
   /**
    * 獲取錯誤詳細信息
    */
-  private getDetails(exception: any, isProduction: boolean): Record<string, any> | undefined {
+  private getDetails(
+    exception: any,
+    isProduction: boolean,
+  ): Record<string, any> | undefined {
     // 在生產環境中不返回堆棧信息
     if (isProduction) {
       return undefined;
@@ -133,7 +134,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     }
 
     if (exception.stack) {
-      details.stack = exception.stack.split('\n').slice(0, 5); // 只返回前5行堆棧
+      details.stack = exception.stack.split("\n").slice(0, 5); // 只返回前5行堆棧
     }
 
     return Object.keys(details).length > 0 ? details : undefined;

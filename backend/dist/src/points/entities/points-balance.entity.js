@@ -25,31 +25,31 @@ let PointsBalance = class PointsBalance {
 };
 exports.PointsBalance = PointsBalance;
 __decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
+    (0, typeorm_1.PrimaryGeneratedColumn)("uuid"),
     __metadata("design:type", String)
 ], PointsBalance.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', length: 32 }),
+    (0, typeorm_1.Column)({ type: "varchar", length: 32 }),
     __metadata("design:type", String)
 ], PointsBalance.prototype, "customerId", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', length: 20 }),
+    (0, typeorm_1.Column)({ type: "varchar", length: 20 }),
     __metadata("design:type", String)
 ], PointsBalance.prototype, "customerType", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'decimal', precision: 10, scale: 2, default: 0 }),
+    (0, typeorm_1.Column)({ type: "decimal", precision: 10, scale: 2, default: 0 }),
     __metadata("design:type", Number)
 ], PointsBalance.prototype, "balance", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'decimal', precision: 10, scale: 2, default: 0 }),
+    (0, typeorm_1.Column)({ type: "decimal", precision: 10, scale: 2, default: 0 }),
     __metadata("design:type", Number)
 ], PointsBalance.prototype, "totalEarned", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'decimal', precision: 10, scale: 2, default: 0 }),
+    (0, typeorm_1.Column)({ type: "decimal", precision: 10, scale: 2, default: 0 }),
     __metadata("design:type", Number)
 ], PointsBalance.prototype, "totalRedeemed", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', length: 32 }),
+    (0, typeorm_1.Column)({ type: "varchar", length: 32 }),
     __metadata("design:type", String)
 ], PointsBalance.prototype, "clinicId", void 0);
 __decorate([
@@ -65,7 +65,7 @@ __decorate([
     __metadata("design:type", Date)
 ], PointsBalance.prototype, "updatedAt", void 0);
 exports.PointsBalance = PointsBalance = __decorate([
-    (0, typeorm_1.Entity)('points_balance'),
-    (0, typeorm_1.Unique)(['customerId', 'customerType', 'clinicId'])
+    (0, typeorm_1.Entity)("points_balance"),
+    (0, typeorm_1.Unique)(["customerId", "customerType", "clinicId"])
 ], PointsBalance);
 //# sourceMappingURL=points-balance.entity.js.map

@@ -17,7 +17,7 @@ let AllExceptionsFilter = AllExceptionsFilter_1 = class AllExceptionsFilter {
         const request = ctx.getRequest();
         this.logError(exception, request);
         const status = this.getStatusCode(exception);
-        const isProduction = process.env.NODE_ENV === 'production';
+        const isProduction = process.env.NODE_ENV === "production";
         const errorResponse = {
             statusCode: status,
             message: this.getMessage(exception, isProduction),
@@ -26,9 +26,7 @@ let AllExceptionsFilter = AllExceptionsFilter_1 = class AllExceptionsFilter {
             path: request.url,
             details: this.getDetails(exception, isProduction),
         };
-        response
-            .status(status)
-            .json(errorResponse);
+        response.status(status).json(errorResponse);
     }
     logError(exception, request) {
         const errorMessage = `
@@ -40,41 +38,41 @@ let AllExceptionsFilter = AllExceptionsFilter_1 = class AllExceptionsFilter {
       Query: ${JSON.stringify(request.query)}
       Params: ${JSON.stringify(request.params)}
       IP: ${request.ip}
-      User-Agent: ${request.get('user-agent')}
+      User-Agent: ${request.get("user-agent")}
     `;
         this.logger.error(errorMessage);
     }
     getStatusCode(exception) {
-        if (exception?.code?.startsWith('SQLITE_') || exception?.code === '23505') {
+        if (exception?.code?.startsWith("SQLITE_") || exception?.code === "23505") {
             return common_1.HttpStatus.CONFLICT;
         }
         return common_1.HttpStatus.INTERNAL_SERVER_ERROR;
     }
     getMessage(exception, isProduction) {
         if (isProduction) {
-            return 'An internal server error occurred. Please contact support.';
+            return "An internal server error occurred. Please contact support.";
         }
-        return exception.message || 'Internal server error';
+        return exception.message || "Internal server error";
     }
     getErrorCode(exception) {
         if (exception?.name) {
             switch (exception.name) {
-                case 'TypeError':
-                    return 'TYPE_ERROR';
-                case 'RangeError':
-                    return 'RANGE_ERROR';
-                case 'SyntaxError':
-                    return 'SYNTAX_ERROR';
-                case 'ReferenceError':
-                    return 'REFERENCE_ERROR';
+                case "TypeError":
+                    return "TYPE_ERROR";
+                case "RangeError":
+                    return "RANGE_ERROR";
+                case "SyntaxError":
+                    return "SYNTAX_ERROR";
+                case "ReferenceError":
+                    return "REFERENCE_ERROR";
                 default:
-                    return 'UNKNOWN_ERROR';
+                    return "UNKNOWN_ERROR";
             }
         }
-        if (exception?.code?.startsWith('SQLITE_')) {
-            return 'DATABASE_ERROR';
+        if (exception?.code?.startsWith("SQLITE_")) {
+            return "DATABASE_ERROR";
         }
-        return 'INTERNAL_SERVER_ERROR';
+        return "INTERNAL_SERVER_ERROR";
     }
     getDetails(exception, isProduction) {
         if (isProduction) {
@@ -88,7 +86,7 @@ let AllExceptionsFilter = AllExceptionsFilter_1 = class AllExceptionsFilter {
             details.errorCode = exception.code;
         }
         if (exception.stack) {
-            details.stack = exception.stack.split('\n').slice(0, 5);
+            details.stack = exception.stack.split("\n").slice(0, 5);
         }
         return Object.keys(details).length > 0 ? details : undefined;
     }

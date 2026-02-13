@@ -31,40 +31,40 @@ let PointsController = class PointsController {
     }
     async getBalance(customerId, customerType, clinicId) {
         if (!customerId) {
-            throw new common_1.BadRequestException('customerId 參數必填');
+            throw new common_1.BadRequestException("customerId 參數必填");
         }
         if (!customerType) {
-            throw new common_1.BadRequestException('customerType 參數必填');
+            throw new common_1.BadRequestException("customerType 參數必填");
         }
         if (!clinicId) {
-            throw new common_1.BadRequestException('clinicId 參數必填');
+            throw new common_1.BadRequestException("clinicId 參數必填");
         }
-        if (!['patient', 'staff'].includes(customerType)) {
+        if (!["patient", "staff"].includes(customerType)) {
             throw new common_1.BadRequestException('customerType 必須是 "patient" 或 "staff"');
         }
         return await this.pointsService.getBalance(customerId, customerType, clinicId);
     }
     async getTransactionHistory(customerId, customerType, clinicId, limit) {
         if (!customerId) {
-            throw new common_1.BadRequestException('customerId 參數必填');
+            throw new common_1.BadRequestException("customerId 參數必填");
         }
         if (!customerType) {
-            throw new common_1.BadRequestException('customerType 參數必填');
+            throw new common_1.BadRequestException("customerType 參數必填");
         }
         if (!clinicId) {
-            throw new common_1.BadRequestException('clinicId 參數必填');
+            throw new common_1.BadRequestException("clinicId 參數必填");
         }
-        if (!['patient', 'staff'].includes(customerType)) {
+        if (!["patient", "staff"].includes(customerType)) {
             throw new common_1.BadRequestException('customerType 必須是 "patient" 或 "staff"');
         }
         let parsedLimit = 20;
         if (limit) {
             const parsed = parseInt(limit, 10);
             if (isNaN(parsed) || parsed < 1) {
-                throw new common_1.BadRequestException('limit 必須是正整數');
+                throw new common_1.BadRequestException("limit 必須是正整數");
             }
             if (parsed > 100) {
-                throw new common_1.BadRequestException('limit 最多 100 筆記錄');
+                throw new common_1.BadRequestException("limit 最多 100 筆記錄");
             }
             parsedLimit = parsed;
         }
@@ -73,40 +73,40 @@ let PointsController = class PointsController {
 };
 exports.PointsController = PointsController;
 __decorate([
-    (0, common_1.Post)('award'),
+    (0, common_1.Post)("award"),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [create_points_transaction_dto_1.CreatePointsTransactionDto]),
     __metadata("design:returntype", Promise)
 ], PointsController.prototype, "awardPoints", null);
 __decorate([
-    (0, common_1.Post)('redeem'),
+    (0, common_1.Post)("redeem"),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [redeem_points_dto_1.RedeemPointsDto]),
     __metadata("design:returntype", Promise)
 ], PointsController.prototype, "redeemPoints", null);
 __decorate([
-    (0, common_1.Get)('balance'),
-    __param(0, (0, common_1.Query)('customerId')),
-    __param(1, (0, common_1.Query)('customerType')),
-    __param(2, (0, common_1.Query)('clinicId')),
+    (0, common_1.Get)("balance"),
+    __param(0, (0, common_1.Query)("customerId")),
+    __param(1, (0, common_1.Query)("customerType")),
+    __param(2, (0, common_1.Query)("clinicId")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String, String]),
     __metadata("design:returntype", Promise)
 ], PointsController.prototype, "getBalance", null);
 __decorate([
-    (0, common_1.Get)('transactions'),
-    __param(0, (0, common_1.Query)('customerId')),
-    __param(1, (0, common_1.Query)('customerType')),
-    __param(2, (0, common_1.Query)('clinicId')),
-    __param(3, (0, common_1.Query)('limit')),
+    (0, common_1.Get)("transactions"),
+    __param(0, (0, common_1.Query)("customerId")),
+    __param(1, (0, common_1.Query)("customerType")),
+    __param(2, (0, common_1.Query)("clinicId")),
+    __param(3, (0, common_1.Query)("limit")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], PointsController.prototype, "getTransactionHistory", null);
 exports.PointsController = PointsController = __decorate([
-    (0, common_1.Controller)('points'),
+    (0, common_1.Controller)("points"),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __metadata("design:paramtypes", [points_service_1.PointsService])
 ], PointsController);

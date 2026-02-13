@@ -1,12 +1,12 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
-import { RevenueRuleEngine } from './revenue-rule-engine.service';
-import { RevenueRecord } from '../entities/revenue-record.entity';
-import { Treatment } from '../../treatments/entities/treatment.entity';
-import { TreatmentSession } from '../../treatments/entities/treatment-session.entity';
-import { TreatmentStaffAssignment } from '../../staff/entities/treatment-staff-assignment.entity';
-import { RevenueRule } from '../entities/revenue-rule.entity';
+import { Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository, In } from "typeorm";
+import { RevenueRuleEngine } from "./revenue-rule-engine.service";
+import { RevenueRecord } from "../entities/revenue-record.entity";
+import { Treatment } from "../../treatments/entities/treatment.entity";
+import { TreatmentSession } from "../../treatments/entities/treatment-session.entity";
+import { TreatmentStaffAssignment } from "../../staff/entities/treatment-staff-assignment.entity";
+import { RevenueRule } from "../entities/revenue-rule.entity";
 
 /**
  * 營收計算服務
@@ -51,9 +51,7 @@ export class RevenueCalculationService {
     });
 
     if (!treatment) {
-      throw new NotFoundException(
-        `Treatment with ID ${treatmentId} not found`,
-      );
+      throw new NotFoundException(`Treatment with ID ${treatmentId} not found`);
     }
 
     // 2. 獲取治療課程信息
@@ -68,26 +66,26 @@ export class RevenueCalculationService {
     }
 
     // 3. 獲取參與該治療的員工分配信息
-    const staffAssignments = await this.treatmentStaffAssignmentRepository.find({
-      where: {
-        treatmentId,
-        isActive: true,
+    const staffAssignments = await this.treatmentStaffAssignmentRepository.find(
+      {
+        where: {
+          treatmentId,
+          isActive: true,
+        },
       },
-    });
+    );
 
     if (staffAssignments.length === 0) {
-      this.logger.warn(
-        `沒有找到治療 ${treatmentId} 的活躍員工分配`,
-      );
+      this.logger.warn(`沒有找到治療 ${treatmentId} 的活躍員工分配`);
       return [];
     }
 
     // 4. 優化：先收集所有唯一的角色（修復 N+1 查詢問題）
-    const roles = [...new Set(
-      staffAssignments.map(assignment => assignment.role)
-    )];
+    const roles = [
+      ...new Set(staffAssignments.map((assignment) => assignment.role)),
+    ];
 
-    this.logger.debug(`收集到 ${roles.length} 個唯一角色：${roles.join(', ')}`);
+    this.logger.debug(`收集到 ${roles.length} 個唯一角色：${roles.join(", ")}`);
 
     // 5. 一次性查詢所有角色的規則（批量查詢，不是迴圈查詢）
     const allRules = await this.revenueRuleRepository.find({
@@ -96,19 +94,19 @@ export class RevenueCalculationService {
         clinicId: treatment.clinicId,
         isActive: true,
       },
-      order: { effectiveFrom: 'DESC' },
+      order: { effectiveFrom: "DESC" },
     });
 
     if (allRules.length === 0) {
       this.logger.warn(
-        `診所 ${treatment.clinicId} 的角色 [${roles.join(', ')}] 未找到營收規則`,
+        `診所 ${treatment.clinicId} 的角色 [${roles.join(", ")}] 未找到營收規則`,
       );
       return [];
     }
 
     // 6. 建立角色->規則的映射表，以便快速查找（O(1) 時間複雜度）
     const roleRulesMap = new Map<string, RevenueRule>();
-    allRules.forEach(rule => {
+    allRules.forEach((rule) => {
       if (!roleRulesMap.has(rule.role)) {
         roleRulesMap.set(rule.role, rule);
       }
@@ -139,7 +137,7 @@ export class RevenueCalculationService {
 
         // 9. 根據規則計算最終營收金額
         const rulePayload = {
-          rule_type: rule.ruleType as 'fixed' | 'percentage' | 'tiered',
+          rule_type: rule.ruleType as "fixed" | "percentage" | "tiered",
           rule_payload: rule.rulePayload,
         };
 
@@ -155,8 +153,8 @@ export class RevenueCalculationService {
         record.staffId = assignment.staffId;
         record.role = role;
         record.amount = calculatedAmount;
-        record.calculationType = 'session';
-        record.status = 'calculated';
+        record.calculationType = "session";
+        record.status = "calculated";
         record.clinicId = treatment.clinicId;
         record.ruleId = rule.id;
         record.calculationDetails = {
@@ -181,9 +179,7 @@ export class RevenueCalculationService {
       }
     }
 
-    this.logger.log(
-      `課程營收計算完成：生成了 ${createdRecords.length} 條記錄`,
-    );
+    this.logger.log(`課程營收計算完成：生成了 ${createdRecords.length} 條記錄`);
 
     return createdRecords;
   }

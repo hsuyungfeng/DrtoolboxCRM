@@ -24,7 +24,7 @@ let ReferralEventListener = ReferralEventListener_1 = class ReferralEventListene
         const { treatmentId, patientId, clinicId } = event;
         try {
             const referral = await this.referralService.getReferralByPatient(patientId, clinicId);
-            if (!referral || referral.status !== 'pending') {
+            if (!referral || referral.status !== "pending") {
                 this.logger.debug(`患者 ${patientId} 無待處理的推薦記錄，跳過轉化邏輯`);
                 return;
             }
@@ -38,7 +38,7 @@ let ReferralEventListener = ReferralEventListener_1 = class ReferralEventListene
 };
 exports.ReferralEventListener = ReferralEventListener;
 __decorate([
-    (0, event_emitter_1.OnEvent)('treatment.created'),
+    (0, event_emitter_1.OnEvent)("treatment.created"),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)

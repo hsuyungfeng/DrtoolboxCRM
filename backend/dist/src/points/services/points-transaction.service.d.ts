@@ -1,6 +1,6 @@
-import { Repository, DataSource } from 'typeorm';
-import { PointsTransaction } from '../entities/points-transaction.entity';
-import { PointsBalance } from '../entities/points-balance.entity';
+import { Repository, DataSource } from "typeorm";
+import { PointsTransaction } from "../entities/points-transaction.entity";
+import { PointsBalance } from "../entities/points-balance.entity";
 export declare class PointsTransactionService {
     private transactionRepository;
     private balanceRepository;

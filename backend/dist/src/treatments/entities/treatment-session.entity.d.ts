@@ -1,17 +1,32 @@
+import Decimal from "decimal.js";
 import { Treatment } from "./treatment.entity";
+import { TreatmentCourse } from "./treatment-course.entity";
+import { StaffAssignment } from "./staff-assignment.entity";
 export declare class TreatmentSession {
     id: string;
     treatmentId: string;
     treatment: Treatment;
+    treatmentCourseId: string;
+    treatmentCourse: TreatmentCourse;
     sessionIndex: number;
+    sessionNumber: number;
+    scheduledDate: Date;
     scheduledTime: Date;
     actualTime: Date;
     status: string;
+    completionStatus: "pending" | "completed" | "cancelled";
     notes: string;
     observations: string;
+    therapistNotes: string;
+    patientFeedback: string;
     durationMinutes: number;
+    sessionPrice: Decimal;
     revenueCalculated: boolean;
+    actualStartTime: Date;
+    actualEndTime: Date;
+    executedBy: string;
     clinicId: string;
     createdAt: Date;
     updatedAt: Date;
+    staffAssignments: StaffAssignment[];
 }

@@ -7,10 +7,10 @@ export declare class TreatmentSessionController {
     create(createTreatmentSessionDto: CreateTreatmentSessionDto): Promise<import("../entities/treatment-session.entity").TreatmentSession>;
     findByTreatmentId(treatmentId: string, clinicId: string): Promise<import("../entities/treatment-session.entity").TreatmentSession[]>;
     findByClinicId(clinicId: string): Promise<import("../entities/treatment-session.entity").TreatmentSession[]>;
-    findByStatus(clinicId: string, status: string): Promise<import("../entities/treatment-session.entity").TreatmentSession[]>;
+    findByStatus(clinicId: string, status: "pending" | "completed" | "cancelled"): Promise<import("../entities/treatment-session.entity").TreatmentSession[]>;
     findUpcomingSessions(clinicId: string, days?: number): Promise<import("../entities/treatment-session.entity").TreatmentSession[]>;
     findOne(id: string): Promise<import("../entities/treatment-session.entity").TreatmentSession>;
     update(id: string, updateTreatmentSessionDto: UpdateTreatmentSessionDto): Promise<import("../entities/treatment-session.entity").TreatmentSession>;
-    completeSession(id: string, notes?: string, observations?: string): Promise<import("../entities/treatment-session.entity").TreatmentSession>;
+    completeSession(id: string, updateDto?: any, clinicId?: string): Promise<import("../entities/treatment-session.entity").TreatmentSession>;
     remove(id: string): Promise<void>;
 }

@@ -1,7 +1,7 @@
-import { PointsConfigService } from './points-config.service';
-import { PointsTransactionService } from './points-transaction.service';
-import { PointsTransaction } from '../entities/points-transaction.entity';
-import { PointsBalance } from '../entities/points-balance.entity';
+import { PointsConfigService } from "./points-config.service";
+import { PointsTransactionService } from "./points-transaction.service";
+import { PointsTransaction } from "../entities/points-transaction.entity";
+import { PointsBalance } from "../entities/points-balance.entity";
 export declare class PointsService {
     private readonly configService;
     private readonly transactionService;

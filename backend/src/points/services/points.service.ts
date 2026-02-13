@@ -3,12 +3,12 @@ import {
   BadRequestException,
   ConflictException,
   Logger,
-} from '@nestjs/common';
-import { OptimisticLockVersionMismatchError } from 'typeorm';
-import { PointsConfigService } from './points-config.service';
-import { PointsTransactionService } from './points-transaction.service';
-import { PointsTransaction } from '../entities/points-transaction.entity';
-import { PointsBalance } from '../entities/points-balance.entity';
+} from "@nestjs/common";
+import { OptimisticLockVersionMismatchError } from "typeorm";
+import { PointsConfigService } from "./points-config.service";
+import { PointsTransactionService } from "./points-transaction.service";
+import { PointsTransaction } from "../entities/points-transaction.entity";
+import { PointsBalance } from "../entities/points-balance.entity";
 
 @Injectable()
 export class PointsService {
@@ -37,10 +37,10 @@ export class PointsService {
     maxRetries: number = 3,
   ): Promise<PointsTransaction> {
     if (amount <= 0) {
-      throw new BadRequestException('獎勵點數必須大於 0');
+      throw new BadRequestException("獎勵點數必須大於 0");
     }
 
-    let lastError: Error = new Error('Unknown error');
+    let lastError: Error = new Error("Unknown error");
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
@@ -63,18 +63,19 @@ export class PointsService {
         const transactionType = this.getTransactionTypeBySource(source);
 
         // 5. 在事務中原子性地更新餘額和建立交易記錄
-        const transaction = await this.transactionService.updateBalanceAndCreateTransaction(
-          balance,
-          {
-            customerId,
-            customerType: balance.customerType,
-            type: transactionType,
-            amount,
-            source,
-            clinicId,
-            referralId,
-          },
-        );
+        const transaction =
+          await this.transactionService.updateBalanceAndCreateTransaction(
+            balance,
+            {
+              customerId,
+              customerType: balance.customerType,
+              type: transactionType,
+              amount,
+              source,
+              clinicId,
+              referralId,
+            },
+          );
 
         this.logger.log(
           `成功獎勵 ${amount} 點給 ${customerId}（嘗試 ${attempt}/${maxRetries}）`,
@@ -124,10 +125,10 @@ export class PointsService {
     maxRetries: number = 3,
   ): Promise<PointsTransaction> {
     if (amount <= 0) {
-      throw new BadRequestException('兌換點數必須大於 0');
+      throw new BadRequestException("兌換點數必須大於 0");
     }
 
-    let lastError: Error = new Error('Unknown error');
+    let lastError: Error = new Error("Unknown error");
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
@@ -154,18 +155,19 @@ export class PointsService {
         latestBalance.totalRedeemed = newTotalRedeemed;
 
         // 5. 在事務中原子性地更新餘額和建立交易記錄
-        const transaction = await this.transactionService.updateBalanceAndCreateTransaction(
-          latestBalance,
-          {
-            customerId,
-            customerType: latestBalance.customerType,
-            type: 'redeem',
-            amount: -amount, // 負數表示扣減
-            source: 'treatment',
-            clinicId,
-            treatmentId,
-          },
-        );
+        const transaction =
+          await this.transactionService.updateBalanceAndCreateTransaction(
+            latestBalance,
+            {
+              customerId,
+              customerType: latestBalance.customerType,
+              type: "redeem",
+              amount: -amount, // 負數表示扣減
+              source: "treatment",
+              clinicId,
+              treatmentId,
+            },
+          );
 
         this.logger.log(
           `成功兌換 ${amount} 點 - ${customerId}（嘗試 ${attempt}/${maxRetries}）`,
@@ -240,9 +242,9 @@ export class PointsService {
 
     // 備用檢查：某些情況下錯誤訊息可能包含版本相關信息
     return (
-      error.message.includes('version') ||
-      error.message.includes('mismatch') ||
-      error.message.includes('optimistic lock')
+      error.message.includes("version") ||
+      error.message.includes("mismatch") ||
+      error.message.includes("optimistic lock")
     );
   }
 
@@ -259,10 +261,10 @@ export class PointsService {
    */
   private getCustomerTypeFromId(customerId: string): string {
     // 簡化邏輯：可以根據 ID 前綴判斷
-    if (customerId.startsWith('staff-')) {
-      return 'staff';
+    if (customerId.startsWith("staff-")) {
+      return "staff";
     }
-    return 'patient';
+    return "patient";
   }
 
   /**
@@ -270,14 +272,14 @@ export class PointsService {
    */
   private getTransactionTypeBySource(source: string): string {
     switch (source) {
-      case 'referral':
-        return 'earn_referral';
-      case 'treatment':
-        return 'earn_treatment';
-      case 'manual':
-        return 'manual_adjust';
+      case "referral":
+        return "earn_referral";
+      case "treatment":
+        return "earn_treatment";
+      case "manual":
+        return "manual_adjust";
       default:
-        return 'earn_referral';
+        return "earn_referral";
     }
   }
 }

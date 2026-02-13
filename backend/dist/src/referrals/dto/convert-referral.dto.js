@@ -17,17 +17,17 @@ class ConvertReferralDto {
 }
 exports.ConvertReferralDto = ConvertReferralDto;
 __decorate([
-    (0, class_validator_1.IsNotEmpty)({ message: '療程 ID 不能為空' }),
-    (0, class_validator_1.IsString)({ message: '療程 ID 必須是字符串' }),
-    (0, class_validator_1.MinLength)(1, { message: '療程 ID 不能為空' }),
-    (0, class_validator_1.MaxLength)(32, { message: '療程 ID 最多 32 個字符' }),
+    (0, class_validator_1.IsNotEmpty)({ message: "療程 ID 不能為空" }),
+    (0, class_validator_1.IsString)({ message: "療程 ID 必須是字符串" }),
+    (0, class_validator_1.MinLength)(1, { message: "療程 ID 不能為空" }),
+    (0, class_validator_1.MaxLength)(32, { message: "療程 ID 最多 32 個字符" }),
     __metadata("design:type", String)
 ], ConvertReferralDto.prototype, "treatmentId", void 0);
 __decorate([
-    (0, class_validator_1.IsNotEmpty)({ message: '診所 ID 不能為空' }),
-    (0, class_validator_1.IsString)({ message: '診所 ID 必須是字符串' }),
-    (0, class_validator_1.MinLength)(1, { message: '診所 ID 不能為空' }),
-    (0, class_validator_1.MaxLength)(32, { message: '診所 ID 最多 32 個字符' }),
+    (0, class_validator_1.IsNotEmpty)({ message: "診所 ID 不能為空" }),
+    (0, class_validator_1.IsString)({ message: "診所 ID 必須是字符串" }),
+    (0, class_validator_1.MinLength)(1, { message: "診所 ID 不能為空" }),
+    (0, class_validator_1.MaxLength)(32, { message: "診所 ID 最多 32 個字符" }),
     __metadata("design:type", String)
 ], ConvertReferralDto.prototype, "clinicId", void 0);
 //# sourceMappingURL=convert-referral.dto.js.map

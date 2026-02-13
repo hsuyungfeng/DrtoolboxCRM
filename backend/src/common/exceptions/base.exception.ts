@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException, HttpStatus } from "@nestjs/common";
 
 /**
  * 基礎業務異常類別
@@ -18,7 +18,7 @@ export class BaseException extends HttpException {
   constructor(
     message: string,
     statusCode: HttpStatus = HttpStatus.INTERNAL_SERVER_ERROR,
-    errorCode: string = 'INTERNAL_ERROR',
+    errorCode: string = "INTERNAL_ERROR",
     details?: Record<string, any>,
   ) {
     super(

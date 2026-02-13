@@ -31,7 +31,7 @@ let TreatmentService = TreatmentService_1 = class TreatmentService {
         const treatment = this.treatmentRepository.create(createTreatmentDto);
         const savedTreatment = await this.treatmentRepository.save(treatment);
         try {
-            this.eventEmitter.emit('treatment.created', {
+            this.eventEmitter.emit("treatment.created", {
                 treatmentId: savedTreatment.id,
                 patientId: savedTreatment.patientId,
                 clinicId: savedTreatment.clinicId,

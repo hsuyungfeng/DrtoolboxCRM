@@ -21,6 +21,9 @@ class CreateTreatmentSessionDto {
     observations;
     durationMinutes;
     revenueCalculated;
+    actualStartTime;
+    actualEndTime;
+    executedBy;
     clinicId;
 }
 exports.CreateTreatmentSessionDto = CreateTreatmentSessionDto;
@@ -71,6 +74,21 @@ __decorate([
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)
 ], CreateTreatmentSessionDto.prototype, "revenueCalculated", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsDateString)(),
+    __metadata("design:type", Date)
+], CreateTreatmentSessionDto.prototype, "actualStartTime", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsDateString)(),
+    __metadata("design:type", Date)
+], CreateTreatmentSessionDto.prototype, "actualEndTime", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateTreatmentSessionDto.prototype, "executedBy", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)

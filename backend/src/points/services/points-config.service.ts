@@ -1,7 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { PointsConfig } from '../entities/points-config.entity';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { PointsConfig } from "../entities/points-config.entity";
 
 @Injectable()
 export class PointsConfigService {
@@ -23,9 +23,7 @@ export class PointsConfigService {
     });
 
     if (!config) {
-      throw new NotFoundException(
-        `配置 ${configKey} 不存在於診所 ${clinicId}`,
-      );
+      throw new NotFoundException(`配置 ${configKey} 不存在於診所 ${clinicId}`);
     }
 
     return config;
@@ -37,7 +35,7 @@ export class PointsConfigService {
   async getAll(clinicId: string): Promise<PointsConfig[]> {
     return await this.configRepository.find({
       where: { clinicId, isActive: true },
-      order: { createdAt: 'DESC' },
+      order: { createdAt: "DESC" },
     });
   }
 
@@ -89,7 +87,10 @@ export class PointsConfigService {
   /**
    * 停用配置
    */
-  async disableConfig(configId: string, clinicId: string): Promise<PointsConfig> {
+  async disableConfig(
+    configId: string,
+    clinicId: string,
+  ): Promise<PointsConfig> {
     const config = await this.configRepository.findOne({
       where: {
         id: configId,

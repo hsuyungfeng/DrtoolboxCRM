@@ -8,7 +8,7 @@ class NotFoundException extends base_exception_1.BaseException {
         const message = resourceId
             ? `${resource} with ID ${resourceId} not found`
             : `${resource} not found`;
-        super(message, common_1.HttpStatus.NOT_FOUND, 'RESOURCE_NOT_FOUND', {
+        super(message, common_1.HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND", {
             resource,
             resourceId,
             ...details,

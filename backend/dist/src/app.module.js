@@ -20,6 +20,7 @@ const revenue_module_1 = require("./revenue/revenue.module");
 const auth_module_1 = require("./auth/auth.module");
 const points_module_1 = require("./points/points.module");
 const referrals_module_1 = require("./referrals/referrals.module");
+const treatment_templates_module_1 = require("./treatment-templates/treatment-templates.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -31,6 +32,7 @@ exports.AppModule = AppModule = __decorate([
             auth_module_1.AuthModule,
             patients_module_1.PatientsModule,
             treatments_module_1.TreatmentsModule,
+            treatment_templates_module_1.TreatmentTemplatesModule,
             staff_module_1.StaffModule,
             revenue_module_1.RevenueModule,
             points_module_1.PointsModule,

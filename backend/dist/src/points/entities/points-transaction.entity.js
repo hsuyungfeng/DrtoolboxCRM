@@ -28,47 +28,47 @@ let PointsTransaction = class PointsTransaction {
 };
 exports.PointsTransaction = PointsTransaction;
 __decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
+    (0, typeorm_1.PrimaryGeneratedColumn)("uuid"),
     __metadata("design:type", String)
 ], PointsTransaction.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', length: 32 }),
+    (0, typeorm_1.Column)({ type: "varchar", length: 32 }),
     __metadata("design:type", String)
 ], PointsTransaction.prototype, "customerId", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', length: 20 }),
+    (0, typeorm_1.Column)({ type: "varchar", length: 20 }),
     __metadata("design:type", String)
 ], PointsTransaction.prototype, "customerType", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', length: 50 }),
+    (0, typeorm_1.Column)({ type: "varchar", length: 50 }),
     __metadata("design:type", String)
 ], PointsTransaction.prototype, "type", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'decimal', precision: 10, scale: 2 }),
+    (0, typeorm_1.Column)({ type: "decimal", precision: 10, scale: 2 }),
     __metadata("design:type", Number)
 ], PointsTransaction.prototype, "amount", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'decimal', precision: 10, scale: 2 }),
+    (0, typeorm_1.Column)({ type: "decimal", precision: 10, scale: 2 }),
     __metadata("design:type", Number)
 ], PointsTransaction.prototype, "balance", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', length: 50 }),
+    (0, typeorm_1.Column)({ type: "varchar", length: 50 }),
     __metadata("design:type", String)
 ], PointsTransaction.prototype, "source", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', length: 32, nullable: true }),
+    (0, typeorm_1.Column)({ type: "varchar", length: 32, nullable: true }),
     __metadata("design:type", String)
 ], PointsTransaction.prototype, "referralId", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', length: 32, nullable: true }),
+    (0, typeorm_1.Column)({ type: "varchar", length: 32, nullable: true }),
     __metadata("design:type", String)
 ], PointsTransaction.prototype, "treatmentId", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', length: 32 }),
+    (0, typeorm_1.Column)({ type: "varchar", length: 32 }),
     __metadata("design:type", String)
 ], PointsTransaction.prototype, "clinicId", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    (0, typeorm_1.Column)({ type: "text", nullable: true }),
     __metadata("design:type", String)
 ], PointsTransaction.prototype, "notes", void 0);
 __decorate([
@@ -80,6 +80,6 @@ __decorate([
     __metadata("design:type", Date)
 ], PointsTransaction.prototype, "updatedAt", void 0);
 exports.PointsTransaction = PointsTransaction = __decorate([
-    (0, typeorm_1.Entity)('points_transaction')
+    (0, typeorm_1.Entity)("points_transaction")
 ], PointsTransaction);
 //# sourceMappingURL=points-transaction.entity.js.map

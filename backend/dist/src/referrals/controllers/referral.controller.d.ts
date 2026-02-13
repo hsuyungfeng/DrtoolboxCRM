@@ -1,7 +1,7 @@
-import { ReferralService, ReferralStats } from '../services/referral.service';
-import { Referral } from '../entities/referral.entity';
-import { CreateReferralDto } from '../dto/create-referral.dto';
-import { ConvertReferralDto } from '../dto/convert-referral.dto';
+import { ReferralService, ReferralStats } from "../services/referral.service";
+import { Referral } from "../entities/referral.entity";
+import { CreateReferralDto } from "../dto/create-referral.dto";
+import { ConvertReferralDto } from "../dto/convert-referral.dto";
 export declare class ReferralController {
     private readonly referralService;
     constructor(referralService: ReferralService);

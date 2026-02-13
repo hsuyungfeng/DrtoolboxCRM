@@ -1,5 +1,11 @@
-import { CreateTreatmentSessionDto } from "./create-treatment-session.dto";
-declare const UpdateTreatmentSessionDto_base: import("@nestjs/mapped-types").MappedType<Partial<CreateTreatmentSessionDto>>;
-export declare class UpdateTreatmentSessionDto extends UpdateTreatmentSessionDto_base {
+import { StaffAssignmentDto } from "./staff-assignment.dto";
+export declare class UpdateTreatmentSessionDto {
+    scheduledDate?: Date;
+    actualStartTime?: Date;
+    actualEndTime?: Date;
+    completionStatus?: "pending" | "completed" | "cancelled";
+    status?: "pending" | "completed" | "cancelled";
+    therapistNotes?: string;
+    patientFeedback?: string;
+    staffAssignments?: StaffAssignmentDto[];
 }
-export {};

@@ -1,4 +1,4 @@
-import { BaseException } from './base.exception';
+import { BaseException } from "./base.exception";
 export declare class ValidationException extends BaseException {
     constructor(errors: Array<{
         field: string;

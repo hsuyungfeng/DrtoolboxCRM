@@ -43,7 +43,7 @@ export class TreatmentSessionController {
   @Get("status")
   findByStatus(
     @Query("clinicId") clinicId: string,
-    @Query("status") status: string,
+    @Query("status") status: "pending" | "completed" | "cancelled",
   ) {
     return this.treatmentSessionService.findByStatus(clinicId, status);
   }
@@ -72,13 +72,24 @@ export class TreatmentSessionController {
   @Patch(":id/complete")
   completeSession(
     @Param("id") id: string,
-    @Body("notes") notes?: string,
-    @Body("observations") observations?: string,
+    @Body() updateDto?: any,
+    @Query("clinicId") clinicId?: string,
   ) {
+    // 支持新的 API 簽名：completeSession(sessionId, updateDto, clinicId)
+    // 也支持舊的簽名：completeSession(id, notes, observations)
+    if (updateDto && typeof updateDto === "string") {
+      // 舊的簽名：updateDto 是 notes，clinicId 是 observations
+      return this.treatmentSessionService.completeSessionLegacy(
+        id,
+        updateDto,
+        clinicId,
+      );
+    }
+    // 新的簽名
     return this.treatmentSessionService.completeSession(
       id,
-      notes,
-      observations,
+      updateDto || {},
+      clinicId || "",
     );
   }
 

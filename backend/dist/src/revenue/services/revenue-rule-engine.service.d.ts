@@ -14,7 +14,7 @@ interface TieredPayload {
 }
 type RulePayload = PercentagePayload | FixedPayload | TieredPayload;
 interface Rule {
-    rule_type: 'percentage' | 'fixed' | 'tiered';
+    rule_type: "percentage" | "fixed" | "tiered";
     rule_payload: RulePayload;
 }
 export declare class RevenueRuleEngine {

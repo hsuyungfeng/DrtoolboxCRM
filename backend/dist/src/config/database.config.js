@@ -7,6 +7,10 @@ const treatment_staff_assignment_entity_1 = require("../staff/entities/treatment
 const patient_entity_1 = require("../patients/entities/patient.entity");
 const treatment_entity_1 = require("../treatments/entities/treatment.entity");
 const treatment_session_entity_1 = require("../treatments/entities/treatment-session.entity");
+const staff_assignment_entity_1 = require("../treatments/entities/staff-assignment.entity");
+const treatment_template_entity_1 = require("../treatment-templates/entities/treatment-template.entity");
+const treatment_course_template_entity_1 = require("../treatments/entities/treatment-course-template.entity");
+const treatment_course_entity_1 = require("../treatments/entities/treatment-course.entity");
 const revenue_record_entity_1 = require("../revenue/entities/revenue-record.entity");
 const revenue_rule_entity_1 = require("../revenue/entities/revenue-rule.entity");
 const revenue_adjustment_entity_1 = require("../revenue/entities/revenue-adjustment.entity");
@@ -22,6 +26,10 @@ exports.databaseConfig = {
         patient_entity_1.Patient,
         treatment_entity_1.Treatment,
         treatment_session_entity_1.TreatmentSession,
+        staff_assignment_entity_1.StaffAssignment,
+        treatment_template_entity_1.TreatmentTemplate,
+        treatment_course_template_entity_1.TreatmentCourseTemplate,
+        treatment_course_entity_1.TreatmentCourse,
         revenue_record_entity_1.RevenueRecord,
         revenue_rule_entity_1.RevenueRule,
         revenue_adjustment_entity_1.RevenueAdjustment,

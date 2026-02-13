@@ -5,8 +5,8 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   Index,
-} from 'typeorm';
-import Decimal from 'decimal.js';
+} from "typeorm";
+import Decimal from "decimal.js";
 
 interface StageConfig {
   stageName: string;
@@ -14,23 +14,23 @@ interface StageConfig {
   sessionEnd: number;
 }
 
-@Entity('treatment_course_templates')
-@Index(['clinicId', 'isActive'])
+@Entity("treatment_course_templates")
+@Index(["clinicId", "isActive"])
 export class TreatmentCourseTemplate {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: "varchar", length: 255 })
   name: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: "text", nullable: true })
   description: string;
 
-  @Column({ type: 'int' })
+  @Column({ type: "int" })
   totalSessions: number;
 
   @Column({
-    type: 'decimal',
+    type: "decimal",
     precision: 10,
     scale: 2,
     transformer: {
@@ -46,13 +46,13 @@ export class TreatmentCourseTemplate {
   })
   totalPrice: Decimal;
 
-  @Column({ type: 'json' })
+  @Column({ type: "json" })
   stageConfig: StageConfig[];
 
-  @Column({ type: 'varchar', length: 32 })
+  @Column({ type: "varchar", length: 32 })
   clinicId: string;
 
-  @Column({ type: 'boolean', default: true })
+  @Column({ type: "boolean", default: true })
   isActive: boolean = true;
 
   @CreateDateColumn()

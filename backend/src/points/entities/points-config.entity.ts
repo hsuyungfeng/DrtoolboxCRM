@@ -4,29 +4,29 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
-} from 'typeorm';
+} from "typeorm";
 
-@Entity('points_config')
+@Entity("points_config")
 export class PointsConfig {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column({ type: 'varchar', length: 100 })
+  @Column({ type: "varchar", length: 100 })
   configKey: string;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  @Column({ type: "decimal", precision: 10, scale: 2 })
   configValue: number;
 
-  @Column({ type: 'text' })
+  @Column({ type: "text" })
   description: string;
 
-  @Column({ type: 'varchar', length: 50 })
+  @Column({ type: "varchar", length: 50 })
   unit: string;
 
-  @Column({ type: 'varchar', length: 32 })
+  @Column({ type: "varchar", length: 32 })
   clinicId: string;
 
-  @Column({ type: 'boolean', default: true })
+  @Column({ type: "boolean", default: true })
   isActive: boolean;
 
   @CreateDateColumn()

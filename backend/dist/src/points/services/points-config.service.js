@@ -38,7 +38,7 @@ let PointsConfigService = class PointsConfigService {
     async getAll(clinicId) {
         return await this.configRepository.find({
             where: { clinicId, isActive: true },
-            order: { createdAt: 'DESC' },
+            order: { createdAt: "DESC" },
         });
     }
     async createConfig(configKey, configValue, description, unit, clinicId) {

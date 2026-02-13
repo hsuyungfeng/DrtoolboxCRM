@@ -14,9 +14,7 @@ export class TreatmentTemplateService {
     private readonly templateRepository: Repository<TreatmentTemplate>,
   ) {}
 
-  async create(
-    dto: CreateTreatmentTemplateDto,
-  ): Promise<TreatmentTemplate> {
+  async create(dto: CreateTreatmentTemplateDto): Promise<TreatmentTemplate> {
     const template = this.templateRepository.create(dto);
     return this.templateRepository.save(template);
   }
@@ -28,17 +26,12 @@ export class TreatmentTemplateService {
     });
   }
 
-  async findById(
-    id: string,
-    clinicId: string,
-  ): Promise<TreatmentTemplate> {
+  async findById(id: string, clinicId: string): Promise<TreatmentTemplate> {
     const template = await this.templateRepository.findOne({
       where: { id, clinicId },
     });
     if (!template) {
-      throw new NotFoundException(
-        `療法模板 ${id} 不存在`,
-      );
+      throw new NotFoundException(`療法模板 ${id} 不存在`);
     }
     return template;
   }

@@ -4,16 +4,16 @@ import {
   ConflictException,
   NotFoundException,
   Logger,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Referral } from '../entities/referral.entity';
-import { Patient } from '../../patients/entities/patient.entity';
-import { Staff } from '../../staff/entities/staff.entity';
-import { Treatment } from '../../treatments/entities/treatment.entity';
-import { PointsService } from '../../points/services/points.service';
-import { PointsConfigService } from '../../points/services/points-config.service';
-import { CreateReferralDto } from '../dto/create-referral.dto';
+} from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { Referral } from "../entities/referral.entity";
+import { Patient } from "../../patients/entities/patient.entity";
+import { Staff } from "../../staff/entities/staff.entity";
+import { Treatment } from "../../treatments/entities/treatment.entity";
+import { PointsService } from "../../points/services/points.service";
+import { PointsConfigService } from "../../points/services/points-config.service";
+import { CreateReferralDto } from "../dto/create-referral.dto";
 
 /**
  * 推薦統計數據
@@ -53,15 +53,18 @@ export class ReferralService {
    * @returns 新創建的推薦記錄
    * @throws ConflictException 如果患者已有未決推薦
    */
-  async createReferral(createReferralDto: CreateReferralDto): Promise<Referral> {
-    const { referrerId, referrerType, patientId, clinicId, notes } = createReferralDto;
+  async createReferral(
+    createReferralDto: CreateReferralDto,
+  ): Promise<Referral> {
+    const { referrerId, referrerType, patientId, clinicId, notes } =
+      createReferralDto;
 
     // 檢查患者是否已有未決推薦
     const existingReferral = await this.referralRepository.findOne({
       where: {
         patientId,
         clinicId,
-        status: 'pending',
+        status: "pending",
       },
     });
 
@@ -76,14 +79,14 @@ export class ReferralService {
       patientId,
       clinicId,
       referralDate: new Date(),
-      status: 'pending',
+      status: "pending",
       notes,
       pointsAwarded: 0,
     });
 
     const savedReferral = await this.referralRepository.save(referral);
     this.logger.log(
-      `成功創建推薦記錄：${savedReferral.id}（推薦人：${referrerId}，患者：${patientId}）`
+      `成功創建推薦記錄：${savedReferral.id}（推薦人：${referrerId}，患者：${patientId}）`,
     );
 
     return savedReferral;
@@ -107,7 +110,7 @@ export class ReferralService {
         referrerType,
         clinicId,
       },
-      order: { createdAt: 'DESC' },
+      order: { createdAt: "DESC" },
     });
   }
 
@@ -117,7 +120,10 @@ export class ReferralService {
    * @param clinicId 診所 ID
    * @returns 推薦記錄（或 null 如果不存在）
    */
-  async getReferralByPatient(patientId: string, clinicId: string): Promise<Referral | null> {
+  async getReferralByPatient(
+    patientId: string,
+    clinicId: string,
+  ): Promise<Referral | null> {
     return await this.referralRepository.findOne({
       where: {
         patientId,
@@ -136,14 +142,18 @@ export class ReferralService {
    * @throws NotFoundException 推薦不存在
    * @throws BadRequestException 推薦已轉化或不符合首次療程條件
    */
-  async convertReferral(referralId: string, treatmentId: string, clinicId: string): Promise<Referral> {
+  async convertReferral(
+    referralId: string,
+    treatmentId: string,
+    clinicId: string,
+  ): Promise<Referral> {
     // 查詢推薦記錄（包含患者信息）
     const referral = await this.referralRepository.findOne({
       where: {
         id: referralId,
         clinicId,
       },
-      relations: ['patient'],
+      relations: ["patient"],
     });
 
     if (!referral) {
@@ -151,9 +161,9 @@ export class ReferralService {
     }
 
     // 檢查推薦狀態
-    if (referral.status !== 'pending') {
+    if (referral.status !== "pending") {
       throw new BadRequestException(
-        `推薦記錄已處於 "${referral.status}" 狀態，無法再次轉化`
+        `推薦記錄已處於 "${referral.status}" 狀態，無法再次轉化`,
       );
     }
 
@@ -163,37 +173,41 @@ export class ReferralService {
         {
           patientId: referral.patientId,
           clinicId,
-          status: 'completed',
+          status: "completed",
         },
         {
           patientId: referral.patientId,
           clinicId,
-          status: 'in_progress',
+          status: "in_progress",
         },
       ],
     });
 
     if (existingTreatmentCount > 0) {
       throw new BadRequestException(
-        `患者 ${referral.patientId} 已有其他療程，此推薦不符合首次療程條件`
+        `患者 ${referral.patientId} 已有其他療程，此推薦不符合首次療程條件`,
       );
     }
 
     // 獲取推薦獎勵點數配置
     const rewardPoints = await this.pointsConfigService.getConfigByKey(
-      'referral_points_reward',
+      "referral_points_reward",
       clinicId,
     );
 
     // 驗證推薦人存在且有效
-    await this.validateReferrer(referral.referrerId, referral.referrerType, clinicId);
+    await this.validateReferrer(
+      referral.referrerId,
+      referral.referrerType,
+      clinicId,
+    );
 
     // 獎勵推薦人點數
     try {
       await this.pointsService.awardPoints(
         referral.referrerId,
         rewardPoints,
-        'referral',
+        "referral",
         clinicId,
         referralId,
       );
@@ -203,14 +217,14 @@ export class ReferralService {
     }
 
     // 更新推薦記錄
-    referral.status = 'converted';
+    referral.status = "converted";
     referral.firstTreatmentId = treatmentId;
     referral.firstTreatmentDate = new Date();
     referral.pointsAwarded = rewardPoints;
 
     const savedReferral = await this.referralRepository.save(referral);
     this.logger.log(
-      `成功轉化推薦記錄：${referralId}（推薦人：${referral.referrerId}，獎勵：${rewardPoints} 點）`
+      `成功轉化推薦記錄：${referralId}（推薦人：${referral.referrerId}，獎勵：${rewardPoints} 點）`,
     );
 
     return savedReferral;
@@ -232,13 +246,21 @@ export class ReferralService {
       where: { clinicId },
     });
 
-    const convertedCount = referrals.filter((r) => r.status === 'converted').length;
-    const pendingCount = referrals.filter((r) => r.status === 'pending').length;
-    const cancelledCount = referrals.filter((r) => r.status === 'cancelled').length;
+    const convertedCount = referrals.filter(
+      (r) => r.status === "converted",
+    ).length;
+    const pendingCount = referrals.filter((r) => r.status === "pending").length;
+    const cancelledCount = referrals.filter(
+      (r) => r.status === "cancelled",
+    ).length;
 
-    const conversionRate = totalReferrals > 0 ? (convertedCount / totalReferrals) * 100 : 0;
+    const conversionRate =
+      totalReferrals > 0 ? (convertedCount / totalReferrals) * 100 : 0;
 
-    const totalPointsAwarded = referrals.reduce((sum, r) => sum + Number(r.pointsAwarded), 0);
+    const totalPointsAwarded = referrals.reduce(
+      (sum, r) => sum + Number(r.pointsAwarded),
+      0,
+    );
 
     return {
       totalReferrals,
@@ -257,7 +279,10 @@ export class ReferralService {
    * @returns 已取消的推薦記錄
    * @throws NotFoundException 推薦不存在
    */
-  async deleteReferral(referralId: string, clinicId: string): Promise<Referral> {
+  async deleteReferral(
+    referralId: string,
+    clinicId: string,
+  ): Promise<Referral> {
     const referral = await this.referralRepository.findOne({
       where: {
         id: referralId,
@@ -269,7 +294,7 @@ export class ReferralService {
       throw new NotFoundException(`推薦記錄 ${referralId} 不存在`);
     }
 
-    referral.status = 'cancelled';
+    referral.status = "cancelled";
     const savedReferral = await this.referralRepository.save(referral);
     this.logger.log(`成功取消推薦記錄：${referralId}`);
 
@@ -289,7 +314,7 @@ export class ReferralService {
     referrerType: string,
     clinicId: string,
   ): Promise<void> {
-    if (referrerType === 'staff') {
+    if (referrerType === "staff") {
       const staff = await this.staffRepository.findOne({
         where: {
           id: referrerId,
@@ -305,10 +330,10 @@ export class ReferralService {
         throw new BadRequestException(`員工 ${referrerId} 無權作為推薦人`);
       }
 
-      if (staff.status !== 'active') {
+      if (staff.status !== "active") {
         throw new BadRequestException(`員工 ${referrerId} 狀態非活躍`);
       }
-    } else if (referrerType === 'patient') {
+    } else if (referrerType === "patient") {
       const patient = await this.patientRepository.findOne({
         where: {
           id: referrerId,
@@ -320,7 +345,7 @@ export class ReferralService {
         throw new NotFoundException(`患者推薦人 ${referrerId} 不存在`);
       }
 
-      if (patient.status !== 'active') {
+      if (patient.status !== "active") {
         throw new BadRequestException(`患者 ${referrerId} 狀態非活躍`);
       }
     }

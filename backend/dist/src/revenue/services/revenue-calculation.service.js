@@ -63,22 +63,24 @@ let RevenueCalculationService = RevenueCalculationService_1 = class RevenueCalcu
             this.logger.warn(`沒有找到治療 ${treatmentId} 的活躍員工分配`);
             return [];
         }
-        const roles = [...new Set(staffAssignments.map(assignment => assignment.role))];
-        this.logger.debug(`收集到 ${roles.length} 個唯一角色：${roles.join(', ')}`);
+        const roles = [
+            ...new Set(staffAssignments.map((assignment) => assignment.role)),
+        ];
+        this.logger.debug(`收集到 ${roles.length} 個唯一角色：${roles.join(", ")}`);
         const allRules = await this.revenueRuleRepository.find({
             where: {
                 role: (0, typeorm_2.In)(roles),
                 clinicId: treatment.clinicId,
                 isActive: true,
             },
-            order: { effectiveFrom: 'DESC' },
+            order: { effectiveFrom: "DESC" },
         });
         if (allRules.length === 0) {
-            this.logger.warn(`診所 ${treatment.clinicId} 的角色 [${roles.join(', ')}] 未找到營收規則`);
+            this.logger.warn(`診所 ${treatment.clinicId} 的角色 [${roles.join(", ")}] 未找到營收規則`);
             return [];
         }
         const roleRulesMap = new Map();
-        allRules.forEach(rule => {
+        allRules.forEach((rule) => {
             if (!roleRulesMap.has(rule.role)) {
                 roleRulesMap.set(rule.role, rule);
             }
@@ -105,8 +107,8 @@ let RevenueCalculationService = RevenueCalculationService_1 = class RevenueCalcu
                 record.staffId = assignment.staffId;
                 record.role = role;
                 record.amount = calculatedAmount;
-                record.calculationType = 'session';
-                record.status = 'calculated';
+                record.calculationType = "session";
+                record.status = "calculated";
                 record.clinicId = treatment.clinicId;
                 record.ruleId = rule.id;
                 record.calculationDetails = {

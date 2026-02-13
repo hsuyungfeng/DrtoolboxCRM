@@ -1,10 +1,10 @@
-import { Repository } from 'typeorm';
-import { RevenueRuleEngine } from './revenue-rule-engine.service';
-import { RevenueRecord } from '../entities/revenue-record.entity';
-import { Treatment } from '../../treatments/entities/treatment.entity';
-import { TreatmentSession } from '../../treatments/entities/treatment-session.entity';
-import { TreatmentStaffAssignment } from '../../staff/entities/treatment-staff-assignment.entity';
-import { RevenueRule } from '../entities/revenue-rule.entity';
+import { Repository } from "typeorm";
+import { RevenueRuleEngine } from "./revenue-rule-engine.service";
+import { RevenueRecord } from "../entities/revenue-record.entity";
+import { Treatment } from "../../treatments/entities/treatment.entity";
+import { TreatmentSession } from "../../treatments/entities/treatment-session.entity";
+import { TreatmentStaffAssignment } from "../../staff/entities/treatment-staff-assignment.entity";
+import { RevenueRule } from "../entities/revenue-rule.entity";
 export declare class RevenueCalculationService {
     private revenueRecordRepository;
     private treatmentRepository;

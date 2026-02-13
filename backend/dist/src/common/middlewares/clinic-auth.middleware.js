@@ -22,7 +22,11 @@ let ClinicAuthMiddleware = ClinicAuthMiddleware_1 = class ClinicAuthMiddleware {
                 message: "診所ID（clinicId）為必填項",
                 errorCode: "CLINIC_ID_REQUIRED",
                 details: {
-                    acceptedSources: ["X-Clinic-Id header", "clinicId query parameter", "clinicId in request body"],
+                    acceptedSources: [
+                        "X-Clinic-Id header",
+                        "clinicId query parameter",
+                        "clinicId in request body",
+                    ],
                     example: "X-Clinic-Id: clinic_12345",
                 },
             });

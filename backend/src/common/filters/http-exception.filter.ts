@@ -4,9 +4,9 @@ import {
   ArgumentsHost,
   HttpException,
   HttpStatus,
-} from '@nestjs/common';
-import { Request, Response } from 'express';
-import { ApiErrorResponse } from '../interfaces/api-error-response.interface';
+} from "@nestjs/common";
+import { Request, Response } from "express";
+import { ApiErrorResponse } from "../interfaces/api-error-response.interface";
 
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -31,16 +31,14 @@ export class HttpExceptionFilter implements ExceptionFilter {
     };
 
     // 設置響應頭和狀態碼
-    response
-      .status(status)
-      .json(errorResponse);
+    response.status(status).json(errorResponse);
   }
 
   /**
    * 從異常響應中提取錯誤信息
    */
   private extractMessage(exceptionResponse: any): string {
-    if (typeof exceptionResponse === 'string') {
+    if (typeof exceptionResponse === "string") {
       return exceptionResponse;
     }
 
@@ -50,13 +48,16 @@ export class HttpExceptionFilter implements ExceptionFilter {
         : exceptionResponse.message;
     }
 
-    return 'Internal server error';
+    return "Internal server error";
   }
 
   /**
    * 從異常響應中提取錯誤代碼
    */
-  private extractErrorCode(exception: HttpException, exceptionResponse: any): string {
+  private extractErrorCode(
+    exception: HttpException,
+    exceptionResponse: any,
+  ): string {
     // 如果是我們的 BaseException，它有 errorCode 屬性
     if (exceptionResponse?.errorCode) {
       return exceptionResponse.errorCode;
@@ -66,19 +67,19 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const status = exception.getStatus();
     switch (status) {
       case HttpStatus.BAD_REQUEST:
-        return 'BAD_REQUEST';
+        return "BAD_REQUEST";
       case HttpStatus.UNAUTHORIZED:
-        return 'UNAUTHORIZED';
+        return "UNAUTHORIZED";
       case HttpStatus.FORBIDDEN:
-        return 'FORBIDDEN';
+        return "FORBIDDEN";
       case HttpStatus.NOT_FOUND:
-        return 'NOT_FOUND';
+        return "NOT_FOUND";
       case HttpStatus.CONFLICT:
-        return 'CONFLICT';
+        return "CONFLICT";
       case HttpStatus.UNPROCESSABLE_ENTITY:
-        return 'VALIDATION_ERROR';
+        return "VALIDATION_ERROR";
       case HttpStatus.INTERNAL_SERVER_ERROR:
-        return 'INTERNAL_SERVER_ERROR';
+        return "INTERNAL_SERVER_ERROR";
       default:
         return `HTTP_${status}`;
     }
@@ -87,8 +88,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
   /**
    * 從異常響應中提取詳細信息
    */
-  private extractDetails(exceptionResponse: any): Record<string, any> | undefined {
-    if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
+  private extractDetails(
+    exceptionResponse: any,
+  ): Record<string, any> | undefined {
+    if (typeof exceptionResponse === "object" && exceptionResponse !== null) {
       const { message, errorCode, errors, ...details } = exceptionResponse;
       return Object.keys(details).length > 0 ? details : undefined;
     }
@@ -98,11 +101,13 @@ export class HttpExceptionFilter implements ExceptionFilter {
   /**
    * 從異常響應中提取驗證錯誤
    */
-  private extractValidationErrors(exceptionResponse: any): ApiErrorResponse['errors'] {
+  private extractValidationErrors(
+    exceptionResponse: any,
+  ): ApiErrorResponse["errors"] {
     if (exceptionResponse?.errors && Array.isArray(exceptionResponse.errors)) {
       return exceptionResponse.errors.map((error: any) => ({
-        field: error.field || error.property || 'unknown',
-        message: error.message || 'Validation error',
+        field: error.field || error.property || "unknown",
+        message: error.message || "Validation error",
         constraint: error.constraint,
       }));
     }

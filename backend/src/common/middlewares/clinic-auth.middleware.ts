@@ -8,15 +8,15 @@ import { Request, Response, NextFunction } from "express";
 
 /**
  * 診所隔離中間件
- * 
+ *
  * 此中間件用於驗證請求中的診所ID（clinicId）並將其注入請求上下文
  * 確保所有數據操作都限制在特定的診所範圍內
- * 
+ *
  * 使用方式：
  * 1. 通過 Header: `X-Clinic-Id: <clinicId>`
  * 2. 通過 Query Parameter: `?clinicId=<clinicId>`
  * 3. 通過 Body（僅限 POST/PUT/PATCH）: `{ clinicId: <clinicId> }`
- * 
+ *
  * 優先級：Header > Query > Body
  */
 @Injectable()
@@ -31,13 +31,19 @@ export class ClinicAuthMiddleware implements NestMiddleware {
       this.extractClinicIdFromBody(req);
 
     if (!clinicId) {
-      this.logger.warn(`No clinicId found in request to ${req.method} ${req.url}`);
+      this.logger.warn(
+        `No clinicId found in request to ${req.method} ${req.url}`,
+      );
       throw new UnauthorizedException({
         statusCode: 401,
         message: "診所ID（clinicId）為必填項",
         errorCode: "CLINIC_ID_REQUIRED",
         details: {
-          acceptedSources: ["X-Clinic-Id header", "clinicId query parameter", "clinicId in request body"],
+          acceptedSources: [
+            "X-Clinic-Id header",
+            "clinicId query parameter",
+            "clinicId in request body",
+          ],
           example: "X-Clinic-Id: clinic_12345",
         },
       });
@@ -59,8 +65,10 @@ export class ClinicAuthMiddleware implements NestMiddleware {
 
     // 將 clinicId 注入請求對象，供後續使用
     (req as any).clinicId = clinicId;
-    
-    this.logger.debug(`Clinic ID authenticated: ${clinicId} for ${req.method} ${req.url}`);
+
+    this.logger.debug(
+      `Clinic ID authenticated: ${clinicId} for ${req.method} ${req.url}`,
+    );
     next();
   }
 
@@ -140,12 +148,12 @@ export class ClinicAuthMiddleware implements NestMiddleware {
 
     // 防止常見的注入模式
     const dangerousPatterns = [
-      /--/,           // SQL 註釋
-      /;/,            // SQL 分隔符
-      /'/,            // SQL 字符串
-      /"/,            // SQL 字符串
-      /\\/,           // 轉義字符
-      /<script/i,     // XSS
+      /--/, // SQL 註釋
+      /;/, // SQL 分隔符
+      /'/, // SQL 字符串
+      /"/, // SQL 字符串
+      /\\/, // 轉義字符
+      /<script/i, // XSS
       /javascript:/i, // XSS
     ];
 

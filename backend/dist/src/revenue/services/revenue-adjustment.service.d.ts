@@ -1,9 +1,9 @@
-import { Repository, DataSource } from 'typeorm';
-import { RevenueAdjustment } from '../entities/revenue-adjustment.entity';
-import { RevenueRecord } from '../entities/revenue-record.entity';
-import { CreateRevenueAdjustmentDto } from '../dto/create-revenue-adjustment.dto';
-import { UpdateRevenueAdjustmentDto } from '../dto/update-revenue-adjustment.dto';
-import { StaffService } from '../../staff/services/staff.service';
+import { Repository, DataSource } from "typeorm";
+import { RevenueAdjustment } from "../entities/revenue-adjustment.entity";
+import { RevenueRecord } from "../entities/revenue-record.entity";
+import { CreateRevenueAdjustmentDto } from "../dto/create-revenue-adjustment.dto";
+import { UpdateRevenueAdjustmentDto } from "../dto/update-revenue-adjustment.dto";
+import { StaffService } from "../../staff/services/staff.service";
 export declare class RevenueAdjustmentService {
     private readonly adjustmentRepo;
     private readonly recordRepo;
@@ -21,7 +21,7 @@ export declare class RevenueAdjustmentService {
     update(id: string, updateDto: UpdateRevenueAdjustmentDto, clinicId: string): Promise<RevenueAdjustment>;
     remove(id: string, clinicId: string): Promise<void>;
     review(id: string, clinicId: string, reviewData: {
-        status: 'approved' | 'rejected';
+        status: "approved" | "rejected";
         notes?: string;
         reviewedBy: string;
     }): Promise<RevenueAdjustment>;

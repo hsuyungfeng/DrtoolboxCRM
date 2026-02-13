@@ -1,5 +1,5 @@
-import { HttpStatus } from '@nestjs/common';
-import { BaseException } from './base.exception';
+import { HttpStatus } from "@nestjs/common";
+import { BaseException } from "./base.exception";
 
 /**
  * 資源未找到異常
@@ -11,19 +11,14 @@ export class NotFoundException extends BaseException {
     resourceId?: string,
     details?: Record<string, any>,
   ) {
-    const message = resourceId 
+    const message = resourceId
       ? `${resource} with ID ${resourceId} not found`
       : `${resource} not found`;
 
-    super(
-      message,
-      HttpStatus.NOT_FOUND,
-      'RESOURCE_NOT_FOUND',
-      {
-        resource,
-        resourceId,
-        ...details,
-      },
-    );
+    super(message, HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND", {
+      resource,
+      resourceId,
+      ...details,
+    });
   }
 }

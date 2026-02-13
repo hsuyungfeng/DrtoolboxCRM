@@ -5,9 +5,9 @@ import {
   IsString,
   IsArray,
   ValidateNested,
-} from 'class-validator';
-import { Type } from 'class-transformer';
-import { StaffAssignmentDto } from './staff-assignment.dto';
+} from "class-validator";
+import { Type } from "class-transformer";
+import { StaffAssignmentDto } from "./staff-assignment.dto";
 
 export class UpdateTreatmentSessionDto {
   @IsOptional()
@@ -26,12 +26,12 @@ export class UpdateTreatmentSessionDto {
   actualEndTime?: Date;
 
   @IsOptional()
-  @IsEnum(['pending', 'completed', 'cancelled'])
-  completionStatus?: 'pending' | 'completed' | 'cancelled';
+  @IsEnum(["pending", "completed", "cancelled"])
+  completionStatus?: "pending" | "completed" | "cancelled";
 
   @IsOptional()
-  @IsEnum(['pending', 'completed', 'cancelled'])
-  status?: 'pending' | 'completed' | 'cancelled';
+  @IsEnum(["pending", "completed", "cancelled"])
+  status?: "pending" | "completed" | "cancelled";
 
   @IsOptional()
   @IsString()

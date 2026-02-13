@@ -15,7 +15,8 @@ const signOptions = {
   imports: [
     PassportModule.register({ defaultStrategy: "jwt" }),
     JwtModule.register({
-      secret: process.env.JWT_SECRET || "your-super-secret-key-change-in-production",
+      secret:
+        process.env.JWT_SECRET || "your-super-secret-key-change-in-production",
       signOptions,
     }),
     StaffModule,

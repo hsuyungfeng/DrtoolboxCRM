@@ -1,10 +1,4 @@
-import {
-  IsNotEmpty,
-  IsString,
-  IsNumber,
-  Min,
-  Max,
-} from 'class-validator';
+import { IsNotEmpty, IsString, IsNumber, Min, Max } from "class-validator";
 
 export class StaffAssignmentDto {
   @IsNotEmpty()

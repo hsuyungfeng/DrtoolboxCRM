@@ -1,16 +1,16 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Logger, NotFoundException } from '@nestjs/common';
-import { RevenueCalculationService } from './revenue-calculation.service';
-import { RevenueRuleEngine } from './revenue-rule-engine.service';
-import { RevenueRecord } from '../entities/revenue-record.entity';
-import { Treatment } from '../../treatments/entities/treatment.entity';
-import { TreatmentSession } from '../../treatments/entities/treatment-session.entity';
-import { TreatmentStaffAssignment } from '../../staff/entities/treatment-staff-assignment.entity';
-import { RevenueRule } from '../entities/revenue-rule.entity';
+import { Test, TestingModule } from "@nestjs/testing";
+import { getRepositoryToken } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { Logger, NotFoundException } from "@nestjs/common";
+import { RevenueCalculationService } from "./revenue-calculation.service";
+import { RevenueRuleEngine } from "./revenue-rule-engine.service";
+import { RevenueRecord } from "../entities/revenue-record.entity";
+import { Treatment } from "../../treatments/entities/treatment.entity";
+import { TreatmentSession } from "../../treatments/entities/treatment-session.entity";
+import { TreatmentStaffAssignment } from "../../staff/entities/treatment-staff-assignment.entity";
+import { RevenueRule } from "../entities/revenue-rule.entity";
 
-describe('RevenueCalculationService', () => {
+describe("RevenueCalculationService", () => {
   let service: RevenueCalculationService;
   let revenueRecordRepo: Repository<RevenueRecord>;
   let treatmentRepo: Repository<Treatment>;
@@ -74,63 +74,69 @@ describe('RevenueCalculationService', () => {
     treatmentSessionRepo = module.get<Repository<TreatmentSession>>(
       getRepositoryToken(TreatmentSession),
     );
-    treatmentStaffAssignmentRepo = module.get<Repository<TreatmentStaffAssignment>>(
-      getRepositoryToken(TreatmentStaffAssignment),
-    );
+    treatmentStaffAssignmentRepo = module.get<
+      Repository<TreatmentStaffAssignment>
+    >(getRepositoryToken(TreatmentStaffAssignment));
     revenueRuleRepo = module.get<Repository<RevenueRule>>(
       getRepositoryToken(RevenueRule),
     );
     revenueRuleEngine = module.get<RevenueRuleEngine>(RevenueRuleEngine);
   });
 
-  describe('calculateSessionRevenue', () => {
-    it('should create revenue records for completed session', async () => {
-      const clinicId = 'clinic-1';
-      const treatmentId = 'treatment-1';
-      const sessionId = 'session-1';
+  describe("calculateSessionRevenue", () => {
+    it("should create revenue records for completed session", async () => {
+      const clinicId = "clinic-1";
+      const treatmentId = "treatment-1";
+      const sessionId = "session-1";
 
       const treatment: Partial<Treatment> = {
         id: treatmentId,
         clinicId,
         totalPrice: 1000,
-        name: 'Test Treatment',
+        name: "Test Treatment",
       };
 
       const session: Partial<TreatmentSession> = {
         id: sessionId,
         treatmentId,
         clinicId,
-        status: 'completed',
+        status: "completed",
         revenueCalculated: false,
       };
 
       const staffAssignments: Partial<TreatmentStaffAssignment>[] = [
         {
-          id: 'assign-1',
-          staffId: 'staff-1',
+          id: "assign-1",
+          staffId: "staff-1",
           treatmentId,
-          role: 'doctor',
+          role: "doctor",
           revenuePercentage: 50,
         },
       ];
 
       const rule: Partial<RevenueRule> = {
-        id: 'rule-1',
-        role: 'doctor',
-        ruleType: 'percentage',
+        id: "rule-1",
+        role: "doctor",
+        ruleType: "percentage",
         rulePayload: { percentage: 50 },
-        effectiveFrom: new Date('2025-01-01'),
+        effectiveFrom: new Date("2025-01-01"),
         effectiveTo: null,
         clinicId,
         isActive: true,
       };
 
-      jest.spyOn(treatmentRepo, 'findOne').mockResolvedValue(treatment as any);
-      jest.spyOn(treatmentSessionRepo, 'findOne').mockResolvedValue(session as any);
-      jest.spyOn(treatmentStaffAssignmentRepo, 'find').mockResolvedValue(staffAssignments as any);
-      jest.spyOn(revenueRuleRepo, 'find').mockResolvedValue([rule as any]);
-      jest.spyOn(revenueRuleEngine, 'calculateAmount').mockReturnValue(500);
-      jest.spyOn(revenueRecordRepo, 'save').mockResolvedValue({ id: 'record-1' } as any);
+      jest.spyOn(treatmentRepo, "findOne").mockResolvedValue(treatment as any);
+      jest
+        .spyOn(treatmentSessionRepo, "findOne")
+        .mockResolvedValue(session as any);
+      jest
+        .spyOn(treatmentStaffAssignmentRepo, "find")
+        .mockResolvedValue(staffAssignments as any);
+      jest.spyOn(revenueRuleRepo, "find").mockResolvedValue([rule as any]);
+      jest.spyOn(revenueRuleEngine, "calculateAmount").mockReturnValue(500);
+      jest
+        .spyOn(revenueRecordRepo, "save")
+        .mockResolvedValue({ id: "record-1" } as any);
 
       const results = await service.calculateSessionRevenue(
         clinicId,
@@ -151,22 +157,22 @@ describe('RevenueCalculationService', () => {
       expect(revenueRecordRepo.save).toHaveBeenCalledTimes(1);
     });
 
-    it('should throw error if treatment not found', async () => {
-      const clinicId = 'clinic-1';
-      const treatmentId = 'treatment-1';
-      const sessionId = 'session-1';
+    it("should throw error if treatment not found", async () => {
+      const clinicId = "clinic-1";
+      const treatmentId = "treatment-1";
+      const sessionId = "session-1";
 
-      jest.spyOn(treatmentRepo, 'findOne').mockResolvedValue(null);
+      jest.spyOn(treatmentRepo, "findOne").mockResolvedValue(null);
 
       await expect(
         service.calculateSessionRevenue(clinicId, treatmentId, sessionId),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('should handle missing rules gracefully', async () => {
-      const clinicId = 'clinic-1';
-      const treatmentId = 'treatment-1';
-      const sessionId = 'session-1';
+    it("should handle missing rules gracefully", async () => {
+      const clinicId = "clinic-1";
+      const treatmentId = "treatment-1";
+      const sessionId = "session-1";
 
       const treatment: Partial<Treatment> = {
         id: treatmentId,
@@ -178,23 +184,27 @@ describe('RevenueCalculationService', () => {
         id: sessionId,
         treatmentId,
         clinicId,
-        status: 'completed',
+        status: "completed",
         revenueCalculated: false,
       };
 
       const staffAssignments: Partial<TreatmentStaffAssignment>[] = [
         {
-          id: 'assign-1',
-          staffId: 'staff-1',
+          id: "assign-1",
+          staffId: "staff-1",
           treatmentId,
-          role: 'doctor',
+          role: "doctor",
         },
       ];
 
-      jest.spyOn(treatmentRepo, 'findOne').mockResolvedValue(treatment as any);
-      jest.spyOn(treatmentSessionRepo, 'findOne').mockResolvedValue(session as any);
-      jest.spyOn(treatmentStaffAssignmentRepo, 'find').mockResolvedValue(staffAssignments as any);
-      jest.spyOn(revenueRuleRepo, 'find').mockResolvedValue([]);
+      jest.spyOn(treatmentRepo, "findOne").mockResolvedValue(treatment as any);
+      jest
+        .spyOn(treatmentSessionRepo, "findOne")
+        .mockResolvedValue(session as any);
+      jest
+        .spyOn(treatmentStaffAssignmentRepo, "find")
+        .mockResolvedValue(staffAssignments as any);
+      jest.spyOn(revenueRuleRepo, "find").mockResolvedValue([]);
 
       const results = await service.calculateSessionRevenue(
         clinicId,
@@ -208,76 +218,82 @@ describe('RevenueCalculationService', () => {
       expect(revenueRuleRepo.find).toHaveBeenCalledTimes(1);
     });
 
-    it('should handle multiple staff assignments with different roles efficiently', async () => {
-      const clinicId = 'clinic-1';
-      const treatmentId = 'treatment-1';
-      const sessionId = 'session-1';
+    it("should handle multiple staff assignments with different roles efficiently", async () => {
+      const clinicId = "clinic-1";
+      const treatmentId = "treatment-1";
+      const sessionId = "session-1";
 
       const treatment: Partial<Treatment> = {
         id: treatmentId,
         clinicId,
         totalPrice: 3000,
-        name: 'Test Treatment',
+        name: "Test Treatment",
       };
 
       const session: Partial<TreatmentSession> = {
         id: sessionId,
         treatmentId,
         clinicId,
-        status: 'completed',
+        status: "completed",
         revenueCalculated: false,
       };
 
       const staffAssignments: Partial<TreatmentStaffAssignment>[] = [
         {
-          id: 'assign-1',
-          staffId: 'doctor-1',
+          id: "assign-1",
+          staffId: "doctor-1",
           treatmentId,
-          role: 'doctor',
+          role: "doctor",
           revenuePercentage: 50,
         },
         {
-          id: 'assign-2',
-          staffId: 'therapist-1',
+          id: "assign-2",
+          staffId: "therapist-1",
           treatmentId,
-          role: 'therapist',
+          role: "therapist",
           revenuePercentage: 30,
         },
       ];
 
       const mockRules: Partial<RevenueRule>[] = [
         {
-          id: 'rule-doctor',
-          role: 'doctor',
-          ruleType: 'percentage',
+          id: "rule-doctor",
+          role: "doctor",
+          ruleType: "percentage",
           rulePayload: { percentage: 50 },
           revenuePercentage: 50,
           isActive: true,
           clinicId,
-          effectiveFrom: new Date('2025-01-01'),
+          effectiveFrom: new Date("2025-01-01"),
         },
         {
-          id: 'rule-therapist',
-          role: 'therapist',
-          ruleType: 'percentage',
+          id: "rule-therapist",
+          role: "therapist",
+          ruleType: "percentage",
           rulePayload: { percentage: 30 },
           revenuePercentage: 30,
           isActive: true,
           clinicId,
-          effectiveFrom: new Date('2025-01-01'),
+          effectiveFrom: new Date("2025-01-01"),
         },
       ];
 
-      jest.spyOn(treatmentRepo, 'findOne').mockResolvedValue(treatment as any);
-      jest.spyOn(treatmentSessionRepo, 'findOne').mockResolvedValue(session as any);
-      jest.spyOn(treatmentStaffAssignmentRepo, 'find').mockResolvedValue(staffAssignments as any);
-      jest.spyOn(revenueRuleRepo, 'find').mockResolvedValue(mockRules as any);
-      jest.spyOn(revenueRuleEngine, 'calculateAmount')
+      jest.spyOn(treatmentRepo, "findOne").mockResolvedValue(treatment as any);
+      jest
+        .spyOn(treatmentSessionRepo, "findOne")
+        .mockResolvedValue(session as any);
+      jest
+        .spyOn(treatmentStaffAssignmentRepo, "find")
+        .mockResolvedValue(staffAssignments as any);
+      jest.spyOn(revenueRuleRepo, "find").mockResolvedValue(mockRules as any);
+      jest
+        .spyOn(revenueRuleEngine, "calculateAmount")
         .mockReturnValueOnce(1500) // 醫生：3000 * 50% = 1500
-        .mockReturnValueOnce(900);  // 治療師：3000 * 30% = 900
-      jest.spyOn(revenueRecordRepo, 'save')
-        .mockResolvedValueOnce({ id: 'record-1' } as any)
-        .mockResolvedValueOnce({ id: 'record-2' } as any);
+        .mockReturnValueOnce(900); // 治療師：3000 * 30% = 900
+      jest
+        .spyOn(revenueRecordRepo, "save")
+        .mockResolvedValueOnce({ id: "record-1" } as any)
+        .mockResolvedValueOnce({ id: "record-2" } as any);
 
       const results = await service.calculateSessionRevenue(
         clinicId,

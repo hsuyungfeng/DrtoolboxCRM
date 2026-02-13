@@ -22,8 +22,8 @@ class UpdateRevenueAdjustmentDto extends (0, swagger_1.PartialType)(create_reven
 exports.UpdateRevenueAdjustmentDto = UpdateRevenueAdjustmentDto;
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: '審核狀態',
-        example: 'approved',
+        description: "審核狀態",
+        example: "approved",
         required: false,
     }),
     (0, class_validator_1.IsString)(),
@@ -32,8 +32,8 @@ __decorate([
 ], UpdateRevenueAdjustmentDto.prototype, "reviewStatus", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: '審核備註',
-        example: '調整金額合理，同意',
+        description: "審核備註",
+        example: "調整金額合理，同意",
         required: false,
     }),
     (0, class_validator_1.IsString)(),
@@ -42,8 +42,8 @@ __decorate([
 ], UpdateRevenueAdjustmentDto.prototype, "reviewNotes", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: '審核者 ID',
-        example: '123e4567-e89b-12d3-a456-426614174002',
+        description: "審核者 ID",
+        example: "123e4567-e89b-12d3-a456-426614174002",
         required: false,
     }),
     (0, class_validator_1.IsString)(),
@@ -52,8 +52,8 @@ __decorate([
 ], UpdateRevenueAdjustmentDto.prototype, "reviewedBy", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: '審核時間',
-        example: '2025-02-09T10:30:00Z',
+        description: "審核時間",
+        example: "2025-02-09T10:30:00Z",
         required: false,
     }),
     (0, class_validator_1.IsString)(),

@@ -24,31 +24,31 @@ let PointsConfig = class PointsConfig {
 };
 exports.PointsConfig = PointsConfig;
 __decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
+    (0, typeorm_1.PrimaryGeneratedColumn)("uuid"),
     __metadata("design:type", String)
 ], PointsConfig.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', length: 100 }),
+    (0, typeorm_1.Column)({ type: "varchar", length: 100 }),
     __metadata("design:type", String)
 ], PointsConfig.prototype, "configKey", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'decimal', precision: 10, scale: 2 }),
+    (0, typeorm_1.Column)({ type: "decimal", precision: 10, scale: 2 }),
     __metadata("design:type", Number)
 ], PointsConfig.prototype, "configValue", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'text' }),
+    (0, typeorm_1.Column)({ type: "text" }),
     __metadata("design:type", String)
 ], PointsConfig.prototype, "description", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', length: 50 }),
+    (0, typeorm_1.Column)({ type: "varchar", length: 50 }),
     __metadata("design:type", String)
 ], PointsConfig.prototype, "unit", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', length: 32 }),
+    (0, typeorm_1.Column)({ type: "varchar", length: 32 }),
     __metadata("design:type", String)
 ], PointsConfig.prototype, "clinicId", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'boolean', default: true }),
+    (0, typeorm_1.Column)({ type: "boolean", default: true }),
     __metadata("design:type", Boolean)
 ], PointsConfig.prototype, "isActive", void 0);
 __decorate([
@@ -60,6 +60,6 @@ __decorate([
     __metadata("design:type", Date)
 ], PointsConfig.prototype, "updatedAt", void 0);
 exports.PointsConfig = PointsConfig = __decorate([
-    (0, typeorm_1.Entity)('points_config')
+    (0, typeorm_1.Entity)("points_config")
 ], PointsConfig);
 //# sourceMappingURL=points-config.entity.js.map

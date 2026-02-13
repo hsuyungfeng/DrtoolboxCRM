@@ -7,27 +7,27 @@ import {
   ManyToOne,
   Index,
   JoinColumn,
-} from 'typeorm';
-import Decimal from 'decimal.js';
-import { TreatmentSession } from './treatment-session.entity';
+} from "typeorm";
+import Decimal from "decimal.js";
+import { TreatmentSession } from "./treatment-session.entity";
 
-@Entity('staff_assignments')
-@Index(['sessionId', 'staffId'])
+@Entity("staff_assignments")
+@Index(["sessionId", "staffId"])
 export class StaffAssignment {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column({ type: 'varchar', length: 36 })
+  @Column({ type: "varchar", length: 36 })
   sessionId: string;
 
-  @Column({ type: 'varchar', length: 36 })
+  @Column({ type: "varchar", length: 36 })
   staffId: string;
 
-  @Column({ type: 'varchar', length: 50 })
+  @Column({ type: "varchar", length: 50 })
   staffRole: string;
 
   @Column({
-    type: 'decimal',
+    type: "decimal",
     precision: 5,
     scale: 2,
     transformer: {
@@ -44,7 +44,7 @@ export class StaffAssignment {
   ppfPercentage: Decimal; // 0-100
 
   @Column({
-    type: 'decimal',
+    type: "decimal",
     precision: 10,
     scale: 2,
     default: 0,
@@ -69,6 +69,6 @@ export class StaffAssignment {
 
   // 關聯
   @ManyToOne(() => TreatmentSession, (session) => session.staffAssignments)
-  @JoinColumn({ name: 'sessionId' })
+  @JoinColumn({ name: "sessionId" })
   session: TreatmentSession;
 }

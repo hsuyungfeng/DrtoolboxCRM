@@ -12,8 +12,6 @@ import { Staff } from "../../staff/entities/staff.entity";
 // 設置 Decimal 精度為 8 位小數，四捨五入
 Decimal.set({ precision: 8, rounding: Decimal.ROUND_HALF_UP });
 
-
-
 export interface RevenueCalculationResult {
   treatmentId: string;
   sessionId?: string;
@@ -211,12 +209,13 @@ export class RevenueCalculatorService {
 
       case "fixed": {
         // 固定金額規則：rulePayload 包含 amount 欄位
-        const fixedAmount =
-          (rulePayload as { amount: number })?.amount || 0;
+        const fixedAmount = (rulePayload as { amount: number })?.amount || 0;
 
         // 驗證金額不為負數
         if (fixedAmount < 0) {
-          this.logger.warn(`Invalid fixed amount: ${fixedAmount}. Must be non-negative.`);
+          this.logger.warn(
+            `Invalid fixed amount: ${fixedAmount}. Must be non-negative.`,
+          );
           return 0;
         }
 
@@ -255,7 +254,9 @@ export class RevenueCalculatorService {
 
           if (baseAmount.greaterThan(threshold)) {
             // 計算此階梯的金額
-            const tierAmount = Decimal.min(baseAmount, threshold).minus(previousThreshold);
+            const tierAmount = Decimal.min(baseAmount, threshold).minus(
+              previousThreshold,
+            );
             amount = amount.plus(tierAmount.mul(percentage).div(100));
             previousThreshold = threshold;
           } else {
@@ -323,7 +324,7 @@ export class RevenueCalculatorService {
 
     if (record.lockedAt) {
       throw new Error(
-         `RevenueRecord ${recordId} is already locked at ${record.lockedAt.toISOString()}`,
+        `RevenueRecord ${recordId} is already locked at ${record.lockedAt.toISOString()}`,
       );
     }
 

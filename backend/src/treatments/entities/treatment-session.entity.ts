@@ -15,9 +15,9 @@ import { TreatmentCourse } from "./treatment-course.entity";
 import { StaffAssignment } from "./staff-assignment.entity";
 
 @Entity("treatment_sessions")
-@Index(['treatmentCourseId', 'sessionNumber'])
-@Index(['clinicId', 'completionStatus'])
-@Index(['clinicId', 'scheduledDate'])
+@Index(["treatmentCourseId", "sessionNumber"])
+@Index(["clinicId", "completionStatus"])
+@Index(["clinicId", "scheduledDate"])
 export class TreatmentSession {
   @PrimaryGeneratedColumn("uuid")
   id: string;
@@ -55,7 +55,7 @@ export class TreatmentSession {
   status: string; // scheduled, in_progress, completed, cancelled
 
   @Column({ type: "varchar", length: 50, nullable: true })
-  completionStatus: 'pending' | 'completed' | 'cancelled'; // For TreatmentCourse sessions
+  completionStatus: "pending" | "completed" | "cancelled"; // For TreatmentCourse sessions
 
   @Column({ type: "text", nullable: true })
   notes: string;

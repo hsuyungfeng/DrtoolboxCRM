@@ -1,13 +1,13 @@
-import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Referral } from './entities/referral.entity';
-import { Patient } from '../patients/entities/patient.entity';
-import { Staff } from '../staff/entities/staff.entity';
-import { Treatment } from '../treatments/entities/treatment.entity';
-import { ReferralService } from './services/referral.service';
-import { ReferralController } from './controllers/referral.controller';
-import { ReferralEventListener } from './listeners/referral-event.listener';
-import { PointsModule } from '../points/points.module';
+import { Module } from "@nestjs/common";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { Referral } from "./entities/referral.entity";
+import { Patient } from "../patients/entities/patient.entity";
+import { Staff } from "../staff/entities/staff.entity";
+import { Treatment } from "../treatments/entities/treatment.entity";
+import { ReferralService } from "./services/referral.service";
+import { ReferralController } from "./controllers/referral.controller";
+import { ReferralEventListener } from "./listeners/referral-event.listener";
+import { PointsModule } from "../points/points.module";
 
 /**
  * ReferralsModule - 推薦系統模組

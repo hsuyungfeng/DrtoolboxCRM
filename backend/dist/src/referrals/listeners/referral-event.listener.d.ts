@@ -1,4 +1,4 @@
-import { ReferralService } from '../services/referral.service';
+import { ReferralService } from "../services/referral.service";
 interface TreatmentCreatedEvent {
     treatmentId: string;
     patientId: string;

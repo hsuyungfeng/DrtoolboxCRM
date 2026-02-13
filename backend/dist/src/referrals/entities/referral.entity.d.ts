@@ -1,4 +1,4 @@
-import { Patient } from '../../patients/entities/patient.entity';
+import { Patient } from "../../patients/entities/patient.entity";
 export declare class Referral {
     id: string;
     referrerId: string;

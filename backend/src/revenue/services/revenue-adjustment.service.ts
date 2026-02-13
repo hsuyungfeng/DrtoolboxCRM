@@ -1,11 +1,16 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
-import { RevenueAdjustment } from '../entities/revenue-adjustment.entity';
-import { RevenueRecord } from '../entities/revenue-record.entity';
-import { CreateRevenueAdjustmentDto } from '../dto/create-revenue-adjustment.dto';
-import { UpdateRevenueAdjustmentDto } from '../dto/update-revenue-adjustment.dto';
-import { StaffService } from '../../staff/services/staff.service';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository, DataSource } from "typeorm";
+import { RevenueAdjustment } from "../entities/revenue-adjustment.entity";
+import { RevenueRecord } from "../entities/revenue-record.entity";
+import { CreateRevenueAdjustmentDto } from "../dto/create-revenue-adjustment.dto";
+import { UpdateRevenueAdjustmentDto } from "../dto/update-revenue-adjustment.dto";
+import { StaffService } from "../../staff/services/staff.service";
 
 @Injectable()
 export class RevenueAdjustmentService {
@@ -21,10 +26,13 @@ export class RevenueAdjustmentService {
   /**
    * 創建分潤調整
    */
-  async create(createDto: CreateRevenueAdjustmentDto, clinicId: string): Promise<RevenueAdjustment> {
+  async create(
+    createDto: CreateRevenueAdjustmentDto,
+    clinicId: string,
+  ): Promise<RevenueAdjustment> {
     // 驗證診所 ID 是否匹配
     if (createDto.clinicId !== clinicId) {
-      throw new ForbiddenException('診所 ID 不匹配');
+      throw new ForbiddenException("診所 ID 不匹配");
     }
 
     // 驗證分潤記錄是否存在且屬於同一診所
@@ -32,18 +40,18 @@ export class RevenueAdjustmentService {
       where: { id: createDto.revenueRecordId, clinicId },
     });
     if (!revenueRecord) {
-      throw new NotFoundException('分潤記錄不存在');
+      throw new NotFoundException("分潤記錄不存在");
     }
 
     // 驗證分潤記錄是否已鎖定（已鎖定的記錄不能調整）
     if (revenueRecord.lockedAt) {
-      throw new BadRequestException('分潤記錄已鎖定，無法調整');
+      throw new BadRequestException("分潤記錄已鎖定，無法調整");
     }
 
     // 驗證調整金額是否會導致分潤記錄總金額為負數
     const newTotal = revenueRecord.amount + createDto.adjustmentAmount;
     if (newTotal < 0) {
-      throw new BadRequestException('調整後分潤金額不能為負數');
+      throw new BadRequestException("調整後分潤金額不能為負數");
     }
 
     // 創建調整記錄
@@ -60,12 +68,12 @@ export class RevenueAdjustmentService {
 
     try {
       const savedAdjustment = await queryRunner.manager.save(adjustment);
-      
+
       // 更新分潤記錄金額
       revenueRecord.amount = newTotal;
-      revenueRecord.status = 'adjusted'; // 更新狀態為已調整
+      revenueRecord.status = "adjusted"; // 更新狀態為已調整
       await queryRunner.manager.save(revenueRecord);
-      
+
       await queryRunner.commitTransaction();
       return savedAdjustment;
     } catch (error) {
@@ -79,38 +87,41 @@ export class RevenueAdjustmentService {
   /**
    * 查詢所有分潤調整
    */
-  async findAll(clinicId: string, filters?: {
-    revenueRecordId?: string;
-    createdBy?: string;
-    startDate?: Date;
-    endDate?: Date;
-  }): Promise<RevenueAdjustment[]> {
+  async findAll(
+    clinicId: string,
+    filters?: {
+      revenueRecordId?: string;
+      createdBy?: string;
+      startDate?: Date;
+      endDate?: Date;
+    },
+  ): Promise<RevenueAdjustment[]> {
     const queryBuilder = this.adjustmentRepo
-      .createQueryBuilder('adjustment')
-      .where('adjustment.clinicId = :clinicId', { clinicId })
-      .leftJoinAndSelect('adjustment.revenueRecord', 'revenueRecord')
-      .orderBy('adjustment.createdAt', 'DESC');
+      .createQueryBuilder("adjustment")
+      .where("adjustment.clinicId = :clinicId", { clinicId })
+      .leftJoinAndSelect("adjustment.revenueRecord", "revenueRecord")
+      .orderBy("adjustment.createdAt", "DESC");
 
     if (filters?.revenueRecordId) {
-      queryBuilder.andWhere('adjustment.revenueRecordId = :revenueRecordId', {
+      queryBuilder.andWhere("adjustment.revenueRecordId = :revenueRecordId", {
         revenueRecordId: filters.revenueRecordId,
       });
     }
 
     if (filters?.createdBy) {
-      queryBuilder.andWhere('adjustment.createdBy = :createdBy', {
+      queryBuilder.andWhere("adjustment.createdBy = :createdBy", {
         createdBy: filters.createdBy,
       });
     }
 
     if (filters?.startDate) {
-      queryBuilder.andWhere('adjustment.createdAt >= :startDate', {
+      queryBuilder.andWhere("adjustment.createdAt >= :startDate", {
         startDate: filters.startDate,
       });
     }
 
     if (filters?.endDate) {
-      queryBuilder.andWhere('adjustment.createdAt <= :endDate', {
+      queryBuilder.andWhere("adjustment.createdAt <= :endDate", {
         endDate: filters.endDate,
       });
     }
@@ -124,10 +135,10 @@ export class RevenueAdjustmentService {
   async findOne(id: string, clinicId: string): Promise<RevenueAdjustment> {
     const adjustment = await this.adjustmentRepo.findOne({
       where: { id, clinicId },
-      relations: ['revenueRecord'],
+      relations: ["revenueRecord"],
     });
     if (!adjustment) {
-      throw new NotFoundException('分潤調整記錄不存在');
+      throw new NotFoundException("分潤調整記錄不存在");
     }
     return adjustment;
   }
@@ -141,10 +152,12 @@ export class RevenueAdjustmentService {
     clinicId: string,
   ): Promise<RevenueAdjustment> {
     const adjustment = await this.findOne(id, clinicId);
-    
+
     // 如果嘗試更新調整金額，需要重新計算分潤記錄金額
     if (updateDto.adjustmentAmount !== undefined) {
-      throw new BadRequestException('不允許直接修改調整金額，請創建新的調整記錄');
+      throw new BadRequestException(
+        "不允許直接修改調整金額，請創建新的調整記錄",
+      );
     }
 
     // 更新審核相關字段
@@ -177,10 +190,10 @@ export class RevenueAdjustmentService {
    */
   async remove(id: string, clinicId: string): Promise<void> {
     const adjustment = await this.findOne(id, clinicId);
-    
+
     // 如果已經審核通過，不允許刪除
-    if (adjustment.reviewStatus === 'approved') {
-      throw new BadRequestException('已審核通過的調整記錄不能刪除');
+    if (adjustment.reviewStatus === "approved") {
+      throw new BadRequestException("已審核通過的調整記錄不能刪除");
     }
 
     // 還原分潤記錄金額
@@ -202,13 +215,13 @@ export class RevenueAdjustmentService {
           where: { revenueRecordId: adjustment.revenueRecordId, clinicId },
         });
         if (adjustmentCount === 1) {
-          revenueRecord.status = 'calculated'; // 恢復為已計算狀態
+          revenueRecord.status = "calculated"; // 恢復為已計算狀態
         }
         await queryRunner.manager.save(revenueRecord);
-        
+
         // 刪除調整記錄
         await queryRunner.manager.remove(adjustment);
-        
+
         await queryRunner.commitTransaction();
       } catch (error) {
         await queryRunner.rollbackTransaction();
@@ -229,16 +242,16 @@ export class RevenueAdjustmentService {
     id: string,
     clinicId: string,
     reviewData: {
-      status: 'approved' | 'rejected';
+      status: "approved" | "rejected";
       notes?: string;
       reviewedBy: string;
     },
   ): Promise<RevenueAdjustment> {
     const adjustment = await this.findOne(id, clinicId);
-    
+
     // 檢查是否已經審核過
     if (adjustment.reviewStatus) {
-      throw new BadRequestException('此調整記錄已經審核過');
+      throw new BadRequestException("此調整記錄已經審核過");
     }
 
     // 更新審核信息
@@ -255,26 +268,34 @@ export class RevenueAdjustmentService {
   /**
    * 查詢指定分潤記錄的所有調整
    */
-  async findByRevenueRecordId(revenueRecordId: string, clinicId: string): Promise<RevenueAdjustment[]> {
+  async findByRevenueRecordId(
+    revenueRecordId: string,
+    clinicId: string,
+  ): Promise<RevenueAdjustment[]> {
     return this.adjustmentRepo.find({
       where: { revenueRecordId, clinicId },
-      order: { createdAt: 'DESC' },
-      relations: ['revenueRecord'],
+      order: { createdAt: "DESC" },
+      relations: ["revenueRecord"],
     });
   }
 
   /**
    * 計算分潤記錄的總調整金額
    */
-  async getTotalAdjustmentAmount(revenueRecordId: string, clinicId: string): Promise<number> {
+  async getTotalAdjustmentAmount(
+    revenueRecordId: string,
+    clinicId: string,
+  ): Promise<number> {
     const result = await this.adjustmentRepo
-      .createQueryBuilder('adjustment')
-      .select('SUM(adjustment.adjustmentAmount)', 'total')
-      .where('adjustment.revenueRecordId = :revenueRecordId', { revenueRecordId })
-      .andWhere('adjustment.clinicId = :clinicId', { clinicId })
-      .andWhere('adjustment.reviewStatus = :status', { status: 'approved' })
+      .createQueryBuilder("adjustment")
+      .select("SUM(adjustment.adjustmentAmount)", "total")
+      .where("adjustment.revenueRecordId = :revenueRecordId", {
+        revenueRecordId,
+      })
+      .andWhere("adjustment.clinicId = :clinicId", { clinicId })
+      .andWhere("adjustment.reviewStatus = :status", { status: "approved" })
       .getRawOne();
-    
+
     return parseFloat(result.total) || 0;
   }
 }

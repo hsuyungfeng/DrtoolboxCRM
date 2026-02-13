@@ -14,9 +14,7 @@ import { UpdateTreatmentTemplateDto } from "../dto/update-treatment-template.dto
 
 @Controller("treatment-templates")
 export class TreatmentTemplateController {
-  constructor(
-    private readonly templateService: TreatmentTemplateService,
-  ) {}
+  constructor(private readonly templateService: TreatmentTemplateService) {}
 
   @Post()
   async create(@Body() dto: CreateTreatmentTemplateDto) {
@@ -29,10 +27,7 @@ export class TreatmentTemplateController {
   }
 
   @Get(":id")
-  async findById(
-    @Param("id") id: string,
-    @Query("clinicId") clinicId: string,
-  ) {
+  async findById(@Param("id") id: string, @Query("clinicId") clinicId: string) {
     return this.templateService.findById(id, clinicId);
   }
 
@@ -46,10 +41,7 @@ export class TreatmentTemplateController {
   }
 
   @Delete(":id")
-  async delete(
-    @Param("id") id: string,
-    @Query("clinicId") clinicId: string,
-  ) {
+  async delete(@Param("id") id: string, @Query("clinicId") clinicId: string) {
     return this.templateService.delete(id, clinicId);
   }
 }

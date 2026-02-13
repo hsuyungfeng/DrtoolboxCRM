@@ -1,22 +1,22 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { PointsController } from './points.controller';
-import { PointsService } from '../services/points.service';
-import { CreatePointsTransactionDto } from '../dto/create-points-transaction.dto';
-import { RedeemPointsDto } from '../dto/redeem-points.dto';
-import { PointsBalance } from '../entities/points-balance.entity';
-import { PointsTransaction } from '../entities/points-transaction.entity';
+import { Test, TestingModule } from "@nestjs/testing";
+import { PointsController } from "./points.controller";
+import { PointsService } from "../services/points.service";
+import { CreatePointsTransactionDto } from "../dto/create-points-transaction.dto";
+import { RedeemPointsDto } from "../dto/redeem-points.dto";
+import { PointsBalance } from "../entities/points-balance.entity";
+import { PointsTransaction } from "../entities/points-transaction.entity";
 
-describe('PointsController', () => {
+describe("PointsController", () => {
   let controller: PointsController;
   let service: jest.Mocked<PointsService>;
 
-  const mockClinicId = 'clinic-001';
-  const mockCustomerId = 'patient-001';
+  const mockClinicId = "clinic-001";
+  const mockCustomerId = "patient-001";
 
   const mockBalance: Partial<PointsBalance> = {
-    id: 'balance-001',
+    id: "balance-001",
     customerId: mockCustomerId,
-    customerType: 'patient',
+    customerType: "patient",
     balance: 500,
     totalEarned: 1000,
     totalRedeemed: 500,
@@ -24,13 +24,13 @@ describe('PointsController', () => {
   };
 
   const mockTransaction: Partial<PointsTransaction> = {
-    id: 'tx-001',
+    id: "tx-001",
     customerId: mockCustomerId,
-    customerType: 'patient',
-    type: 'earn_referral',
+    customerType: "patient",
+    type: "earn_referral",
     amount: 100,
     balance: 600,
-    source: 'referral',
+    source: "referral",
     clinicId: mockClinicId,
   };
 
@@ -56,15 +56,15 @@ describe('PointsController', () => {
     service = module.get<jest.Mocked<PointsService>>(PointsService);
   });
 
-  describe('awardPoints', () => {
-    it('應該成功獎勵點數', async () => {
+  describe("awardPoints", () => {
+    it("應該成功獎勵點數", async () => {
       // Arrange
       const createDto = new CreatePointsTransactionDto();
       createDto.customerId = mockCustomerId;
-      createDto.customerType = 'patient';
-      createDto.type = 'earn_referral';
+      createDto.customerType = "patient";
+      createDto.type = "earn_referral";
       createDto.amount = 100;
-      createDto.source = 'referral';
+      createDto.source = "referral";
       createDto.clinicId = mockClinicId;
 
       service.awardPoints.mockResolvedValue(
@@ -79,22 +79,22 @@ describe('PointsController', () => {
       expect(service.awardPoints).toHaveBeenCalledWith(
         mockCustomerId,
         100,
-        'referral',
+        "referral",
         mockClinicId,
         undefined,
       );
     });
 
-    it('應該支持推薦 ID', async () => {
+    it("應該支持推薦 ID", async () => {
       // Arrange
       const createDto = new CreatePointsTransactionDto();
       createDto.customerId = mockCustomerId;
-      createDto.customerType = 'patient';
-      createDto.type = 'earn_referral';
+      createDto.customerType = "patient";
+      createDto.type = "earn_referral";
       createDto.amount = 100;
-      createDto.source = 'referral';
+      createDto.source = "referral";
       createDto.clinicId = mockClinicId;
-      createDto.referralId = 'ref-123';
+      createDto.referralId = "ref-123";
 
       service.awardPoints.mockResolvedValue(
         mockTransaction as PointsTransaction,
@@ -107,25 +107,25 @@ describe('PointsController', () => {
       expect(service.awardPoints).toHaveBeenCalledWith(
         mockCustomerId,
         100,
-        'referral',
+        "referral",
         mockClinicId,
-        'ref-123',
+        "ref-123",
       );
     });
   });
 
-  describe('redeemPoints', () => {
-    it('應該成功兌換點數', async () => {
+  describe("redeemPoints", () => {
+    it("應該成功兌換點數", async () => {
       // Arrange
       const redeemDto = new RedeemPointsDto();
       redeemDto.customerId = mockCustomerId;
-      redeemDto.customerType = 'patient';
+      redeemDto.customerType = "patient";
       redeemDto.amount = 50;
       redeemDto.clinicId = mockClinicId;
 
       const redeemTx = {
         ...mockTransaction,
-        type: 'redeem',
+        type: "redeem",
         amount: -50,
       } as PointsTransaction;
 
@@ -144,19 +144,19 @@ describe('PointsController', () => {
       );
     });
 
-    it('應該支持療程 ID', async () => {
+    it("應該支持療程 ID", async () => {
       // Arrange
       const redeemDto = new RedeemPointsDto();
       redeemDto.customerId = mockCustomerId;
-      redeemDto.customerType = 'patient';
+      redeemDto.customerType = "patient";
       redeemDto.amount = 50;
       redeemDto.clinicId = mockClinicId;
-      redeemDto.treatmentId = 'treat-123';
+      redeemDto.treatmentId = "treat-123";
 
       const redeemTx = {
         ...mockTransaction,
-        type: 'redeem',
-        treatmentId: 'treat-123',
+        type: "redeem",
+        treatmentId: "treat-123",
       } as PointsTransaction;
 
       service.redeemPoints.mockResolvedValue(redeemTx);
@@ -169,22 +169,26 @@ describe('PointsController', () => {
         mockCustomerId,
         50,
         mockClinicId,
-        'treat-123',
+        "treat-123",
       );
     });
   });
 
-  describe('getBalance', () => {
-    it('應該取得點數餘額', async () => {
+  describe("getBalance", () => {
+    it("應該取得點數餘額", async () => {
       // Arrange
-      const customerId = 'patient-001';
-      const customerType = 'patient';
-      const clinicId = 'clinic-001';
+      const customerId = "patient-001";
+      const customerType = "patient";
+      const clinicId = "clinic-001";
 
       service.getBalance.mockResolvedValue(mockBalance as PointsBalance);
 
       // Act
-      const result = await controller.getBalance(customerId, customerType, clinicId);
+      const result = await controller.getBalance(
+        customerId,
+        customerType,
+        clinicId,
+      );
 
       // Assert
       expect(result).toEqual(mockBalance);
@@ -196,12 +200,12 @@ describe('PointsController', () => {
     });
   });
 
-  describe('getTransactionHistory', () => {
-    it('應該取得交易歷史（默認 20 筆）', async () => {
+  describe("getTransactionHistory", () => {
+    it("應該取得交易歷史（默認 20 筆）", async () => {
       // Arrange
-      const customerId = 'patient-001';
-      const customerType = 'patient';
-      const clinicId = 'clinic-001';
+      const customerId = "patient-001";
+      const customerType = "patient";
+      const clinicId = "clinic-001";
       const transactions = [mockTransaction as PointsTransaction];
 
       service.getTransactionHistory.mockResolvedValue(transactions);
@@ -223,11 +227,11 @@ describe('PointsController', () => {
       );
     });
 
-    it('應該支持自定義的限制數量', async () => {
+    it("應該支持自定義的限制數量", async () => {
       // Arrange
-      const customerId = 'patient-001';
-      const customerType = 'patient';
-      const clinicId = 'clinic-001';
+      const customerId = "patient-001";
+      const customerType = "patient";
+      const clinicId = "clinic-001";
       const limit = 50;
       const transactions = [] as PointsTransaction[];
 

@@ -49,7 +49,7 @@ let PointsTransactionService = class PointsTransactionService {
                 customerType,
                 clinicId,
             },
-            order: { createdAt: 'DESC' },
+            order: { createdAt: "DESC" },
             take: limit,
         });
     }

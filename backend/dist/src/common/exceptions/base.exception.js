@@ -5,7 +5,7 @@ const common_1 = require("@nestjs/common");
 class BaseException extends common_1.HttpException {
     errorCode;
     details;
-    constructor(message, statusCode = common_1.HttpStatus.INTERNAL_SERVER_ERROR, errorCode = 'INTERNAL_ERROR', details) {
+    constructor(message, statusCode = common_1.HttpStatus.INTERNAL_SERVER_ERROR, errorCode = "INTERNAL_ERROR", details) {
         super({
             message,
             errorCode,

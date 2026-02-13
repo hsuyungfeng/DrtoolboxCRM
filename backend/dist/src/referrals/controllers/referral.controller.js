@@ -51,7 +51,7 @@ let ReferralController = class ReferralController {
     }
     validateClinicId(dtoClinicId, userClinicId) {
         if (dtoClinicId !== userClinicId) {
-            throw new common_1.BadRequestException('診所 ID 不匹配，無權限操作其他診所的數據');
+            throw new common_1.BadRequestException("診所 ID 不匹配，無權限操作其他診所的數據");
         }
     }
 };
@@ -65,25 +65,25 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], ReferralController.prototype, "create", null);
 __decorate([
-    (0, common_1.Get)('by-referrer/:referrerId/:referrerType'),
-    __param(0, (0, common_1.Param)('referrerId')),
-    __param(1, (0, common_1.Param)('referrerType')),
+    (0, common_1.Get)("by-referrer/:referrerId/:referrerType"),
+    __param(0, (0, common_1.Param)("referrerId")),
+    __param(1, (0, common_1.Param)("referrerType")),
     __param(2, (0, common_1.Request)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String, Object]),
     __metadata("design:returntype", Promise)
 ], ReferralController.prototype, "getReferralsByReferrer", null);
 __decorate([
-    (0, common_1.Get)('by-patient/:patientId'),
-    __param(0, (0, common_1.Param)('patientId')),
+    (0, common_1.Get)("by-patient/:patientId"),
+    __param(0, (0, common_1.Param)("patientId")),
     __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], ReferralController.prototype, "getReferralByPatient", null);
 __decorate([
-    (0, common_1.Put)(':id/convert'),
-    __param(0, (0, common_1.Param)('id')),
+    (0, common_1.Put)(":id/convert"),
+    __param(0, (0, common_1.Param)("id")),
     __param(1, (0, common_1.Body)()),
     __param(2, (0, common_1.Request)()),
     __metadata("design:type", Function),
@@ -91,22 +91,22 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], ReferralController.prototype, "convert", null);
 __decorate([
-    (0, common_1.Delete)(':id'),
-    __param(0, (0, common_1.Param)('id')),
+    (0, common_1.Delete)(":id"),
+    __param(0, (0, common_1.Param)("id")),
     __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], ReferralController.prototype, "delete", null);
 __decorate([
-    (0, common_1.Get)('stats'),
+    (0, common_1.Get)("stats"),
     __param(0, (0, common_1.Request)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], ReferralController.prototype, "getStats", null);
 exports.ReferralController = ReferralController = __decorate([
-    (0, common_1.Controller)('referrals'),
+    (0, common_1.Controller)("referrals"),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __metadata("design:paramtypes", [referral_service_1.ReferralService])
 ], ReferralController);

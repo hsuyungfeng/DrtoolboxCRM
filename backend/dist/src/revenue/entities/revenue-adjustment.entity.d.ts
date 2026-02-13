@@ -9,7 +9,7 @@ export declare class RevenueAdjustment {
     createdAt: Date;
     clinicId: string;
     metadata: any;
-    reviewStatus: 'pending' | 'approved' | 'rejected';
+    reviewStatus: "pending" | "approved" | "rejected";
     reviewNotes: string | null;
     reviewedBy: string | null;
     reviewedAt: Date | null;

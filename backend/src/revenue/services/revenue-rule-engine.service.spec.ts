@@ -1,5 +1,5 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { RevenueRuleEngine } from './revenue-rule-engine.service';
+import { Test, TestingModule } from "@nestjs/testing";
+import { RevenueRuleEngine } from "./revenue-rule-engine.service";
 
 // Type definitions matching the service
 interface PercentagePayload {
@@ -23,11 +23,11 @@ interface TieredPayload {
 type RulePayload = PercentagePayload | FixedPayload | TieredPayload;
 
 interface Rule {
-  rule_type: 'percentage' | 'fixed' | 'tiered';
+  rule_type: "percentage" | "fixed" | "tiered";
   rule_payload: RulePayload;
 }
 
-describe('RevenueRuleEngine', () => {
+describe("RevenueRuleEngine", () => {
   let service: RevenueRuleEngine;
 
   beforeEach(async () => {
@@ -38,9 +38,9 @@ describe('RevenueRuleEngine', () => {
     service = module.get<RevenueRuleEngine>(RevenueRuleEngine);
   });
 
-  it('should calculate percentage-based revenue', () => {
+  it("should calculate percentage-based revenue", () => {
     const rule: Rule = {
-      rule_type: 'percentage',
+      rule_type: "percentage",
       rule_payload: { percentage: 50 },
     };
     const totalPrice = 1000;
@@ -49,9 +49,9 @@ describe('RevenueRuleEngine', () => {
     expect(result).toBe(500);
   });
 
-  it('should calculate fixed-amount revenue', () => {
+  it("should calculate fixed-amount revenue", () => {
     const rule: Rule = {
-      rule_type: 'fixed',
+      rule_type: "fixed",
       rule_payload: { fixed_amount: 200 },
     };
     const totalPrice = 1000;
@@ -60,9 +60,9 @@ describe('RevenueRuleEngine', () => {
     expect(result).toBe(200);
   });
 
-  it('should calculate tiered-based revenue', () => {
+  it("should calculate tiered-based revenue", () => {
     const rule: Rule = {
-      rule_type: 'tiered',
+      rule_type: "tiered",
       rule_payload: {
         tiers: [
           { from_amount: 0, to_amount: 1000, percentage: 40 },
@@ -77,18 +77,18 @@ describe('RevenueRuleEngine', () => {
     expect(result).toBe(1500); // 3000 * 50 / 100
   });
 
-  it('should throw error for unknown rule type', () => {
+  it("should throw error for unknown rule type", () => {
     const rule = {
-      rule_type: 'unknown',
+      rule_type: "unknown",
       rule_payload: {},
     } as unknown as Rule;
 
     expect(() => service.calculateAmount(1000, rule)).toThrow();
   });
 
-  it('should match tier at boundary (totalPrice === tier boundary)', () => {
+  it("should match tier at boundary (totalPrice === tier boundary)", () => {
     const rule: Rule = {
-      rule_type: 'tiered',
+      rule_type: "tiered",
       rule_payload: {
         tiers: [
           { from_amount: 0, to_amount: 1000, percentage: 40 },

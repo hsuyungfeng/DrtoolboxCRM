@@ -71,7 +71,7 @@ __decorate([
         type: "varchar",
         length: 20,
         nullable: true,
-        default: 'pending',
+        default: "pending",
     }),
     __metadata("design:type", String)
 ], RevenueAdjustment.prototype, "reviewStatus", void 0);

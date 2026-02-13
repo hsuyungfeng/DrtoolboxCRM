@@ -8,5 +8,8 @@ export declare class CreateTreatmentSessionDto {
     observations?: string;
     durationMinutes?: number;
     revenueCalculated?: boolean;
+    actualStartTime?: Date;
+    actualEndTime?: Date;
+    executedBy?: string;
     clinicId: string;
 }

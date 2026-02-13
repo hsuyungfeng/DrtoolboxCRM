@@ -1,11 +1,11 @@
-import { Repository } from 'typeorm';
-import { Referral } from '../entities/referral.entity';
-import { Patient } from '../../patients/entities/patient.entity';
-import { Staff } from '../../staff/entities/staff.entity';
-import { Treatment } from '../../treatments/entities/treatment.entity';
-import { PointsService } from '../../points/services/points.service';
-import { PointsConfigService } from '../../points/services/points-config.service';
-import { CreateReferralDto } from '../dto/create-referral.dto';
+import { Repository } from "typeorm";
+import { Referral } from "../entities/referral.entity";
+import { Patient } from "../../patients/entities/patient.entity";
+import { Staff } from "../../staff/entities/staff.entity";
+import { Treatment } from "../../treatments/entities/treatment.entity";
+import { PointsService } from "../../points/services/points.service";
+import { PointsConfigService } from "../../points/services/points-config.service";
+import { CreateReferralDto } from "../dto/create-referral.dto";
 export interface ReferralStats {
     totalReferrals: number;
     convertedCount: number;

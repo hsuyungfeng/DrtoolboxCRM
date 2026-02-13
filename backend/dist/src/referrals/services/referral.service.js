@@ -45,7 +45,7 @@ let ReferralService = ReferralService_1 = class ReferralService {
             where: {
                 patientId,
                 clinicId,
-                status: 'pending',
+                status: "pending",
             },
         });
         if (existingReferral) {
@@ -57,7 +57,7 @@ let ReferralService = ReferralService_1 = class ReferralService {
             patientId,
             clinicId,
             referralDate: new Date(),
-            status: 'pending',
+            status: "pending",
             notes,
             pointsAwarded: 0,
         });
@@ -72,7 +72,7 @@ let ReferralService = ReferralService_1 = class ReferralService {
                 referrerType,
                 clinicId,
             },
-            order: { createdAt: 'DESC' },
+            order: { createdAt: "DESC" },
         });
     }
     async getReferralByPatient(patientId, clinicId) {
@@ -89,12 +89,12 @@ let ReferralService = ReferralService_1 = class ReferralService {
                 id: referralId,
                 clinicId,
             },
-            relations: ['patient'],
+            relations: ["patient"],
         });
         if (!referral) {
             throw new common_1.NotFoundException(`推薦記錄 ${referralId} 不存在`);
         }
-        if (referral.status !== 'pending') {
+        if (referral.status !== "pending") {
             throw new common_1.BadRequestException(`推薦記錄已處於 "${referral.status}" 狀態，無法再次轉化`);
         }
         const existingTreatmentCount = await this.treatmentRepository.count({
@@ -102,28 +102,28 @@ let ReferralService = ReferralService_1 = class ReferralService {
                 {
                     patientId: referral.patientId,
                     clinicId,
-                    status: 'completed',
+                    status: "completed",
                 },
                 {
                     patientId: referral.patientId,
                     clinicId,
-                    status: 'in_progress',
+                    status: "in_progress",
                 },
             ],
         });
         if (existingTreatmentCount > 0) {
             throw new common_1.BadRequestException(`患者 ${referral.patientId} 已有其他療程，此推薦不符合首次療程條件`);
         }
-        const rewardPoints = await this.pointsConfigService.getConfigByKey('referral_points_reward', clinicId);
+        const rewardPoints = await this.pointsConfigService.getConfigByKey("referral_points_reward", clinicId);
         await this.validateReferrer(referral.referrerId, referral.referrerType, clinicId);
         try {
-            await this.pointsService.awardPoints(referral.referrerId, rewardPoints, 'referral', clinicId, referralId);
+            await this.pointsService.awardPoints(referral.referrerId, rewardPoints, "referral", clinicId, referralId);
         }
         catch (error) {
             this.logger.error(`獎勵推薦人點數失敗：${error.message}`);
             throw new common_1.BadRequestException(`無法獎勵推薦人點數：${error.message}`);
         }
-        referral.status = 'converted';
+        referral.status = "converted";
         referral.firstTreatmentId = treatmentId;
         referral.firstTreatmentDate = new Date();
         referral.pointsAwarded = rewardPoints;
@@ -138,9 +138,9 @@ let ReferralService = ReferralService_1 = class ReferralService {
         const referrals = await this.referralRepository.find({
             where: { clinicId },
         });
-        const convertedCount = referrals.filter((r) => r.status === 'converted').length;
-        const pendingCount = referrals.filter((r) => r.status === 'pending').length;
-        const cancelledCount = referrals.filter((r) => r.status === 'cancelled').length;
+        const convertedCount = referrals.filter((r) => r.status === "converted").length;
+        const pendingCount = referrals.filter((r) => r.status === "pending").length;
+        const cancelledCount = referrals.filter((r) => r.status === "cancelled").length;
         const conversionRate = totalReferrals > 0 ? (convertedCount / totalReferrals) * 100 : 0;
         const totalPointsAwarded = referrals.reduce((sum, r) => sum + Number(r.pointsAwarded), 0);
         return {
@@ -162,13 +162,13 @@ let ReferralService = ReferralService_1 = class ReferralService {
         if (!referral) {
             throw new common_1.NotFoundException(`推薦記錄 ${referralId} 不存在`);
         }
-        referral.status = 'cancelled';
+        referral.status = "cancelled";
         const savedReferral = await this.referralRepository.save(referral);
         this.logger.log(`成功取消推薦記錄：${referralId}`);
         return savedReferral;
     }
     async validateReferrer(referrerId, referrerType, clinicId) {
-        if (referrerType === 'staff') {
+        if (referrerType === "staff") {
             const staff = await this.staffRepository.findOne({
                 where: {
                     id: referrerId,
@@ -181,11 +181,11 @@ let ReferralService = ReferralService_1 = class ReferralService {
             if (!staff.canBeReferrer) {
                 throw new common_1.BadRequestException(`員工 ${referrerId} 無權作為推薦人`);
             }
-            if (staff.status !== 'active') {
+            if (staff.status !== "active") {
                 throw new common_1.BadRequestException(`員工 ${referrerId} 狀態非活躍`);
             }
         }
-        else if (referrerType === 'patient') {
+        else if (referrerType === "patient") {
             const patient = await this.patientRepository.findOne({
                 where: {
                     id: referrerId,
@@ -195,7 +195,7 @@ let ReferralService = ReferralService_1 = class ReferralService {
             if (!patient) {
                 throw new common_1.NotFoundException(`患者推薦人 ${referrerId} 不存在`);
             }
-            if (patient.status !== 'active') {
+            if (patient.status !== "active") {
                 throw new common_1.BadRequestException(`患者 ${referrerId} 狀態非活躍`);
             }
         }

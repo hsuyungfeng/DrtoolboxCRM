@@ -32,20 +32,20 @@ let RevenueAdjustmentService = class RevenueAdjustmentService {
     }
     async create(createDto, clinicId) {
         if (createDto.clinicId !== clinicId) {
-            throw new common_1.ForbiddenException('診所 ID 不匹配');
+            throw new common_1.ForbiddenException("診所 ID 不匹配");
         }
         const revenueRecord = await this.recordRepo.findOne({
             where: { id: createDto.revenueRecordId, clinicId },
         });
         if (!revenueRecord) {
-            throw new common_1.NotFoundException('分潤記錄不存在');
+            throw new common_1.NotFoundException("分潤記錄不存在");
         }
         if (revenueRecord.lockedAt) {
-            throw new common_1.BadRequestException('分潤記錄已鎖定，無法調整');
+            throw new common_1.BadRequestException("分潤記錄已鎖定，無法調整");
         }
         const newTotal = revenueRecord.amount + createDto.adjustmentAmount;
         if (newTotal < 0) {
-            throw new common_1.BadRequestException('調整後分潤金額不能為負數');
+            throw new common_1.BadRequestException("調整後分潤金額不能為負數");
         }
         const adjustment = this.adjustmentRepo.create({
             ...createDto,
@@ -57,7 +57,7 @@ let RevenueAdjustmentService = class RevenueAdjustmentService {
         try {
             const savedAdjustment = await queryRunner.manager.save(adjustment);
             revenueRecord.amount = newTotal;
-            revenueRecord.status = 'adjusted';
+            revenueRecord.status = "adjusted";
             await queryRunner.manager.save(revenueRecord);
             await queryRunner.commitTransaction();
             return savedAdjustment;
@@ -72,27 +72,27 @@ let RevenueAdjustmentService = class RevenueAdjustmentService {
     }
     async findAll(clinicId, filters) {
         const queryBuilder = this.adjustmentRepo
-            .createQueryBuilder('adjustment')
-            .where('adjustment.clinicId = :clinicId', { clinicId })
-            .leftJoinAndSelect('adjustment.revenueRecord', 'revenueRecord')
-            .orderBy('adjustment.createdAt', 'DESC');
+            .createQueryBuilder("adjustment")
+            .where("adjustment.clinicId = :clinicId", { clinicId })
+            .leftJoinAndSelect("adjustment.revenueRecord", "revenueRecord")
+            .orderBy("adjustment.createdAt", "DESC");
         if (filters?.revenueRecordId) {
-            queryBuilder.andWhere('adjustment.revenueRecordId = :revenueRecordId', {
+            queryBuilder.andWhere("adjustment.revenueRecordId = :revenueRecordId", {
                 revenueRecordId: filters.revenueRecordId,
             });
         }
         if (filters?.createdBy) {
-            queryBuilder.andWhere('adjustment.createdBy = :createdBy', {
+            queryBuilder.andWhere("adjustment.createdBy = :createdBy", {
                 createdBy: filters.createdBy,
             });
         }
         if (filters?.startDate) {
-            queryBuilder.andWhere('adjustment.createdAt >= :startDate', {
+            queryBuilder.andWhere("adjustment.createdAt >= :startDate", {
                 startDate: filters.startDate,
             });
         }
         if (filters?.endDate) {
-            queryBuilder.andWhere('adjustment.createdAt <= :endDate', {
+            queryBuilder.andWhere("adjustment.createdAt <= :endDate", {
                 endDate: filters.endDate,
             });
         }
@@ -101,17 +101,17 @@ let RevenueAdjustmentService = class RevenueAdjustmentService {
     async findOne(id, clinicId) {
         const adjustment = await this.adjustmentRepo.findOne({
             where: { id, clinicId },
-            relations: ['revenueRecord'],
+            relations: ["revenueRecord"],
         });
         if (!adjustment) {
-            throw new common_1.NotFoundException('分潤調整記錄不存在');
+            throw new common_1.NotFoundException("分潤調整記錄不存在");
         }
         return adjustment;
     }
     async update(id, updateDto, clinicId) {
         const adjustment = await this.findOne(id, clinicId);
         if (updateDto.adjustmentAmount !== undefined) {
-            throw new common_1.BadRequestException('不允許直接修改調整金額，請創建新的調整記錄');
+            throw new common_1.BadRequestException("不允許直接修改調整金額，請創建新的調整記錄");
         }
         if (updateDto.reviewStatus) {
             adjustment.reviewStatus = updateDto.reviewStatus;
@@ -135,8 +135,8 @@ let RevenueAdjustmentService = class RevenueAdjustmentService {
     }
     async remove(id, clinicId) {
         const adjustment = await this.findOne(id, clinicId);
-        if (adjustment.reviewStatus === 'approved') {
-            throw new common_1.BadRequestException('已審核通過的調整記錄不能刪除');
+        if (adjustment.reviewStatus === "approved") {
+            throw new common_1.BadRequestException("已審核通過的調整記錄不能刪除");
         }
         const revenueRecord = await this.recordRepo.findOne({
             where: { id: adjustment.revenueRecordId, clinicId },
@@ -151,7 +151,7 @@ let RevenueAdjustmentService = class RevenueAdjustmentService {
                     where: { revenueRecordId: adjustment.revenueRecordId, clinicId },
                 });
                 if (adjustmentCount === 1) {
-                    revenueRecord.status = 'calculated';
+                    revenueRecord.status = "calculated";
                 }
                 await queryRunner.manager.save(revenueRecord);
                 await queryRunner.manager.remove(adjustment);
@@ -172,7 +172,7 @@ let RevenueAdjustmentService = class RevenueAdjustmentService {
     async review(id, clinicId, reviewData) {
         const adjustment = await this.findOne(id, clinicId);
         if (adjustment.reviewStatus) {
-            throw new common_1.BadRequestException('此調整記錄已經審核過');
+            throw new common_1.BadRequestException("此調整記錄已經審核過");
         }
         adjustment.reviewStatus = reviewData.status;
         if (reviewData.notes !== undefined) {
@@ -185,17 +185,19 @@ let RevenueAdjustmentService = class RevenueAdjustmentService {
     async findByRevenueRecordId(revenueRecordId, clinicId) {
         return this.adjustmentRepo.find({
             where: { revenueRecordId, clinicId },
-            order: { createdAt: 'DESC' },
-            relations: ['revenueRecord'],
+            order: { createdAt: "DESC" },
+            relations: ["revenueRecord"],
         });
     }
     async getTotalAdjustmentAmount(revenueRecordId, clinicId) {
         const result = await this.adjustmentRepo
-            .createQueryBuilder('adjustment')
-            .select('SUM(adjustment.adjustmentAmount)', 'total')
-            .where('adjustment.revenueRecordId = :revenueRecordId', { revenueRecordId })
-            .andWhere('adjustment.clinicId = :clinicId', { clinicId })
-            .andWhere('adjustment.reviewStatus = :status', { status: 'approved' })
+            .createQueryBuilder("adjustment")
+            .select("SUM(adjustment.adjustmentAmount)", "total")
+            .where("adjustment.revenueRecordId = :revenueRecordId", {
+            revenueRecordId,
+        })
+            .andWhere("adjustment.clinicId = :clinicId", { clinicId })
+            .andWhere("adjustment.reviewStatus = :status", { status: "approved" })
             .getRawOne();
         return parseFloat(result.total) || 0;
     }

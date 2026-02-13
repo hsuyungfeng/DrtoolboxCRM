@@ -22,18 +22,10 @@ exports.PointsModule = PointsModule;
 exports.PointsModule = PointsModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            typeorm_1.TypeOrmModule.forFeature([
-                points_config_entity_1.PointsConfig,
-                points_balance_entity_1.PointsBalance,
-                points_transaction_entity_1.PointsTransaction,
-            ]),
+            typeorm_1.TypeOrmModule.forFeature([points_config_entity_1.PointsConfig, points_balance_entity_1.PointsBalance, points_transaction_entity_1.PointsTransaction]),
         ],
         controllers: [points_controller_1.PointsController],
-        providers: [
-            points_config_service_1.PointsConfigService,
-            points_transaction_service_1.PointsTransactionService,
-            points_service_1.PointsService,
-        ],
+        providers: [points_config_service_1.PointsConfigService, points_transaction_service_1.PointsTransactionService, points_service_1.PointsService],
         exports: [points_service_1.PointsService, points_config_service_1.PointsConfigService, points_transaction_service_1.PointsTransactionService],
     })
 ], PointsModule);

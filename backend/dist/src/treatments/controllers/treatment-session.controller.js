@@ -43,8 +43,11 @@ let TreatmentSessionController = class TreatmentSessionController {
     update(id, updateTreatmentSessionDto) {
         return this.treatmentSessionService.update(id, updateTreatmentSessionDto);
     }
-    completeSession(id, notes, observations) {
-        return this.treatmentSessionService.completeSession(id, notes, observations);
+    completeSession(id, updateDto, clinicId) {
+        if (updateDto && typeof updateDto === "string") {
+            return this.treatmentSessionService.completeSessionLegacy(id, updateDto, clinicId);
+        }
+        return this.treatmentSessionService.completeSession(id, updateDto || {}, clinicId || "");
     }
     remove(id) {
         return this.treatmentSessionService.remove(id);
@@ -107,10 +110,10 @@ __decorate([
 __decorate([
     (0, common_1.Patch)(":id/complete"),
     __param(0, (0, common_1.Param)("id")),
-    __param(1, (0, common_1.Body)("notes")),
-    __param(2, (0, common_1.Body)("observations")),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, common_1.Query)("clinicId")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:paramtypes", [String, Object, String]),
     __metadata("design:returntype", void 0)
 ], TreatmentSessionController.prototype, "completeSession", null);
 __decorate([
