@@ -21,6 +21,7 @@ const treatment_course_service_1 = require("./services/treatment-course.service"
 const ppf_calculation_service_1 = require("./services/ppf-calculation.service");
 const treatment_controller_1 = require("./controllers/treatment.controller");
 const treatment_session_controller_1 = require("./controllers/treatment-session.controller");
+const treatment_course_controller_1 = require("./controllers/treatment-course.controller");
 const points_module_1 = require("../points/points.module");
 let TreatmentsModule = class TreatmentsModule {
 };
@@ -37,7 +38,7 @@ exports.TreatmentsModule = TreatmentsModule = __decorate([
             ]),
             points_module_1.PointsModule,
         ],
-        controllers: [treatment_controller_1.TreatmentController, treatment_session_controller_1.TreatmentSessionController],
+        controllers: [treatment_controller_1.TreatmentController, treatment_session_controller_1.TreatmentSessionController, treatment_course_controller_1.TreatmentCourseController, treatment_course_controller_1.StaffSessionController],
         providers: [
             treatment_service_1.TreatmentService,
             treatment_session_service_1.TreatmentSessionService,

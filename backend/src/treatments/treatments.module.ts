@@ -12,6 +12,7 @@ import { TreatmentCourseService } from "./services/treatment-course.service";
 import { PPFCalculationService } from "./services/ppf-calculation.service";
 import { TreatmentController } from "./controllers/treatment.controller";
 import { TreatmentSessionController } from "./controllers/treatment-session.controller";
+import { TreatmentCourseController, StaffSessionController } from "./controllers/treatment-course.controller";
 import { PointsModule } from "../points/points.module";
 
 @Module({
@@ -25,7 +26,7 @@ import { PointsModule } from "../points/points.module";
     ]),
     PointsModule,
   ],
-  controllers: [TreatmentController, TreatmentSessionController],
+  controllers: [TreatmentController, TreatmentSessionController, TreatmentCourseController, StaffSessionController],
   providers: [
     TreatmentService,
     TreatmentSessionService,
