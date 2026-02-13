@@ -3,11 +3,14 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { Treatment } from "./entities/treatment.entity";
 import { TreatmentSession } from "./entities/treatment-session.entity";
 import { TreatmentCourseTemplate } from "./entities/treatment-course-template.entity";
+import { TreatmentCourse } from "./entities/treatment-course.entity";
 import { TreatmentService } from "./services/treatment.service";
 import { TreatmentSessionService } from "./services/treatment-session.service";
 import { TreatmentCourseTemplateService } from "./services/treatment-course-template.service";
+import { TreatmentCourseService } from "./services/treatment-course.service";
 import { TreatmentController } from "./controllers/treatment.controller";
 import { TreatmentSessionController } from "./controllers/treatment-session.controller";
+import { PointsModule } from "../points/points.module";
 
 @Module({
   imports: [
@@ -15,18 +18,22 @@ import { TreatmentSessionController } from "./controllers/treatment-session.cont
       Treatment,
       TreatmentSession,
       TreatmentCourseTemplate,
+      TreatmentCourse,
     ]),
+    PointsModule,
   ],
   controllers: [TreatmentController, TreatmentSessionController],
   providers: [
     TreatmentService,
     TreatmentSessionService,
     TreatmentCourseTemplateService,
+    TreatmentCourseService,
   ],
   exports: [
     TreatmentService,
     TreatmentSessionService,
     TreatmentCourseTemplateService,
+    TreatmentCourseService,
   ],
 })
 export class TreatmentsModule {}
