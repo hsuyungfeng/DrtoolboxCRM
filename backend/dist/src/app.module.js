@@ -21,6 +21,9 @@ const auth_module_1 = require("./auth/auth.module");
 const points_module_1 = require("./points/points.module");
 const referrals_module_1 = require("./referrals/referrals.module");
 const treatment_templates_module_1 = require("./treatment-templates/treatment-templates.module");
+const audit_1 = require("./common/audit");
+const ai_module_1 = require("./ai/ai.module");
+const notifications_module_1 = require("./notifications/notifications.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -29,6 +32,9 @@ exports.AppModule = AppModule = __decorate([
         imports: [
             typeorm_1.TypeOrmModule.forRoot(database_config_1.databaseConfig),
             event_emitter_1.EventEmitterModule.forRoot(),
+            audit_1.AuditModule,
+            ai_module_1.AiModule,
+            notifications_module_1.NotificationsModule,
             auth_module_1.AuthModule,
             patients_module_1.PatientsModule,
             treatments_module_1.TreatmentsModule,

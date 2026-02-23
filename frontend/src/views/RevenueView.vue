@@ -46,15 +46,68 @@
              :row-key="(row) => row.id"
            />
          </n-tab-pane>
-         <n-tab-pane name="adjustments" tab="分潤調整">
-           <n-data-table
-             :columns="adjustmentColumns"
-             :data="revenueAdjustments"
-             :loading="loadingAdjustments"
-             :pagination="pagination"
-             :row-key="(row) => row.id"
-           />
-         </n-tab-pane>
+        <n-tab-pane name="adjustments" tab="分潤調整">
+            <n-data-table
+              :columns="adjustmentColumns"
+              :data="revenueAdjustments"
+              :loading="loadingAdjustments"
+              :pagination="pagination"
+              :row-key="(row) => row.id"
+            />
+          </n-tab-pane>
+          <n-tab-pane name="calculator" tab="分潤試算">
+            <div class="calculator-section">
+              <n-card title="即時分潤試算" subtitle="輸入療程金額，即時查看各角色分潤分配">
+                <n-space vertical :size="16">
+                  <n-form-item label="療程類型" path="treatmentType">
+                    <n-select
+                      v-model:value="calculatorForm.treatmentType"
+                      :options="treatmentTypeOptions"
+                      placeholder="請選擇療程類型"
+                      style="width: 300px"
+                    />
+                  </n-form-item>
+                  <n-form-item label="療程金額" path="amount">
+                    <n-input-number
+                      v-model:value="calculatorForm.amount"
+                      :min="0"
+                      :step="100"
+                      placeholder="請輸入療程金額"
+                      style="width: 300px"
+                    >
+                      <template #prefix>¥</template>
+                    </n-input-number>
+                  </n-form-item>
+                  <n-button type="primary" @click="calculatePPF" :disabled="!calculatorForm.amount">
+                    開始試算
+                  </n-button>
+                </n-space>
+              </n-card>
+
+              <n-card v-if="calculationResult.length > 0" title="試算結果" style="margin-top: 16px">
+                <n-data-table
+                  :columns="previewColumns"
+                  :data="calculationResult"
+                  :pagination="false"
+                />
+                <div class="total-summary">
+                  <n-statistic label="總分潤金額" :value="totalCalculatedAmount">
+                    <template #prefix>¥</template>
+                  </n-statistic>
+                  <n-statistic label="分潤率" :value="totalPercentage" suffix="%">
+                  </n-statistic>
+                </div>
+              </n-card>
+
+              <n-card v-if="tieredPreview.length > 0" title="階梯式規則預覽" style="margin-top: 16px">
+                <n-data-table
+                  :columns="tieredColumns"
+                  :data="tieredPreview"
+                  :pagination="false"
+                />
+              </n-card>
+            </div>
+          </n-tab-pane>
       </n-tabs>
     </n-card>
 
@@ -283,7 +336,7 @@ import { ref, h, onMounted, computed } from 'vue';
 import {
   NButton, NTag, NSpace, NIcon, NDataTable, NCard, NModal,
   NForm, NFormItem, NSelect, NDatePicker, NSwitch, NTabs, NTabPane,
-  NInput, NInputNumber, useDialog, useMessage,
+  NInput, NInputNumber, useDialog, useMessage, NStatistic,
 } from 'naive-ui';
 import type { DataTableColumns, FormInst, FormRules, SelectOption } from 'naive-ui';
 import type { RevenueRecord, RevenueRule, RevenueAdjustment } from '@/types';
@@ -298,6 +351,21 @@ const loadingAdjustments = ref(false);
 const showCreateRuleModal = ref(false);
 const showEditRuleModal = ref(false);
 const editingRuleId = ref<string | null>(null);
+
+const calculatorForm = ref({
+  treatmentType: '',
+  amount: 0,
+});
+
+const calculationResult = ref<any[]>([]);
+const tieredPreview = ref<any[]>([]);
+
+const treatmentTypeOptions: SelectOption[] = [
+  { label: '一般療程', value: 'general' },
+  { label: '美容護理', value: 'beauty' },
+  { label: '醫療手術', value: 'medical' },
+  { label: '復健治療', value: 'rehab' },
+];
 
 const ruleFormRef = ref<FormInst | null>(null);
 const ruleFormValue = ref({
@@ -320,6 +388,15 @@ const ruleFormValue = ref({
 const showPercentageField = computed(() => ruleFormValue.value.ruleType === 'percentage');
 const showFixedField = computed(() => ruleFormValue.value.ruleType === 'fixed');
 const showTieredFields = computed(() => ruleFormValue.value.ruleType === 'tiered');
+
+const totalCalculatedAmount = computed(() => {
+  return calculationResult.value.reduce((sum, item) => sum + item.amount, 0);
+});
+
+const totalPercentage = computed(() => {
+  if (!calculatorForm.value.amount) return 0;
+  return ((totalCalculatedAmount.value / calculatorForm.value.amount) * 100).toFixed(2);
+});
 
 const roleOptions: SelectOption[] = [
   { label: '醫生', value: 'doctor' },
@@ -655,13 +732,141 @@ const adjustmentColumns: DataTableColumns<RevenueAdjustment> = [
   },
 ];
 
+const previewColumns: DataTableColumns<any> = [
+  {
+    title: '角色',
+    key: 'role',
+    render(row) {
+      const roleMap: Record<string, { text: string; type: string }> = {
+        doctor: { text: '醫生', type: 'info' },
+        therapist: { text: '治療師', type: 'success' },
+        assistant: { text: '助理', type: 'warning' },
+        consultant: { text: '顧問', type: 'default' },
+        admin: { text: '管理員', type: 'error' },
+      };
+      const role = roleMap[row.role] || { text: row.role, type: 'default' };
+      return h(NTag, { type: role.type as any }, { default: () => role.text });
+    },
+  },
+  {
+    title: '規則類型',
+    key: 'ruleType',
+    render(row) {
+      const typeMap: Record<string, { text: string; type: string }> = {
+        percentage: { text: '百分比', type: 'info' },
+        fixed: { text: '固定金額', type: 'success' },
+        tiered: { text: '階梯式', type: 'warning' },
+      };
+      const type = typeMap[row.ruleType] || { text: row.ruleType, type: 'default' };
+      return h(NTag, { type: type.type as any }, { default: () => type.text });
+    },
+  },
+  {
+    title: '計算參數',
+    key: 'params',
+    render(row) {
+      if (row.ruleType === 'percentage') {
+        return `${row.params.percentage}%`;
+      } else if (row.ruleType === 'fixed') {
+        return `¥${row.params.amount}`;
+      } else {
+        return '階梯式';
+      }
+    },
+  },
+  {
+    title: '分潤金額',
+    key: 'amount',
+    render(row) {
+      return h('span', { style: 'font-weight: bold; color: #18a058;' }, `¥${row.amount.toLocaleString()}`);
+    },
+  },
+  {
+    title: '佔比',
+    key: 'percentage',
+    render(row) {
+      return `${row.percentage.toFixed(2)}%`;
+    },
+  },
+];
+
+const tieredColumns: DataTableColumns<any> = [
+  {
+    title: '門檻金額',
+    key: 'threshold',
+    render(row) {
+      return `¥${row.threshold.toLocaleString()}`;
+    },
+  },
+  {
+    title: '適用百分比',
+    key: 'percentage',
+    render(row) {
+      return `${row.percentage}%`;
+    },
+  },
+  {
+    title: '說明',
+    key: 'description',
+  },
+];
+
 // 生命周期
 onMounted(async () => {
   await loadRevenueData();
 });
 
 // 方法
-// 階梯式規則輔助方法
+function calculatePPF() {
+  const amount = calculatorForm.value.amount;
+  if (!amount || amount <= 0) return;
+
+  const results: any[] = [];
+  const activeRules = revenueRules.value.filter(r => r.isActive);
+
+  activeRules.forEach(rule => {
+    let calculatedAmount = 0;
+    const ruleType = rule.ruleType;
+    const payload = rule.rulePayload;
+
+    if (ruleType === 'percentage' && payload.percentage) {
+      calculatedAmount = (amount * payload.percentage) / 100;
+    } else if (ruleType === 'fixed' && payload.amount) {
+      calculatedAmount = payload.amount;
+    }
+
+    if (calculatedAmount > 0) {
+      results.push({
+        role: rule.role,
+        ruleType: ruleType,
+        params: payload,
+        amount: Math.round(calculatedAmount * 100) / 100,
+        percentage: (calculatedAmount / amount) * 100,
+      });
+    }
+  });
+
+  calculationResult.value = results;
+
+  const tieredRules = activeRules.filter(r => r.ruleType === 'tiered' && r.rulePayload?.tiers);
+  const tieredResults: any[] = [];
+  
+  tieredRules.forEach(rule => {
+    const tiers = rule.rulePayload.tiers.sort((a: any, b: any) => b.threshold - a.threshold);
+    const applicableTier = tiers.find((tier: any) => amount >= tier.threshold);
+    
+    if (applicableTier) {
+      tieredResults.push({
+        threshold: applicableTier.threshold,
+        percentage: applicableTier.percentage,
+        description: `金額 ¥${amount.toLocaleString()} 適用於門檻 ¥${applicableTier.threshold.toLocaleString()}`,
+      });
+    }
+  });
+
+  tieredPreview.value = tieredResults;
+}
+
 function addTier() {
   ruleFormValue.value.rulePayload.tiers.push({ threshold: 0, percentage: 0 });
 }
@@ -957,5 +1162,18 @@ async function reviewAdjustment(id: string) {
 h1 {
   margin: 0;
   color: #333;
+}
+
+.calculator-section {
+  padding: 8px;
+}
+
+.total-summary {
+  display: flex;
+  gap: 32px;
+  margin-top: 24px;
+  padding: 16px;
+  background: #f0fdf4;
+  border-radius: 8px;
 }
 </style>

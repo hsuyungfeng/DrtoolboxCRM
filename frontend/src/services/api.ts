@@ -218,5 +218,6 @@ export const revenueAdjustmentApi = {
 };
 
 export { treatmentTemplatesApi } from './treatment-templates-api';
+export { treatmentSessionApi } from './treatments-api';
 
 export default api;

@@ -9,6 +9,7 @@ export declare class TreatmentCourseController {
     private readonly templateService;
     constructor(courseService: TreatmentCourseService, sessionService: TreatmentSessionService, templateService: TreatmentCourseTemplateService);
     createCourse(createDto: CreateTreatmentCourseDto): Promise<import("../entities/treatment-course.entity").TreatmentCourse>;
+    getPatientCourses(patientId: string, clinicId: string): Promise<import("../entities/treatment-course.entity").TreatmentCourse[]>;
     getCourseById(courseId: string, clinicId: string): Promise<import("../entities/treatment-course.entity").TreatmentCourse>;
     getActiveTemplates(clinicId: string): Promise<import("../entities/treatment-course-template.entity").TreatmentCourseTemplate[]>;
     completeSession(sessionId: string, updateDto: UpdateTreatmentSessionDto, clinicId: string): Promise<import("../entities/treatment-session.entity").TreatmentSession>;

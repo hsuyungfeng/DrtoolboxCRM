@@ -10,24 +10,35 @@ services:
     environment:
       - NODE_ENV=production
       - DATABASE_PATH=/app/data/database.sqlite
+      - JWT_SECRET=${JWT_SECRET:-your-secret-key-change-in-production}
     volumes:
       - ./backend/data:/app/data
       - ./backend/database.sqlite:/app/data/database.sqlite
     networks:
       - crm-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/api"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "8080:80"
+      - "80:80"
+      - "443:443"
     environment:
       - VITE_API_BASE_URL=http://backend:3000/api
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     networks:
       - crm-network
+    restart: unless-stopped
 
 networks:
   crm-network:

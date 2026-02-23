@@ -12,11 +12,17 @@ import { AuthModule } from "./auth/auth.module";
 import { PointsModule } from "./points/points.module";
 import { ReferralsModule } from "./referrals/referrals.module";
 import { TreatmentTemplatesModule } from "./treatment-templates/treatment-templates.module";
+import { AuditModule } from "./common/audit";
+import { AiModule } from "./ai/ai.module";
+import { NotificationsModule } from "./notifications/notifications.module";
 
 @Module({
   imports: [
     TypeOrmModule.forRoot(databaseConfig),
     EventEmitterModule.forRoot(),
+    AuditModule,
+    AiModule,
+    NotificationsModule,
     AuthModule,
     PatientsModule,
     TreatmentsModule,

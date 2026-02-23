@@ -143,11 +143,11 @@ __decorate([
     __metadata("design:type", Boolean)
 ], TreatmentSession.prototype, "revenueCalculated", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: "timestamp", nullable: true }),
+    (0, typeorm_1.Column)({ type: "datetime", nullable: true }),
     __metadata("design:type", Date)
 ], TreatmentSession.prototype, "actualStartTime", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: "timestamp", nullable: true }),
+    (0, typeorm_1.Column)({ type: "datetime", nullable: true }),
     __metadata("design:type", Date)
 ], TreatmentSession.prototype, "actualEndTime", void 0);
 __decorate([

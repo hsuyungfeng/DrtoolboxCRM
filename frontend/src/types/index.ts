@@ -7,6 +7,7 @@ export interface User {
   name: string;
   role: string;
   clinicId: string;
+  clinicName?: string;
   email?: string;
   phone?: string;
   createdAt: string;
@@ -78,15 +79,29 @@ export interface Treatment {
 export interface TreatmentSession {
   id: string;
   treatmentId: string;
+  treatmentCourseId?: string;
   sessionIndex: number;
+  sessionNumber?: number;
+  scheduledDate?: string;
   scheduledTime: string;
   actualTime?: string;
   status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
+  completionStatus?: 'pending' | 'completed' | 'cancelled';
   notes?: string;
   observations?: string;
+  therapistNotes?: string;
+  patientFeedback?: string;
+  durationMinutes?: number;
+  sessionPrice?: number;
+  revenueCalculated?: boolean;
+  actualStartTime?: string;
+  actualEndTime?: string;
+  executedBy?: string;
   clinicId: string;
   createdAt: string;
   updatedAt?: string;
+  patientName?: string;
+  treatmentName?: string;
 }
 
 /**

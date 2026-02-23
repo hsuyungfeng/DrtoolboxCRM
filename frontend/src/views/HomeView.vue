@@ -1,8 +1,43 @@
 <template>
   <div class="home-view">
-    <h1>Doctor CRM 首頁</h1>
+    <h1>Doctor CRM 儀表板</h1>
     <p>歡迎使用醫療診所客戶關係管理系統</p>
     
+    <div class="quick-stats">
+      <n-statistic label="今日療程" :value="todaySessions">
+        <template #suffix>次</template>
+      </n-statistic>
+      <n-statistic label="本月分潤" :value="monthlyRevenue">
+        <template #prefix>¥</template>
+      </n-statistic>
+      <n-statistic label="活躍患者" :value="activePatients">
+        <template #suffix>人</template>
+      </n-statistic>
+      <n-statistic label="員工數" :value="staffCount">
+        <template #suffix>人</template>
+      </n-statistic>
+    </div>
+
+    <div class="dashboard-charts">
+      <n-card title="本月療程趨勢" class="chart-card">
+        <div ref="revenueChartRef" style="width: 100%; height: 300px;"></div>
+      </n-card>
+      
+      <n-card title="分潤類型分佈" class="chart-card">
+        <div ref="pieChartRef" style="width: 100%; height: 300px;"></div>
+      </n-card>
+    </div>
+
+    <div class="dashboard-charts">
+      <n-card title="各角色分潤統計" class="chart-card">
+        <div ref="roleChartRef" style="width: 100%; height: 300px;"></div>
+      </n-card>
+      
+      <n-card title="療程完成進度" class="chart-card">
+        <div ref="progressChartRef" style="width: 100%; height: 300px;"></div>
+      </n-card>
+    </div>
+
     <div class="dashboard-cards">
       <n-card title="患者管理" hoverable>
         <template #header-extra>
@@ -32,17 +67,17 @@
         </n-button>
       </n-card>
 
-      <n-card title="員工管理" hoverable>
+      <n-card title="排程管理" hoverable>
         <template #header-extra>
           <n-icon size="24">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+              <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zM9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/>
             </svg>
           </n-icon>
         </template>
-        <p>管理員工信息與專業角色</p>
-        <n-button type="primary" @click="$router.push('/staff')">
-          進入員工管理
+        <p>查看與管理療程排程</p>
+        <n-button type="primary" @click="$router.push('/schedule')">
+          進入排程管理
         </n-button>
       </n-card>
 
@@ -60,33 +95,175 @@
         </n-button>
       </n-card>
     </div>
-
-    <div class="quick-stats">
-      <n-statistic label="今日療程" :value="todaySessions">
-        <template #suffix>次</template>
-      </n-statistic>
-      <n-statistic label="本月分潤" :value="monthlyRevenue">
-        <template #prefix>¥</template>
-      </n-statistic>
-      <n-statistic label="活躍患者" :value="activePatients">
-        <template #suffix>人</template>
-      </n-statistic>
-      <n-statistic label="員工數" :value="staffCount">
-        <template #suffix>人</template>
-      </n-statistic>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { NCard, NButton, NIcon, NStatistic } from 'naive-ui';
+import * as echarts from 'echarts';
 
-// 模擬數據
+const revenueChartRef = ref<HTMLElement | null>(null);
+const pieChartRef = ref<HTMLElement | null>(null);
+const roleChartRef = ref<HTMLElement | null>(null);
+const progressChartRef = ref<HTMLElement | null>(null);
+
 const todaySessions = ref(8);
 const monthlyRevenue = ref(152300);
 const activePatients = ref(45);
 const staffCount = ref(12);
+
+let revenueChart: echarts.ECharts | null = null;
+let pieChart: echarts.ECharts | null = null;
+let roleChart: echarts.ECharts | null = null;
+let progressChart: echarts.ECharts | null = null;
+
+function initCharts() {
+  if (revenueChartRef.value) {
+    revenueChart = echarts.init(revenueChartRef.value);
+    revenueChart.setOption({
+      tooltip: { trigger: 'axis' },
+      xAxis: {
+        type: 'category',
+        data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+      },
+      yAxis: { type: 'value', name: '金額 (¥)' },
+      series: [
+        {
+          name: '療程營收',
+          type: 'bar',
+          data: [82000, 93200, 90100, 134000, 129000, 152300, 145000, 168000, 182000, 195000, 210000, 235000],
+          itemStyle: { color: '#5470c6' },
+        },
+        {
+          name: '分潤支出',
+          type: 'line',
+          data: [25000, 28000, 27000, 42000, 38000, 48000, 45000, 52000, 58000, 62000, 68000, 75000],
+          itemStyle: { color: '#91cc75' },
+        },
+      ],
+    });
+  }
+
+  if (pieChartRef.value) {
+    pieChart = echarts.init(pieChartRef.value);
+    pieChart.setOption({
+      tooltip: { trigger: 'item' },
+      legend: { orient: 'vertical', left: 'left' },
+      series: [
+        {
+          name: '分潤類型',
+          type: 'pie',
+          radius: '50%',
+          data: [
+            { value: 45000, name: '百分比分潤' },
+            { value: 25000, name: '固定金額' },
+            { value: 15000, name: '階梯式分潤' },
+            { value: 8000, name: '其他' },
+          ],
+          emphasis: {
+            itemStyle: {
+              shadowBlur: 10,
+              shadowOffsetX: 0,
+              shadowColor: 'rgba(0, 0, 0, 0.5)',
+            },
+          },
+        },
+      ],
+    });
+  }
+
+  if (roleChartRef.value) {
+    roleChart = echarts.init(roleChartRef.value);
+    roleChart.setOption({
+      tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+      legend: { data: ['醫生', '治療師', '助理', '顧問'] },
+      grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+      xAxis: { type: 'value' },
+      yAxis: { type: 'category', data: ['1月', '2月', '3月', '4月', '5月', '6月'] },
+      series: [
+        {
+          name: '醫生',
+          type: 'bar',
+          stack: 'total',
+          label: { show: true, position: 'insideRight' },
+          data: [12000, 14000, 11000, 15000, 16000, 18000],
+        },
+        {
+          name: '治療師',
+          type: 'bar',
+          stack: 'total',
+          label: { show: true, position: 'insideRight' },
+          data: [8000, 9000, 8500, 10000, 11000, 12000],
+        },
+        {
+          name: '助理',
+          type: 'bar',
+          stack: 'total',
+          label: { show: true, position: 'insideRight' },
+          data: [3000, 3500, 3200, 4000, 4200, 4500],
+        },
+        {
+          name: '顧問',
+          type: 'bar',
+          stack: 'total',
+          label: { show: true, position: 'insideRight' },
+          data: [2000, 2500, 2100, 3000, 2800, 3500],
+        },
+      ],
+    });
+  }
+
+  if (progressChartRef.value) {
+    progressChart = echarts.init(progressChartRef.value);
+    progressChart.setOption({
+      tooltip: { trigger: 'item' },
+      series: [
+        {
+          name: '療程進度',
+          type: 'pie',
+          radius: ['40%', '70%'],
+          avoidLabelOverlap: false,
+          itemStyle: {
+            borderRadius: 10,
+            borderColor: '#fff',
+            borderWidth: 2,
+          },
+          label: {
+            show: true,
+            formatter: '{b}: {c} ({d}%)',
+          },
+          data: [
+            { value: 1048, name: '已完成' },
+            { value: 300, name: '執行中' },
+            { value: 280, name: '待執行' },
+            { value: 120, name: '已取消' },
+          ],
+        },
+      ],
+    });
+  }
+}
+
+function handleResize() {
+  revenueChart?.resize();
+  pieChart?.resize();
+  roleChart?.resize();
+  progressChart?.resize();
+}
+
+onMounted(() => {
+  initCharts();
+  window.addEventListener('resize', handleResize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize);
+  revenueChart?.dispose();
+  pieChart?.dispose();
+  roleChart?.dispose();
+  progressChart?.dispose();
+});
 </script>
 
 <style scoped>
@@ -99,6 +276,16 @@ h1 {
   color: #333;
 }
 
+.quick-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 24px;
+  margin: 32px 0;
+  padding: 24px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
 .dashboard-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -106,13 +293,14 @@ h1 {
   margin: 32px 0;
 }
 
-.quick-stats {
+.dashboard-charts {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
   gap: 24px;
-  margin-top: 32px;
-  padding: 24px;
-  background: #f8f9fa;
-  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.chart-card {
+  min-height: 360px;
 }
 </style>

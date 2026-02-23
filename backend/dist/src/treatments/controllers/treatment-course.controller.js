@@ -32,6 +32,15 @@ let TreatmentCourseController = class TreatmentCourseController {
     async createCourse(createDto) {
         return await this.courseService.createCourse(createDto);
     }
+    async getPatientCourses(patientId, clinicId) {
+        if (!patientId || patientId.trim() === "") {
+            throw new common_1.BadRequestException("patientId 不能為空");
+        }
+        if (!clinicId || clinicId.trim() === "") {
+            throw new common_1.BadRequestException("clinicId 不能為空");
+        }
+        return await this.courseService.getPatientCourses(patientId, clinicId);
+    }
     async getCourseById(courseId, clinicId) {
         if (!clinicId || clinicId.trim() === "") {
             throw new common_1.BadRequestException("clinicId 不能為空");
@@ -59,6 +68,14 @@ __decorate([
     __metadata("design:paramtypes", [create_treatment_course_dto_1.CreateTreatmentCourseDto]),
     __metadata("design:returntype", Promise)
 ], TreatmentCourseController.prototype, "createCourse", null);
+__decorate([
+    (0, common_1.Get)(),
+    __param(0, (0, common_1.Query)("patientId")),
+    __param(1, (0, common_1.Query)("clinicId")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", Promise)
+], TreatmentCourseController.prototype, "getPatientCourses", null);
 __decorate([
     (0, common_1.Get)("courses/:courseId"),
     __param(0, (0, common_1.Param)("courseId")),

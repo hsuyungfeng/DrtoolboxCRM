@@ -17,29 +17,38 @@ const revenue_adjustment_entity_1 = require("../revenue/entities/revenue-adjustm
 const points_config_entity_1 = require("../points/entities/points-config.entity");
 const points_balance_entity_1 = require("../points/entities/points-balance.entity");
 const points_transaction_entity_1 = require("../points/entities/points-transaction.entity");
+const audit_log_entity_1 = require("../common/audit/audit-log.entity");
+const entities = [
+    staff_entity_1.Staff,
+    treatment_staff_assignment_entity_1.TreatmentStaffAssignment,
+    patient_entity_1.Patient,
+    treatment_entity_1.Treatment,
+    treatment_session_entity_1.TreatmentSession,
+    staff_assignment_entity_1.StaffAssignment,
+    treatment_template_entity_1.TreatmentTemplate,
+    treatment_course_template_entity_1.TreatmentCourseTemplate,
+    treatment_course_entity_1.TreatmentCourse,
+    revenue_record_entity_1.RevenueRecord,
+    revenue_rule_entity_1.RevenueRule,
+    revenue_adjustment_entity_1.RevenueAdjustment,
+    points_config_entity_1.PointsConfig,
+    points_balance_entity_1.PointsBalance,
+    points_transaction_entity_1.PointsTransaction,
+    audit_log_entity_1.AuditLog,
+];
+const dbType = process.env.DB_TYPE || 'sqlite';
 exports.databaseConfig = {
-    type: "sqlite",
-    database: (0, path_1.join)(process.cwd(), "database.sqlite"),
-    entities: [
-        staff_entity_1.Staff,
-        treatment_staff_assignment_entity_1.TreatmentStaffAssignment,
-        patient_entity_1.Patient,
-        treatment_entity_1.Treatment,
-        treatment_session_entity_1.TreatmentSession,
-        staff_assignment_entity_1.StaffAssignment,
-        treatment_template_entity_1.TreatmentTemplate,
-        treatment_course_template_entity_1.TreatmentCourseTemplate,
-        treatment_course_entity_1.TreatmentCourse,
-        revenue_record_entity_1.RevenueRecord,
-        revenue_rule_entity_1.RevenueRule,
-        revenue_adjustment_entity_1.RevenueAdjustment,
-        points_config_entity_1.PointsConfig,
-        points_balance_entity_1.PointsBalance,
-        points_transaction_entity_1.PointsTransaction,
-    ],
-    synchronize: process.env.NODE_ENV !== "production",
-    logging: process.env.NODE_ENV !== "production",
-    migrations: [(0, path_1.join)(__dirname, "../migrations/*{.ts,.js}")],
+    type: dbType,
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT || (dbType === 'postgres' ? '5432' : '0'), 10),
+    username: process.env.DB_USERNAME,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE || (dbType === 'sqlite' ? (0, path_1.join)(process.cwd(), 'database.sqlite') : 'doctor_crm'),
+    entities,
+    synchronize: process.env.NODE_ENV !== 'production',
+    logging: process.env.NODE_ENV === 'development',
+    migrations: [(0, path_1.join)(__dirname, '../migrations/*{.ts,.js}')],
     migrationsRun: false,
+    ssl: dbType === 'postgres' && process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
 };
 //# sourceMappingURL=database.config.js.map

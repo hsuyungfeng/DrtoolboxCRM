@@ -15,29 +15,40 @@ import { RevenueAdjustment } from "../revenue/entities/revenue-adjustment.entity
 import { PointsConfig } from "../points/entities/points-config.entity";
 import { PointsBalance } from "../points/entities/points-balance.entity";
 import { PointsTransaction } from "../points/entities/points-transaction.entity";
+import { AuditLog } from "../common/audit/audit-log.entity";
+
+const entities = [
+  Staff,
+  TreatmentStaffAssignment,
+  Patient,
+  Treatment,
+  TreatmentSession,
+  StaffAssignment,
+  TreatmentTemplate,
+  TreatmentCourseTemplate,
+  TreatmentCourse,
+  RevenueRecord,
+  RevenueRule,
+  RevenueAdjustment,
+  PointsConfig,
+  PointsBalance,
+  PointsTransaction,
+  AuditLog,
+];
+
+const dbType = process.env.DB_TYPE || 'sqlite';
 
 export const databaseConfig: TypeOrmModuleOptions = {
-  type: "sqlite",
-  database: join(process.cwd(), "database.sqlite"),
-  entities: [
-    Staff,
-    TreatmentStaffAssignment,
-    Patient,
-    Treatment,
-    TreatmentSession,
-    StaffAssignment,
-    TreatmentTemplate,
-    TreatmentCourseTemplate,
-    TreatmentCourse,
-    RevenueRecord,
-    RevenueRule,
-    RevenueAdjustment,
-    PointsConfig,
-    PointsBalance,
-    PointsTransaction,
-  ],
-  synchronize: process.env.NODE_ENV !== "production",
-  logging: process.env.NODE_ENV !== "production",
-  migrations: [join(__dirname, "../migrations/*{.ts,.js}")],
+  type: dbType as any,
+  host: process.env.DB_HOST || 'localhost',
+  port: parseInt(process.env.DB_PORT || (dbType === 'postgres' ? '5432' : '0'), 10),
+  username: process.env.DB_USERNAME,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE || (dbType === 'sqlite' ? join(process.cwd(), 'database.sqlite') : 'doctor_crm'),
+  entities,
+  synchronize: process.env.NODE_ENV !== 'production',
+  logging: process.env.NODE_ENV === 'development',
+  migrations: [join(__dirname, '../migrations/*{.ts,.js}')],
   migrationsRun: false,
+  ssl: dbType === 'postgres' && process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
 };

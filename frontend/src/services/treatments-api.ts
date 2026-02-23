@@ -1,5 +1,5 @@
 import { http } from './api';
-import type { TreatmentCourse, TreatmentCourseSession, StaffAssignment, TreatmentTemplate } from '@/types';
+import type { TreatmentCourse, TreatmentCourseSession, StaffAssignment, TreatmentTemplate, TreatmentSession } from '@/types';
 
 /**
  * 療程 API 服務層
@@ -87,6 +87,29 @@ export const treatmentCoursesApi = {
         clinicId,
         ...filters,
       },
+    }),
+};
+
+export const treatmentSessionApi = {
+  getAll: (clinicId: string) =>
+    http.get<TreatmentSession[]>('/treatments/sessions', {
+      params: { clinicId },
+    }),
+
+  getById: (id: string, clinicId: string) =>
+    http.get<TreatmentSession>(`/treatments/sessions/${id}`, {
+      params: { clinicId },
+    }),
+
+  create: (data: Partial<TreatmentSession>) =>
+    http.post<TreatmentSession>('/treatments/sessions', data),
+
+  update: (id: string, data: Partial<TreatmentSession>) =>
+    http.put<TreatmentSession>(`/treatments/sessions/${id}`, data),
+
+  delete: (id: string, clinicId: string) =>
+    http.delete(`/treatments/sessions/${id}`, {
+      params: { clinicId },
     }),
 };
 
