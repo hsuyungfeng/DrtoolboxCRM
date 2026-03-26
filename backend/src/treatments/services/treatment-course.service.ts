@@ -280,6 +280,111 @@ export class TreatmentCourseService {
   }
 
   /**
+   * 取得療程含進度資訊
+   * Get treatment course with progress information
+   *
+   * @param courseId 療程 ID / Course ID
+   * @param clinicId 診所 ID / Clinic ID
+   * @returns 含進度物件的療程 / Course with progress object
+   */
+  async getCourseWithProgress(
+    courseId: string,
+    clinicId: string,
+  ): Promise<TreatmentCourse & { progress: ReturnType<TreatmentProgressService["getProgress"]> }> {
+    const course = await this.courseRepository.findOne({
+      where: { id: courseId, clinicId },
+      relations: ["sessions"],
+    });
+
+    if (!course) {
+      throw new NotFoundException("療程不存在");
+    }
+
+    const progress = this.treatmentProgressService.getProgress(course);
+
+    return {
+      ...course,
+      progress,
+    };
+  }
+
+  /**
+   * 列舉患者的所有療程含進度
+   * List all patient courses with progress information
+   *
+   * @param patientId 患者 ID / Patient ID
+   * @param clinicId 診所 ID / Clinic ID
+   * @returns 含進度物件的療程陣列 / Array of courses with progress
+   */
+  async getPatientCoursesWithProgress(
+    patientId: string,
+    clinicId: string,
+  ): Promise<Array<TreatmentCourse & { progress: ReturnType<TreatmentProgressService["getProgress"]> }>> {
+    const courses = await this.courseRepository.find({
+      where: { patientId, clinicId },
+      relations: ["sessions"],
+      order: { createdAt: "DESC" },
+    });
+
+    return courses.map((course) => ({
+      ...course,
+      progress: this.treatmentProgressService.getProgress(course),
+    }));
+  }
+
+  /**
+   * 更新課程完成狀態，自動更新療程狀態
+   * Complete a session and automatically update course status when all sessions are done
+   *
+   * @param sessionId 課程 ID / Session ID
+   * @param clinicId 診所 ID / Clinic ID
+   * @returns 更新後的課程 / Updated session
+   */
+  async completeSession(
+    sessionId: string,
+    clinicId: string,
+  ): Promise<TreatmentSession> {
+    const session = await this.sessionRepository.findOne({
+      where: { id: sessionId, clinicId },
+      relations: ["treatmentCourse"],
+    });
+
+    if (!session) {
+      throw new NotFoundException("課程不存在");
+    }
+
+    // 更新課程狀態 / Update session completion status
+    session.completionStatus = "completed";
+    await this.sessionRepository.save(session);
+
+    // 重新載入療程的所有 sessions 以計算進度 / Reload all sessions for progress calculation
+    const course = await this.courseRepository.findOne({
+      where: { id: session.treatmentCourseId },
+      relations: ["sessions"],
+    });
+
+    if (course) {
+      const isFinally = this.treatmentProgressService.isCourseFinallyCompleted(course);
+
+      if (isFinally && course.status !== "completed") {
+        course.status = "completed";
+        course.completedAt = new Date();
+        await this.courseRepository.save(course);
+
+        this.logger.log(
+          `療程全部完成，自動更新狀態 - courseId: ${course.id}`,
+        );
+      }
+    }
+
+    this.logger.log(
+      `成功完成課程 - sessionId: ${sessionId}`,
+    );
+
+    return session;
+  }
+
+  /**
    * 分配醫護人員到療程課程
    * Assign staff to a treatment session
    *
