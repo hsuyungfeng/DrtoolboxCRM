@@ -44,6 +44,9 @@
 - **2026-03-26 [01-01]：** MedicalOrder 欄位採用英文屬性名（drugOrTreatmentName、dosage、usageMethod），中文說明以 JSDoc 記錄
 - **2026-03-26 [01-01]：** ScriptTemplate 使用字串 status（active/inactive）而非布林 isActive，預留擴充空間
 - **2026-03-26 [01-01]：** UpdateMedicalOrderDto 使用 @IsIn() 提供執行期狀態值驗證
+- **2026-03-26 [01-03]：** Patient 實體採用複合唯一索引 (clinicId, idNumber) 確保診所內身份唯一
+- **2026-03-26 [01-03]：** PatientSearchRepository 繼承 TypeORM Repository 以利用複合索引查詢
+- **2026-03-26 [01-03]：** 保留既有欄位（emergencyContact、currentMedications 等）確保向後相容性
 
 ---
 
@@ -61,9 +64,9 @@
 
 ## 最後會話
 
-**停止於：** Phase 01 Plan 01 完成（2026-03-26T08:59:29Z）
+**停止於：** Phase 01 Plan 03 完成（2026-03-26T09:00:00Z）
 
-**下一步：** 執行 Phase 1 Plan 02
+**下一步：** 執行 Phase 1 Plan 04
 
 ---
 
