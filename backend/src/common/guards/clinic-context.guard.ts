@@ -42,6 +42,11 @@ export class ClinicContextGuard implements CanActivate {
       request.headers['x-clinic-id'] = userClinicId;
     }
 
+    // 將 clinicId 附加到 request 物件，方便控制器直接存取
+    request.clinicId = requestClinicId && user.role === 'super_admin'
+      ? requestClinicId
+      : userClinicId;
+
     return true;
   }
 }

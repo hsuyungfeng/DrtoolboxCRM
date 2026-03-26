@@ -8,8 +8,12 @@ import {
 
 export class CreatePatientDto {
   @IsString()
-  @Length(1, 255)
+  @Length(1, 100)
   name: string;
+
+  @IsString()
+  @Length(1, 50)
+  idNumber: string; // 身份證號碼
 
   @IsOptional()
   @IsEmail()
