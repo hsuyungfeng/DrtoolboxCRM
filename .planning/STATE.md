@@ -33,7 +33,7 @@
 | 計劃 | 名稱 | 狀態 | 提交 |
 |------|------|------|------|
 | 01 | MedicalOrder 實體與 DTO | ✓ 完成 | 3fc6b9df |
-| 02 | TreatmentProgressService | ✓ 完成 | - |
+| 02 | TreatmentProgressService + 醫護分配 | ✓ 完成 | 93184d6a |
 | 03 | PatientSearch 實體與搜尋服務 | ✓ 完成 | 20143af4 |
 | 04-13 | 後續計劃 | ○ 待處理 | - |
 
@@ -47,6 +47,9 @@
 - **2026-03-26 [01-03]：** Patient 實體採用複合唯一索引 (clinicId, idNumber) 確保診所內身份唯一
 - **2026-03-26 [01-03]：** PatientSearchRepository 繼承 TypeORM Repository 以利用複合索引查詢
 - **2026-03-26 [01-03]：** 保留既有欄位（emergencyContact、currentMedications 等）確保向後相容性
+- **2026-03-26 [01-02]：** 進度計算從 sessions.completionStatus 即時衍生，不單獨儲存進度欄位以保持資料一致性
+- **2026-03-26 [01-02]：** StaffAssignment 使用現有 staffRole/ppfPercentage 欄位；clinicId 驗證透過 session.clinicId 完成
+- **2026-03-26 [01-02]：** StaffModule 匯入 TreatmentsModule 以使用 StaffService 驗證醫護人員存在和診所歸屬
 
 ---
 
@@ -64,7 +67,7 @@
 
 ## 最後會話
 
-**停止於：** Phase 01 Plan 03 完成（2026-03-26T09:00:00Z）
+**停止於：** Phase 01 Plan 02 完成（2026-03-26T09:01:12Z）
 
 **下一步：** 執行 Phase 1 Plan 04
 
