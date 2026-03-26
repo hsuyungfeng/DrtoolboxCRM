@@ -2,14 +2,19 @@ import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { HttpExceptionFilter } from "./common/filters/http-exception.filter";
 import { AllExceptionsFilter } from "./common/filters/all-exceptions.filter";
+import { ValidationErrorFilter } from "./common/filters/validation-error.filter";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { ClinicAuthMiddleware } from "./common/middlewares/clinic-auth.middleware";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // 註冊全域異常過濾器
-  app.useGlobalFilters(new HttpExceptionFilter(), new AllExceptionsFilter());
+  // 註冊全域異常過濾器（ValidationErrorFilter 優先處理驗證錯誤）
+  app.useGlobalFilters(
+    new ValidationErrorFilter(),
+    new HttpExceptionFilter(),
+    new AllExceptionsFilter(),
+  );
 
   // 啟用 CORS
   app.enableCors({
