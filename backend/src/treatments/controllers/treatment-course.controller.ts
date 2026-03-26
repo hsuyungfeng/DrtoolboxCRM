@@ -3,29 +3,35 @@ import {
   Post,
   Get,
   Put,
+  Patch,
+  Delete,
   Body,
   Param,
   Query,
+  Req,
   UseGuards,
   BadRequestException,
+  HttpCode,
+  HttpStatus,
 } from "@nestjs/common";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
 import { TreatmentCourseService } from "../services/treatment-course.service";
 import { TreatmentSessionService } from "../services/treatment-session.service";
 import { TreatmentCourseTemplateService } from "../services/treatment-course-template.service";
 import { CreateTreatmentCourseDto } from "../dto/create-treatment-course.dto";
+import { UpdateTreatmentCourseDto } from "../dto/update-treatment-course.dto";
 import { UpdateTreatmentSessionDto } from "../dto/update-treatment-session.dto";
 
 /**
  * 療程 REST API 控制器
  * 負責處理療程相關的 HTTP 請求
- * 支持五個主要端點：
- * 1. POST /treatments/courses - 建立療程套餐
- * 2. GET /treatments/courses/:courseId - 查詢特定療程套餐
- * 3. GET /treatments/templates - 查詢所有可用課程模板
- * 4. PUT /treatments/sessions/:sessionId - 完成療程次數
- * 5. GET /staff/:staffId/sessions - 查詢治療師的所有療程次數
+ *
+ * Treatment REST API Controller
+ * Handles treatment-related HTTP requests with complete CRUD operations
  */
+@ApiBearerAuth()
+@ApiTags('Treatment Courses')
 @Controller("treatments")
 @UseGuards(JwtAuthGuard)
 export class TreatmentCourseController {
@@ -45,16 +51,21 @@ export class TreatmentCourseController {
    * @throws NotFoundException 當模板或患者不存在時
    */
   @Post("courses")
-  async createCourse(@Body() createDto: CreateTreatmentCourseDto) {
+  @HttpCode(HttpStatus.CREATED)
+  async createCourse(
+    @Body() createDto: CreateTreatmentCourseDto,
+    @Req() req: any,
+  ) {
     return await this.courseService.createCourse(createDto);
   }
 
   /**
-   * 查詢患者的所有療程套餐
-   * GET /treatments/courses
+   * 查詢患者的所有療程套餐（Query 參數模式）
+   * GET /treatments/courses?patientId=...&status=...
    *
    * @param patientId 患者 ID (query parameter)
    * @param clinicId 診所 ID (query parameter)
+   * @param status 療程狀態過濾 (optional)
    * @returns 患者的所有療程套餐
    * @throws BadRequestException 當必要參數缺失時
    */
@@ -62,6 +73,7 @@ export class TreatmentCourseController {
   async getPatientCourses(
     @Query("patientId") patientId: string,
     @Query("clinicId") clinicId: string,
+    @Query("status") status?: string,
   ) {
     if (!patientId || patientId.trim() === "") {
       throw new BadRequestException("patientId 不能為空");
@@ -71,28 +83,158 @@ export class TreatmentCourseController {
       throw new BadRequestException("clinicId 不能為空");
     }
 
-    return await this.courseService.getPatientCourses(patientId, clinicId);
+    const courses = await this.courseService.getPatientCourses(patientId, clinicId, status);
+    return {
+      statusCode: 200,
+      data: courses,
+      count: courses.length,
+    };
   }
 
   /**
-   * 查詢特定療程套餐
+   * 查詢患者所有療程（路由參數模式）
+   * GET /treatments/patient/:patientId
+   *
+   * @param patientId 患者 ID (路由參數)
+   * @param clinicId 診所 ID (query parameter)
+   * @param status 療程狀態過濾 (optional)
+   * @returns 患者所有療程含進度
+   */
+  @Get("patient/:patientId")
+  async getPatientTreatments(
+    @Param("patientId") patientId: string,
+    @Query("clinicId") clinicId: string,
+    @Query("status") status?: string,
+    @Req() req?: any,
+  ) {
+    const resolvedClinicId = clinicId || req?.user?.clinicId;
+
+    if (!resolvedClinicId || resolvedClinicId.trim() === "") {
+      throw new BadRequestException("clinicId 不能為空");
+    }
+
+    const courses = await this.courseService.getPatientCourses(patientId, resolvedClinicId, status);
+    return {
+      statusCode: 200,
+      data: courses,
+      count: courses.length,
+    };
+  }
+
+  /**
+   * 查詢特定療程套餐（含進度）
    * GET /treatments/courses/:courseId
    *
    * @param courseId 療程套餐 ID
    * @param clinicId 診所 ID (query parameter)
-   * @returns 療程套餐及其關聯的 sessions 和 staffAssignments
+   * @returns 療程套餐及其關聯的 sessions、staffAssignments 和進度
    * @throws NotFoundException 當療程不存在或診所 ID 不匹配時
    */
   @Get("courses/:courseId")
   async getCourseById(
     @Param("courseId") courseId: string,
     @Query("clinicId") clinicId: string,
+    @Req() req?: any,
   ) {
-    if (!clinicId || clinicId.trim() === "") {
+    const resolvedClinicId = clinicId || req?.user?.clinicId;
+
+    if (!resolvedClinicId || resolvedClinicId.trim() === "") {
       throw new BadRequestException("clinicId 不能為空");
     }
 
-    return await this.courseService.getCourseById(courseId, clinicId);
+    const course = await this.courseService.getCourseWithProgress(courseId, resolvedClinicId);
+    return {
+      statusCode: 200,
+      data: course,
+    };
+  }
+
+  /**
+   * 取得療程的所有課程
+   * GET /treatments/courses/:courseId/sessions
+   *
+   * @param courseId 療程 ID
+   * @param clinicId 診所 ID
+   * @returns 課程列表（含醫護分配）
+   */
+  @Get("courses/:courseId/sessions")
+  async getCourseSessions(
+    @Param("courseId") courseId: string,
+    @Query("clinicId") clinicId: string,
+    @Req() req?: any,
+  ) {
+    const resolvedClinicId = clinicId || req?.user?.clinicId;
+
+    if (!resolvedClinicId || resolvedClinicId.trim() === "") {
+      throw new BadRequestException("clinicId 不能為空");
+    }
+
+    const sessions = await this.courseService.getCourseSessions(courseId, resolvedClinicId);
+    return {
+      statusCode: 200,
+      data: sessions,
+      count: sessions.length,
+    };
+  }
+
+  /**
+   * 編輯療程詳情
+   * PATCH /treatments/courses/:courseId
+   *
+   * @param courseId 療程套餐 ID
+   * @param dto 更新療程的 DTO
+   * @param clinicId 診所 ID (query parameter)
+   * @returns 更新後的療程套餐
+   * @throws NotFoundException 當療程不存在時
+   * @throws BadRequestException 當狀態無效時
+   */
+  @Patch("courses/:courseId")
+  async updateCourse(
+    @Param("courseId") courseId: string,
+    @Body() dto: UpdateTreatmentCourseDto,
+    @Query("clinicId") clinicId: string,
+    @Req() req?: any,
+  ) {
+    const resolvedClinicId = clinicId || req?.user?.clinicId;
+
+    if (!resolvedClinicId || resolvedClinicId.trim() === "") {
+      throw new BadRequestException("clinicId 不能為空");
+    }
+
+    const course = await this.courseService.updateCourse(courseId, dto, resolvedClinicId);
+    return {
+      statusCode: 200,
+      message: '療程已更新',
+      data: course,
+    };
+  }
+
+  /**
+   * 刪除療程
+   * DELETE /treatments/courses/:courseId
+   *
+   * @param courseId 療程套餐 ID
+   * @param clinicId 診所 ID (query parameter)
+   * @throws NotFoundException 當療程不存在時
+   * @throws BadRequestException 當療程已開始不能刪除時
+   */
+  @Delete("courses/:courseId")
+  async deleteCourse(
+    @Param("courseId") courseId: string,
+    @Query("clinicId") clinicId: string,
+    @Req() req?: any,
+  ) {
+    const resolvedClinicId = clinicId || req?.user?.clinicId;
+
+    if (!resolvedClinicId || resolvedClinicId.trim() === "") {
+      throw new BadRequestException("clinicId 不能為空");
+    }
+
+    await this.courseService.deleteCourse(courseId, resolvedClinicId);
+    return {
+      statusCode: 200,
+      message: '療程已刪除',
+    };
   }
 
   /**
