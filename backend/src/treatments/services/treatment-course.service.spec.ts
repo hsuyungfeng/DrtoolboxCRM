@@ -5,8 +5,11 @@ import { BadRequestException, NotFoundException } from "@nestjs/common";
 import { TreatmentCourseService } from "./treatment-course.service";
 import { TreatmentCourse } from "../entities/treatment-course.entity";
 import { TreatmentSession } from "../entities/treatment-session.entity";
+import { StaffAssignment } from "../entities/staff-assignment.entity";
 import { TreatmentCourseTemplateService } from "./treatment-course-template.service";
+import { TreatmentProgressService } from "./treatment-progress.service";
 import { PointsService } from "../../points/services/points.service";
+import { StaffService } from "../../staff/services/staff.service";
 import Decimal from "decimal.js";
 
 describe("TreatmentCourseService", () => {
@@ -48,6 +51,15 @@ describe("TreatmentCourseService", () => {
 
     const mockSessionRepo = {
       save: jest.fn(),
+      findOne: jest.fn(),
+    };
+
+    const mockAssignmentRepo = {
+      findOne: jest.fn(),
+      find: jest.fn(),
+      create: jest.fn(),
+      save: jest.fn(),
+      remove: jest.fn(),
     };
 
     // Mock services
@@ -57,6 +69,18 @@ describe("TreatmentCourseService", () => {
 
     const mockPointsServiceInstance = {
       redeemPoints: jest.fn(),
+    };
+
+    const mockTreatmentProgressService = {
+      calculateProgressPercent: jest.fn(),
+      getProgress: jest.fn(),
+      isCourseFinallyCompleted: jest.fn(),
+      calculateProgressForCourses: jest.fn(),
+    };
+
+    const mockStaffServiceInstance = {
+      findOne: jest.fn(),
+      findAll: jest.fn(),
     };
 
     // Mock DataSource with transaction
@@ -76,12 +100,24 @@ describe("TreatmentCourseService", () => {
           useValue: mockSessionRepo,
         },
         {
+          provide: getRepositoryToken(StaffAssignment),
+          useValue: mockAssignmentRepo,
+        },
+        {
           provide: TreatmentCourseTemplateService,
           useValue: mockTemplateServiceInstance,
         },
         {
+          provide: TreatmentProgressService,
+          useValue: mockTreatmentProgressService,
+        },
+        {
           provide: PointsService,
           useValue: mockPointsServiceInstance,
+        },
+        {
+          provide: StaffService,
+          useValue: mockStaffServiceInstance,
         },
         {
           provide: DataSource,

@@ -5,12 +5,15 @@ import {
   Logger,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository, DataSource } from "typeorm";
+import { Repository, DataSource, In } from "typeorm";
 import { TreatmentCourse } from "../entities/treatment-course.entity";
 import { TreatmentSession } from "../entities/treatment-session.entity";
+import { StaffAssignment } from "../entities/staff-assignment.entity";
 import { CreateTreatmentCourseDto } from "../dto/create-treatment-course.dto";
 import { TreatmentCourseTemplateService } from "./treatment-course-template.service";
+import { TreatmentProgressService } from "./treatment-progress.service";
 import { PointsService } from "../../points/services/points.service";
+import { StaffService } from "../../staff/services/staff.service";
 import Decimal from "decimal.js";
 
 /**
@@ -28,8 +31,12 @@ export class TreatmentCourseService {
     private readonly courseRepository: Repository<TreatmentCourse>,
     @InjectRepository(TreatmentSession)
     private readonly sessionRepository: Repository<TreatmentSession>,
+    @InjectRepository(StaffAssignment)
+    private readonly staffAssignmentRepository: Repository<StaffAssignment>,
     private readonly templateService: TreatmentCourseTemplateService,
+    private readonly treatmentProgressService: TreatmentProgressService,
     private readonly pointsService: PointsService,
+    private readonly staffService: StaffService,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -270,6 +277,144 @@ export class TreatmentCourseService {
     );
 
     return result;
+  }
+
+  /**
+   * 分配醫護人員到療程課程
+   * Assign staff to a treatment session
+   *
+   * @param courseId 療程 ID / Treatment course ID
+   * @param sessionId 課程 ID / Session ID
+   * @param staffId 醫護人員 ID / Staff ID
+   * @param clinicId 診所 ID / Clinic ID
+   * @param staffRole 醫護人員角色 / Staff role
+   * @param ppfPercentage PPF 百分比 / PPF percentage (0-100)
+   * @returns 建立的分配記錄 / Created assignment record
+   */
+  async assignStaffToSession(
+    courseId: string,
+    sessionId: string,
+    staffId: string,
+    clinicId: string,
+    staffRole: string,
+    ppfPercentage: number,
+  ): Promise<StaffAssignment> {
+    // 驗證療程存在且屬於該診所 / Validate course exists and belongs to clinic
+    const course = await this.courseRepository.findOne({
+      where: { id: courseId, clinicId },
+    });
+    if (!course) {
+      throw new NotFoundException("療程不存在");
+    }
+
+    // 驗證課程存在且屬於該療程 / Validate session exists and belongs to course
+    const session = await this.sessionRepository.findOne({
+      where: { id: sessionId, treatmentCourseId: courseId },
+    });
+    if (!session) {
+      throw new NotFoundException("課程不存在");
+    }
+
+    // 驗證醫護人員存在且屬於該診所 / Validate staff exists and belongs to clinic
+    const staff = await this.staffService.findOne(staffId);
+    if (!staff) {
+      throw new NotFoundException("醫護人員不存在");
+    }
+    if (staff.clinicId !== clinicId) {
+      throw new NotFoundException("醫護人員不屬於此診所");
+    }
+
+    // 檢查是否已分配 / Check if already assigned
+    const existing = await this.staffAssignmentRepository.findOne({
+      where: { sessionId, staffId },
+    });
+    if (existing) {
+      throw new BadRequestException("該醫護人員已分配到此課程");
+    }
+
+    // 建立分配記錄 / Create assignment record
+    const ppfDecimal = new Decimal(ppfPercentage);
+    const assignment = this.staffAssignmentRepository.create({
+      sessionId,
+      staffId,
+      staffRole,
+      ppfPercentage: ppfDecimal,
+      ppfAmount: new Decimal(0), // 初始為 0，由 PPF 計算服務更新 / Initially 0, updated by PPF calculation service
+    });
+
+    const saved = await this.staffAssignmentRepository.save(assignment);
+
+    this.logger.log(
+      `成功分配醫護人員 - sessionId: ${sessionId}, staffId: ${staffId}, courseId: ${courseId}`,
+    );
+
+    return saved;
+  }
+
+  /**
+   * 取得療程的醫護人員分配情況
+   * Get staff assignments for a treatment course
+   *
+   * @param courseId 療程 ID / Course ID
+   * @param clinicId 診所 ID / Clinic ID
+   * @returns 分配記錄陣列 / Array of assignment records
+   */
+  async getStaffAssignmentsForCourse(
+    courseId: string,
+    clinicId: string,
+  ): Promise<StaffAssignment[]> {
+    const course = await this.courseRepository.findOne({
+      where: { id: courseId, clinicId },
+      relations: ["sessions"],
+    });
+
+    if (!course) {
+      throw new NotFoundException("療程不存在");
+    }
+
+    const sessionIds = course.sessions.map((s) => s.id);
+
+    if (sessionIds.length === 0) {
+      return [];
+    }
+
+    return this.staffAssignmentRepository.find({
+      where: { sessionId: In(sessionIds) },
+      relations: ["session"],
+    });
+  }
+
+  /**
+   * 取消醫護人員分配
+   * Unassign staff from session
+   *
+   * @param assignmentId 分配記錄 ID / Assignment record ID
+   * @param clinicId 診所 ID / Clinic ID（用於驗證 / for validation）
+   */
+  async unassignStaff(
+    assignmentId: string,
+    clinicId: string,
+  ): Promise<void> {
+    // 查詢分配記錄 / Find assignment record
+    const assignment = await this.staffAssignmentRepository.findOne({
+      where: { id: assignmentId },
+      relations: ["session"],
+    });
+
+    if (!assignment) {
+      throw new NotFoundException("分配記錄不存在");
+    }
+
+    // 驗證屬於此診所（透過 session.clinicId） / Validate belongs to clinic via session.clinicId
+    if (assignment.session && assignment.session.clinicId !== clinicId) {
+      throw new NotFoundException("分配記錄不存在");
+    }
+
+    await this.staffAssignmentRepository.remove(assignment);
+
+    this.logger.log(
+      `成功取消醫護人員分配 - assignmentId: ${assignmentId}`,
+    );
   }
 
   /**
