@@ -10,6 +10,7 @@ import { TreatmentCourse } from "../entities/treatment-course.entity";
 import { TreatmentSession } from "../entities/treatment-session.entity";
 import { StaffAssignment } from "../entities/staff-assignment.entity";
 import { CreateTreatmentCourseDto } from "../dto/create-treatment-course.dto";
+import { UpdateTreatmentCourseDto } from "../dto/update-treatment-course.dto";
 import { TreatmentCourseTemplateService } from "./treatment-course-template.service";
 import { TreatmentProgressService } from "./treatment-progress.service";
 import { PointsService } from "../../points/services/points.service";
@@ -195,6 +196,7 @@ export class TreatmentCourseService {
   async getPatientCourses(
     patientId: string,
     clinicId: string,
+    status?: string,
   ): Promise<TreatmentCourse[]> {
     // 驗證必要參數
     if (!patientId || patientId.trim() === "") {
@@ -205,17 +207,141 @@ export class TreatmentCourseService {
       throw new BadRequestException("clinicId 不能為空");
     }
 
+    // 支持狀態過濾
+    const whereClause: any = { patientId, clinicId };
+    if (status) {
+      whereClause.status = status;
+    }
+
     const courses = await this.courseRepository.find({
-      where: { patientId, clinicId },
+      where: whereClause,
       relations: ["sessions", "sessions.staffAssignments"],
       order: { createdAt: "DESC" },
     });
 
     this.logger.log(
-      `查詢患者療程 - patientId: ${patientId}, clinicId: ${clinicId}, count: ${courses.length}`,
+      `查詢患者療程 - patientId: ${patientId}, clinicId: ${clinicId}, status: ${status || 'all'}, count: ${courses.length}`,
     );
 
     return courses;
+  }
+
+  /**
+   * 更新療程詳情（名稱、描述、費用、狀態）
+   * Update course details (name, description, cost, status)
+   * 不修改課程（sessions）本身
+   *
+   * @param courseId 療程 ID / Course ID
+   * @param dto 更新資料 / Update data
+   * @param clinicId 診所 ID / Clinic ID
+   * @returns 更新後的療程 / Updated course
+   * @throws NotFoundException 當療程不存在時
+   * @throws BadRequestException 當狀態無效時
+   */
+  async updateCourse(
+    courseId: string,
+    dto: UpdateTreatmentCourseDto,
+    clinicId: string,
+  ): Promise<TreatmentCourse> {
+    const course = await this.courseRepository.findOne({
+      where: { id: courseId, clinicId },
+      relations: ['sessions'],
+    });
+
+    if (!course) {
+      throw new NotFoundException('療程不存在');
+    }
+
+    // 更新允許的欄位
+    if (dto.name) course.name = dto.name;
+    if (dto.description) course.description = dto.description;
+    if (typeof dto.costPerSession !== 'undefined') {
+      course.costPerSession = dto.costPerSession;
+    }
+    if (dto.status) {
+      // 驗證狀態轉換
+      const validStatuses = ['active', 'completed', 'abandoned'];
+      if (!validStatuses.includes(dto.status)) {
+        throw new BadRequestException('無效的療程狀態');
+      }
+      course.status = dto.status;
+
+      if (dto.status === 'completed') {
+        course.completedAt = new Date();
+      }
+    }
+
+    const result = await this.courseRepository.save(course);
+
+    this.logger.log(
+      `成功更新療程 - courseId: ${courseId}, clinicId: ${clinicId}`,
+    );
+
+    return result;
+  }
+
+  /**
+   * 刪除療程（驗證未開始才允許刪除）
+   * Delete course (only allowed if no sessions have started)
+   *
+   * @param courseId 療程 ID / Course ID
+   * @param clinicId 診所 ID / Clinic ID
+   * @throws NotFoundException 當療程不存在時
+   * @throws BadRequestException 當療程已開始不能刪除時
+   */
+  async deleteCourse(courseId: string, clinicId: string): Promise<void> {
+    const course = await this.courseRepository.findOne({
+      where: { id: courseId, clinicId },
+      relations: ['sessions'],
+    });
+
+    if (!course) {
+      throw new NotFoundException('療程不存在');
+    }
+
+    // 如果已開始不能刪除
+    const hasStarted = course.sessions.some(
+      (s) => s.completionStatus !== 'pending',
+    );
+    if (hasStarted) {
+      throw new BadRequestException(
+        '已開始的療程不能刪除，請標記為 abandoned',
+      );
+    }
+
+    await this.courseRepository.remove(course);
+
+    this.logger.log(
+      `成功刪除療程 - courseId: ${courseId}, clinicId: ${clinicId}`,
+    );
+  }
+
+  /**
+   * 取得療程的所有課程（含醫護分配）
+   * Get all sessions of a course with staff assignments
+   *
+   * @param courseId 療程 ID / Course ID
+   * @param clinicId 診所 ID / Clinic ID
+   * @returns 課程陣列 / Array of sessions
+   * @throws NotFoundException 當療程不存在時
+   */
+  async getCourseSessions(
+    courseId: string,
+    clinicId: string,
+  ): Promise<TreatmentSession[]> {
+    const course = await this.courseRepository.findOne({
+      where: { id: courseId, clinicId },
+    });
+
+    if (!course) {
+      throw new NotFoundException('療程不存在');
+    }
+
+    return this.sessionRepository.find({
+      where: { treatmentCourseId: courseId },
+      relations: ['staffAssignments'],
+      order: { sessionNumber: 'ASC' },
+    });
   }
 
   /**

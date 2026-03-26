@@ -23,8 +23,51 @@ export class TreatmentCourse {
   @Column({ type: "varchar", length: 32 })
   patientId: string;
 
-  @Column({ type: "varchar", length: 32 })
+  @Column({ type: "varchar", length: 32, nullable: true })
   templateId: string;
+
+  /**
+   * 療程名稱
+   * Treatment course name
+   */
+  @Column({ type: "varchar", length: 255, nullable: true })
+  name: string;
+
+  /**
+   * 療程類型（如：物理治療、針灸等）
+   * Treatment type
+   */
+  @Column({ type: "varchar", length: 100, nullable: true })
+  type: string;
+
+  /**
+   * 療程描述
+   * Treatment course description
+   */
+  @Column({ type: "text", nullable: true })
+  description: string;
+
+  /**
+   * 每次課程費用
+   * Cost per session
+   */
+  @Column({
+    type: "decimal",
+    precision: 10,
+    scale: 2,
+    nullable: true,
+    transformer: {
+      to: (value: Decimal | number | null): string | null => {
+        if (value === null || value === undefined) return null;
+        return value instanceof Decimal ? value.toString() : String(value);
+      },
+      from: (value: string | null): Decimal | null => {
+        if (value === null || value === undefined) return null;
+        return new Decimal(value);
+      },
+    },
+  })
+  costPerSession: Decimal | number;
 
   @Column({ type: "varchar", length: 50, default: "active" })
   status: "active" | "completed" | "abandoned" = "active";
