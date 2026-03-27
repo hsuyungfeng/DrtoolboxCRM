@@ -63,6 +63,12 @@ const routes: Array<RouteRecordRaw> = [
     meta: { title: '醫令詳情' },
   },
   {
+    path: '/patient-dashboard',
+    name: 'PatientDashboard',
+    component: () => import('@/views/PatientDashboard.vue'),
+    meta: { title: '我的療程與醫令' },
+  },
+  {
     path: '/login',
     name: 'Login',
     component: () => import('@/views/LoginView.vue'),
