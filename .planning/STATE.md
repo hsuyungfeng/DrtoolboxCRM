@@ -3,7 +3,7 @@
 **更新時間：** 2026-03-27
 **當前階段：** Phase 1 執行中
 **里程碑：** v1.0 - 自費醫療管理系統
-**當前計劃：** Phase 01 / Plan 10（已完成）→ 進行 Plan 11
+**當前計劃：** Phase 01 / Plan 11（已完成）→ 進行 Plan 12
 
 ## 項目參考
 
@@ -21,7 +21,7 @@
 | 代碼庫分析 | ✓ 完成 | 100% |
 | 需求定義 | ✓ 完成 | 100% |
 | 路線圖規劃 | ✓ 完成 | 100% |
-| **Phase 1** | ◆ 進行中 | 83% (11/13 計劃完成) |
+| **Phase 1** | ◆ 進行中 | 92% (12/13 計劃完成) |
 | Phase 2 | ○ 待處理 | 0% |
 | Phase 3 | ○ 待處理 | 0% |
 | Phase 4 | ○ 待處理 | 0% |
@@ -42,7 +42,8 @@
 | 08 | Frontend 療程管理 UI 組件 | ✓ 完成 | 7e0a8f5a |
 | 09 | Frontend 醫令管理 UI 組件 | ✓ 完成 | 5151fa85 |
 | 10 | 患者儀表板 PatientDashboard | ✓ 完成 | 7e5b246b |
-| 11-13 | 後續計劃 | ○ 待處理 | - |
+| 11 | 後端單元與集成測試 | ✓ 完成 | 84d10e23 |
+| 12-13 | 後續計劃 | ○ 待處理 | - |
 
 ---
 
@@ -74,6 +75,8 @@
 - **2026-03-27 [01-10]：** PatientTreatmentView 使用 treatmentsApi.getTreatments({ patientId }) 符合現有 API 服務層結構
 - **2026-03-27 [01-10]：** PatientMedicalOrderView 模板欄位名更正為英文（drugOrTreatmentName 等），與 MedicalOrder 介面一致
 - **2026-03-27 [01-10]：** 患者視圖組件採唯讀設計，無新增/編輯/刪除操作
+- **2026-03-27 [01-11]：** PatientController 集成測試使用 MockClinicContextGuard 模擬認證，不依賴真實 JWT
+- **2026-03-27 [01-11]：** Jest coverageThreshold 設定 branches 70%、functions/lines/statements 90%，排除 entity/module/dto/main.ts
 
 ---
 
@@ -91,10 +94,10 @@
 
 ## 最後會話
 
-**停止於：** Phase 01 Plan 10 完成（2026-03-27T02:50:00Z）
+**停止於：** Phase 01 Plan 11 完成（2026-03-27T03:11:00Z）
 
-**下一步：** 執行 Phase 1 Plan 11
+**下一步：** 執行 Phase 1 Plan 12
 
 ---
 
-*最後更新：2026-03-27T02:50:00Z*
+*最後更新：2026-03-27T03:11:00Z*
