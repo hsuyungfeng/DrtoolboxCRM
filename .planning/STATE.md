@@ -3,7 +3,7 @@
 **更新時間：** 2026-03-27
 **當前階段：** Phase 1 執行中
 **里程碑：** v1.0 - 自費醫療管理系統
-**當前計劃：** Phase 01 / Plan 08（已完成）→ 進行 Plan 09
+**當前計劃：** Phase 01 / Plan 09（已完成）→ 進行 Plan 10
 
 ## 項目參考
 
@@ -21,7 +21,7 @@
 | 代碼庫分析 | ✓ 完成 | 100% |
 | 需求定義 | ✓ 完成 | 100% |
 | 路線圖規劃 | ✓ 完成 | 100% |
-| **Phase 1** | ◆ 進行中 | 69% (9/13 計劃完成) |
+| **Phase 1** | ◆ 進行中 | 77% (10/13 計劃完成) |
 | Phase 2 | ○ 待處理 | 0% |
 | Phase 3 | ○ 待處理 | 0% |
 | Phase 4 | ○ 待處理 | 0% |
@@ -40,7 +40,8 @@
 | 06 | PatientController 患者 API | ✓ 完成 | 98dd91d4 |
 | 07 | DTO 驗證層與 ValidationErrorFilter | ✓ 完成 | 00b37172 |
 | 08 | Frontend 療程管理 UI 組件 | ✓ 完成 | 7e0a8f5a |
-| 09-13 | 後續計劃 | ○ 待處理 | - |
+| 09 | Frontend 醫令管理 UI 組件 | ✓ 完成 | 5151fa85 |
+| 10-13 | 後續計劃 | ○ 待處理 | - |
 
 ---
 
@@ -67,6 +68,8 @@
 - **2026-03-27 [01-08]：** TreatmentProgressBar 使用 withDefaults + computed 修正計劃範本 props 存取 bug
 - **2026-03-27 [01-08]：** 課程完成後 checkbox disabled，確保療程進度資料單向遞增
 - **2026-03-27 [01-08]：** treatmentsApi.completeSession 使用 PATCH /treatments/sessions/:id/complete
+- **2026-03-27 [01-09]：** MedicalOrderTable 以 render function 內嵌於 MedicalOrderList.vue，避免獨立組件額外建立
+- **2026-03-27 [01-09]：** medical-orders-api.ts 欄位使用英文屬性名與後端 DTO 一致（drugOrTreatmentName、dosage、usageMethod、totalUsage）
 
 ---
 
@@ -84,10 +87,10 @@
 
 ## 最後會話
 
-**停止於：** Phase 01 Plan 08 完成（2026-03-27T02:53:58Z）
+**停止於：** Phase 01 Plan 09 完成（2026-03-27T02:59:00Z）
 
-**下一步：** 執行 Phase 1 Plan 09
+**下一步：** 執行 Phase 1 Plan 10
 
 ---
 
-*最後更新：2026-03-27T02:53:58Z*
+*最後更新：2026-03-27T02:59:00Z*
