@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-03-27T11:28:07.545Z"
+last_updated: "2026-03-27T11:34:26.106Z"
 progress:
   total_phases: 2
   completed_phases: 1
   total_plans: 17
-  completed_plans: 15
+  completed_plans: 16
 ---
 
 # 項目狀態：Doctor CRM
@@ -16,7 +16,7 @@ progress:
 **更新時間：** 2026-03-27
 **當前階段：** Phase 2 執行中
 **里程碑：** v1.0 - 自費醫療管理系統
-**當前計劃：** Phase 02 / Plan 01（已完成）— 事件基礎架構完成
+**當前計劃：** Phase 02 / Plan 02（已完成）— 通知持久化實體與核心服務重構完成
 
 ## 項目參考
 
@@ -35,7 +35,7 @@ progress:
 | 需求定義 | ✓ 完成 | 100% |
 | 路線圖規劃 | ✓ 完成 | 100% |
 | **Phase 1** | ✓ 完成 | 100% (13/13 計劃完成) |
-| **Phase 2** | 執行中 | 33% (1/3 計劃完成) |
+| **Phase 2** | 執行中 | 67% (2/3 計劃完成) |
 | Phase 3 | ○ 待處理 | 0% |
 | Phase 4 | ○ 待處理 | 0% |
 
@@ -97,6 +97,9 @@ progress:
 - **2026-03-27 [01-13.1]：** Controller 測試 mock 需包含控制器實際呼叫的所有 service 方法（getCourseWithProgress 非 getCourseById）
 - **2026-03-27 [02-01]：** CourseStartedEvent 在事務外 emit，CourseCompletedEvent 在事務內 emit（EventEmitter2 async 模式確保 Listener 在提交後執行）
 - **2026-03-27 [02-01]：** tests/ 目錄的 spec 補入 EventEmitter2 mock，避免 DI 容器初始化失敗（Rule 3 自動修正）
+- **2026-03-27 [02-02]：** NotificationRecord 記錄每次發送嘗試（含 channel），支援多渠道分別追蹤，偏好缺席預設全渠道啟用
+- **2026-03-27 [02-02]：** in_app 渠道 status 設為 sent（儲存即送達），email/sms 設為 pending（等待 Plan 03）
+- **2026-03-27 [02-02]：** NotificationService 移至 services/ 子目錄，controller import 同步更新（Rule 3）
 
 ---
 
@@ -117,17 +120,17 @@ progress:
 | 計劃 | 名稱 | 狀態 | 提交 |
 |------|------|------|------|
 | 01 | 事件基礎架構（course.started / course.completed） | ✓ 完成 | d6a88d0a |
-| 02 | 通知 Listener 與傳送服務 | ○ 待處理 | — |
+| 02 | 通知持久化實體與核心服務重構 | ✓ 完成 | 4ad994cc |
 | 03 | 通知管理 API | ○ 待處理 | — |
 
 ---
 
 ## 最後會話
 
-**停止於：** Completed 02-01-PLAN.md（2026-03-27T11:27:00Z）
+**停止於：** Completed 02-02-PLAN.md（2026-03-27T11:33:23Z）
 
-**下一步：** 執行 Phase 2 Plan 02（通知 Listener 與傳送服務）
+**下一步：** 執行 Phase 2 Plan 03（通知管理 API）
 
 ---
 
-*最後更新：2026-03-27T11:27:00Z*
+*最後更新：2026-03-27T11:33:23Z*
