@@ -1,3 +1,16 @@
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: unknown
+last_updated: "2026-03-27T06:50:37.424Z"
+progress:
+  total_phases: 1
+  completed_phases: 1
+  total_plans: 14
+  completed_plans: 14
+---
+
 # 項目狀態：Doctor CRM
 
 **更新時間：** 2026-03-27
