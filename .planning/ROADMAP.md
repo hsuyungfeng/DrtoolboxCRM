@@ -19,7 +19,7 @@
 
 | 計劃 | 名稱 | 狀態 | 提交 |
 |------|------|------|------|
-| 01 | MedicalOrder 實體與 DTO | ✓ 完成 | 3fc6b9df |
+| 01 | 8/13 | In Progress|  |
 | 02 | TreatmentProgressService + 醫護分配 | ✓ 完成 | 93184d6a |
 | 03 | PatientSearch 實體與搜尋服務 | ✓ 完成 | 20143af4 |
 | 04 | MedicalOrderController 醫令 API | ✓ 完成 | 2cf1405d |

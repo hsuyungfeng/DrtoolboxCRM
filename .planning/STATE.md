@@ -3,7 +3,7 @@
 **更新時間：** 2026-03-27
 **當前階段：** Phase 1 執行中
 **里程碑：** v1.0 - 自費醫療管理系統
-**當前計劃：** Phase 01 / Plan 05（已完成）→ 進行 Plan 08
+**當前計劃：** Phase 01 / Plan 08（已完成）→ 進行 Plan 09
 
 ## 項目參考
 
@@ -21,7 +21,7 @@
 | 代碼庫分析 | ✓ 完成 | 100% |
 | 需求定義 | ✓ 完成 | 100% |
 | 路線圖規劃 | ✓ 完成 | 100% |
-| **Phase 1** | ◆ 進行中 | 62% (8/13 計劃完成) |
+| **Phase 1** | ◆ 進行中 | 69% (9/13 計劃完成) |
 | Phase 2 | ○ 待處理 | 0% |
 | Phase 3 | ○ 待處理 | 0% |
 | Phase 4 | ○ 待處理 | 0% |
@@ -39,7 +39,8 @@
 | 05 | TreatmentCourse CRUD API | ✓ 完成 | 9eeb169d |
 | 06 | PatientController 患者 API | ✓ 完成 | 98dd91d4 |
 | 07 | DTO 驗證層與 ValidationErrorFilter | ✓ 完成 | 00b37172 |
-| 08-13 | 後續計劃 | ○ 待處理 | - |
+| 08 | Frontend 療程管理 UI 組件 | ✓ 完成 | 7e0a8f5a |
+| 09-13 | 後續計劃 | ○ 待處理 | - |
 
 ---
 
@@ -63,6 +64,9 @@
 - **2026-03-27 [01-05]：** TreatmentCourseController 使用 JwtAuthGuard 而非 ClinicContextGuard，與現有架構一致
 - **2026-03-27 [01-05]：** clinicId 透過 query 參數或 req.user.clinicId 雙重解析，提高 API 彈性
 - **2026-03-27 [01-05]：** 患者視圖 DTO 使用 @Exclude() 在序列化層隱藏敏感欄位（clinicId、patientId）
+- **2026-03-27 [01-08]：** TreatmentProgressBar 使用 withDefaults + computed 修正計劃範本 props 存取 bug
+- **2026-03-27 [01-08]：** 課程完成後 checkbox disabled，確保療程進度資料單向遞增
+- **2026-03-27 [01-08]：** treatmentsApi.completeSession 使用 PATCH /treatments/sessions/:id/complete
 
 ---
 
@@ -80,10 +84,10 @@
 
 ## 最後會話
 
-**停止於：** Phase 01 Plan 05 完成（2026-03-27T00:00:00Z）
+**停止於：** Phase 01 Plan 08 完成（2026-03-27T02:53:58Z）
 
-**下一步：** 執行 Phase 1 Plan 08
+**下一步：** 執行 Phase 1 Plan 09
 
 ---
 
-*最後更新：2026-03-27*
+*最後更新：2026-03-27T02:53:58Z*
