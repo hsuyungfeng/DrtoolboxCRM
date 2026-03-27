@@ -5,6 +5,10 @@ export declare class TreatmentCourse {
     id: string;
     patientId: string;
     templateId: string;
+    name: string;
+    type: string;
+    description: string;
+    costPerSession: Decimal | number;
     status: "active" | "completed" | "abandoned";
     purchaseDate: Date;
     purchaseAmount: Decimal;

@@ -5,18 +5,23 @@ import { TreatmentSession } from "./entities/treatment-session.entity";
 import { TreatmentCourseTemplate } from "./entities/treatment-course-template.entity";
 import { TreatmentCourse } from "./entities/treatment-course.entity";
 import { StaffAssignment } from "./entities/staff-assignment.entity";
+import { MedicalOrder } from "./entities/medical-order.entity";
+import { ScriptTemplate } from "./entities/script-template.entity";
+import { Patient } from "../patients/entities/patient.entity";
 import { TreatmentService } from "./services/treatment.service";
 import { TreatmentSessionService } from "./services/treatment-session.service";
 import { TreatmentCourseTemplateService } from "./services/treatment-course-template.service";
 import { TreatmentCourseService } from "./services/treatment-course.service";
 import { TreatmentProgressService } from "./services/treatment-progress.service";
 import { PPFCalculationService } from "./services/ppf-calculation.service";
+import { MedicalOrderService } from "./services/medical-order.service";
 import { TreatmentController } from "./controllers/treatment.controller";
 import { TreatmentSessionController } from "./controllers/treatment-session.controller";
 import {
   TreatmentCourseController,
   StaffSessionController,
 } from "./controllers/treatment-course.controller";
+import { MedicalOrderController } from "./controllers/medical-order.controller";
 import { PointsModule } from "../points/points.module";
 import { StaffModule } from "../staff/staff.module";
 
@@ -28,6 +33,9 @@ import { StaffModule } from "../staff/staff.module";
       TreatmentCourseTemplate,
       TreatmentCourse,
       StaffAssignment,
+      MedicalOrder,
+      ScriptTemplate,
+      Patient,
     ]),
     PointsModule,
     StaffModule,
@@ -37,6 +45,7 @@ import { StaffModule } from "../staff/staff.module";
     TreatmentSessionController,
     TreatmentCourseController,
     StaffSessionController,
+    MedicalOrderController,
   ],
   providers: [
     TreatmentService,
@@ -45,6 +54,7 @@ import { StaffModule } from "../staff/staff.module";
     TreatmentCourseService,
     TreatmentProgressService,
     PPFCalculationService,
+    MedicalOrderService,
   ],
   exports: [
     TreatmentService,
@@ -53,6 +63,7 @@ import { StaffModule } from "../staff/staff.module";
     TreatmentCourseService,
     TreatmentProgressService,
     PPFCalculationService,
+    MedicalOrderService,
   ],
 })
 export class TreatmentsModule {}

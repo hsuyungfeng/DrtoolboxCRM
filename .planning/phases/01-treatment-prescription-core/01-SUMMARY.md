@@ -106,3 +106,14 @@ completed: 2026-03-26
 ---
 *Phase: 01-treatment-prescription-core*
 *完成日期：2026-03-26*
+
+## Self-Check: PASSED
+
+- FOUND: backend/src/treatments/entities/medical-order.entity.ts
+- FOUND: backend/src/treatments/entities/script-template.entity.ts
+- FOUND: backend/src/treatments/dto/create-medical-order.dto.ts
+- FOUND: backend/src/treatments/dto/update-medical-order.dto.ts
+- FOUND: .planning/phases/01-treatment-prescription-core/01-SUMMARY.md
+- FOUND commit 3c0e604d: feat(01-01): 建立 MedicalOrder 實體及狀態機
+- FOUND commit f505916f: feat(01-01): 建立 ScriptTemplate 實體（醫令模板）
+- FOUND commit 3fc6b9df: feat(01-01): 建立 CreateMedicalOrderDto 與 UpdateMedicalOrderDto

@@ -21,6 +21,10 @@ let TreatmentCourse = class TreatmentCourse {
     id;
     patientId;
     templateId;
+    name;
+    type;
+    description;
+    costPerSession;
     status = "active";
     purchaseDate;
     purchaseAmount;
@@ -43,9 +47,42 @@ __decorate([
     __metadata("design:type", String)
 ], TreatmentCourse.prototype, "patientId", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: "varchar", length: 32 }),
+    (0, typeorm_1.Column)({ type: "varchar", length: 32, nullable: true }),
     __metadata("design:type", String)
 ], TreatmentCourse.prototype, "templateId", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 255, nullable: true }),
+    __metadata("design:type", String)
+], TreatmentCourse.prototype, "name", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 100, nullable: true }),
+    __metadata("design:type", String)
+], TreatmentCourse.prototype, "type", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "text", nullable: true }),
+    __metadata("design:type", String)
+], TreatmentCourse.prototype, "description", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: "decimal",
+        precision: 10,
+        scale: 2,
+        nullable: true,
+        transformer: {
+            to: (value) => {
+                if (value === null || value === undefined)
+                    return null;
+                return value instanceof decimal_js_1.default ? value.toString() : String(value);
+            },
+            from: (value) => {
+                if (value === null || value === undefined)
+                    return null;
+                return new decimal_js_1.default(value);
+            },
+        },
+    }),
+    __metadata("design:type", Object)
+], TreatmentCourse.prototype, "costPerSession", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: "varchar", length: 50, default: "active" }),
     __metadata("design:type", String)

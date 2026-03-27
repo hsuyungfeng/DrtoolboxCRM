@@ -17,10 +17,43 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const patient_entity_1 = require("../entities/patient.entity");
+const patient_search_service_1 = require("./patient-search.service");
 let PatientService = class PatientService {
     patientRepository;
-    constructor(patientRepository) {
+    patientSearchService;
+    constructor(patientRepository, patientSearchService) {
         this.patientRepository = patientRepository;
+        this.patientSearchService = patientSearchService;
+    }
+    async createPatient(dto, clinicId) {
+        const available = await this.patientSearchService.validateIdNumberAvailability(dto.idNumber, clinicId);
+        if (!available) {
+            throw new common_1.BadRequestException(`身份證ID「${dto.idNumber}」已存在於本診所，請確認是否重複建檔`);
+        }
+        const patient = this.patientRepository.create({
+            ...dto,
+            clinicId,
+            status: "active",
+        });
+        return this.patientRepository.save(patient);
+    }
+    async updatePatient(patientId, dto, clinicId) {
+        const patient = await this.patientRepository.findOne({
+            where: { id: patientId, clinicId },
+        });
+        if (!patient) {
+            throw new common_1.NotFoundException(`患者不存在或不屬於本診所（ID: ${patientId}）`);
+        }
+        if (dto.idNumber && dto.idNumber !== patient.idNumber) {
+            const available = await this.patientSearchService.validateIdNumberAvailability(dto.idNumber, clinicId);
+            if (!available) {
+                throw new common_1.BadRequestException(`新身份證ID「${dto.idNumber}」已存在於本診所`);
+            }
+        }
+        const { clinicId: _ignored, ...safeDto } = dto;
+        void _ignored;
+        Object.assign(patient, safeDto);
+        return this.patientRepository.save(patient);
     }
     async create(createPatientDto) {
         const patient = this.patientRepository.create(createPatientDto);
@@ -35,10 +68,10 @@ let PatientService = class PatientService {
     async findOne(id) {
         const patient = await this.patientRepository.findOne({
             where: { id },
-            relations: ["treatments"],
+            relations: ["treatmentCourses"],
         });
         if (!patient) {
-            throw new common_1.NotFoundException(`Patient with ID ${id} not found`);
+            throw new common_1.NotFoundException(`患者不存在（ID: ${id}）`);
         }
         return patient;
     }
@@ -57,6 +90,7 @@ exports.PatientService = PatientService;
 exports.PatientService = PatientService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(patient_entity_1.Patient)),
-    __metadata("design:paramtypes", [typeorm_2.Repository])
+    __metadata("design:paramtypes", [typeorm_2.Repository,
+        patient_search_service_1.PatientSearchService])
 ], PatientService);
 //# sourceMappingURL=patient.service.js.map

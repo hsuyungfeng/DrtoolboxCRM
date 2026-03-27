@@ -13,6 +13,7 @@ exports.CreatePatientDto = void 0;
 const class_validator_1 = require("class-validator");
 class CreatePatientDto {
     name;
+    idNumber;
     email;
     phone;
     dateOfBirth;
@@ -28,9 +29,14 @@ class CreatePatientDto {
 exports.CreatePatientDto = CreatePatientDto;
 __decorate([
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.Length)(1, 255),
+    (0, class_validator_1.Length)(1, 100),
     __metadata("design:type", String)
 ], CreatePatientDto.prototype, "name", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.Length)(1, 50),
+    __metadata("design:type", String)
+], CreatePatientDto.prototype, "idNumber", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsEmail)(),

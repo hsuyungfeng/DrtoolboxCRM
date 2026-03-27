@@ -1,0 +1,90 @@
+[project]
+# 項目名稱
+name = "doctor-crm"
+# 項目版本
+version = "0.1.0"
+# 項目描述 (繁體中文)
+description = "醫療客戶關係管理系統 - 醫生 CRM"
+# 作者
+authors = [
+    {name = "開發團隊", email = "team@example.com"}
+]
+# 許可證
+license = {text = "MIT"}
+# Python 版本要求
+requires-python = ">=3.10"
+# 依賴項
+dependencies = [
+    # 數據處理
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
+    # 數據庫操作
+    "sqlite3>=0.0.1",  # 標準庫，僅作標記
+    # HTTP 客戶端
+    "requests>=2.31.0",
+    # 日期時間處理
+    "python-dateutil>=2.8.2",
+    # 環境變量管理
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+# 開發依賴
+dev = [
+    "pytest>=7.4.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.5.0",
+    "pre-commit>=3.5.0",
+]
+# 數據遷移工具
+migration = [
+    "alembic>=1.12.0",
+    "sqlalchemy>=2.0.0",
+]
+# 數據分析
+analysis = [
+    "matplotlib>=3.7.0",
+    "seaborn>=0.12.0",
+    "jupyter>=1.0.0",
+]
+
+# 構建系統要求
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# 工具配置
+[tool.black]
+line-length = 88
+target-version = ['py310']
+
+[tool.isort]
+profile = "black"
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v"
+
+# 項目結構說明 (繁體中文)
+# 本項目為醫療 CRM 系統，包含以下模塊：
+# 1. 後端 API 服務 (NestJS + TypeScript)
+# 2. 前端界面 (Vue 3 + TypeScript + Naive UI)
+# 3. 數據庫 (SQLite/PostgreSQL)
+# 4. 分潤計算引擎 (PPF 算法)
+# 
+# 使用 uv 管理 Python 依賴：
+# - 安裝依賴：uv pip install -e .
+# - 安裝開發依賴：uv pip install -e .[dev]
+# - 安裝遷移工具：uv pip install -e .[migration]
+# - 安裝分析工具：uv pip install -e .[analysis]
+# 
+# 注意：Node.js 依賴使用 npm 管理，請參考 package.json 文件。

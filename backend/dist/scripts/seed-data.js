@@ -41,7 +41,7 @@ async function seed() {
         patient.id = "patient_001";
         patient.clinicId = clinicId;
         patient.name = "張三";
-        patient.phone = "0912345678";
+        patient.phoneNumber = "0912345678";
         patient.email = "zhangsan@example.com";
         patient.dateOfBirth = new Date("1980-01-01");
         patient.gender = "male";
@@ -49,7 +49,6 @@ async function seed() {
         patient.emergencyPhone = "0987654321";
         patient.allergies = "無";
         patient.currentMedications = "無";
-        patient.medicalNotes = "健康狀況良好";
         patient.status = "active";
         await patientRepository.save(patient);
         console.log("創建員工數據...");

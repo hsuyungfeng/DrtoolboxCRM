@@ -47,7 +47,7 @@ __decorate([
     __metadata("design:type", String)
 ], Treatment.prototype, "patientId", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => patient_entity_1.Patient, (patient) => patient.treatments),
+    (0, typeorm_1.ManyToOne)(() => patient_entity_1.Patient),
     (0, typeorm_1.JoinColumn)({ name: "patientId" }),
     __metadata("design:type", patient_entity_1.Patient)
 ], Treatment.prototype, "patient", void 0);

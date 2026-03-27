@@ -21,7 +21,7 @@ export class Treatment {
   @Column({ type: "varchar", length: 32 })
   patientId: string;
 
-  @ManyToOne(() => Patient, (patient) => patient.treatments)
+  @ManyToOne(() => Patient)
   @JoinColumn({ name: "patientId" })
   patient: Patient;
 

@@ -4,11 +4,12 @@ const core_1 = require("@nestjs/core");
 const app_module_1 = require("./app.module");
 const http_exception_filter_1 = require("./common/filters/http-exception.filter");
 const all_exceptions_filter_1 = require("./common/filters/all-exceptions.filter");
+const validation_error_filter_1 = require("./common/filters/validation-error.filter");
 const swagger_1 = require("@nestjs/swagger");
 const clinic_auth_middleware_1 = require("./common/middlewares/clinic-auth.middleware");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
-    app.useGlobalFilters(new http_exception_filter_1.HttpExceptionFilter(), new all_exceptions_filter_1.AllExceptionsFilter());
+    app.useGlobalFilters(new validation_error_filter_1.ValidationErrorFilter(), new http_exception_filter_1.HttpExceptionFilter(), new all_exceptions_filter_1.AllExceptionsFilter());
     app.enableCors({
         origin: process.env.CORS_ORIGIN || true,
         methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],

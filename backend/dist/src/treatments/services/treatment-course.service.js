@@ -22,21 +22,30 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const treatment_course_entity_1 = require("../entities/treatment-course.entity");
 const treatment_session_entity_1 = require("../entities/treatment-session.entity");
+const staff_assignment_entity_1 = require("../entities/staff-assignment.entity");
 const treatment_course_template_service_1 = require("./treatment-course-template.service");
+const treatment_progress_service_1 = require("./treatment-progress.service");
 const points_service_1 = require("../../points/services/points.service");
+const staff_service_1 = require("../../staff/services/staff.service");
 const decimal_js_1 = __importDefault(require("decimal.js"));
 let TreatmentCourseService = TreatmentCourseService_1 = class TreatmentCourseService {
     courseRepository;
     sessionRepository;
+    staffAssignmentRepository;
     templateService;
+    treatmentProgressService;
     pointsService;
+    staffService;
     dataSource;
     logger = new common_1.Logger(TreatmentCourseService_1.name);
-    constructor(courseRepository, sessionRepository, templateService, pointsService, dataSource) {
+    constructor(courseRepository, sessionRepository, staffAssignmentRepository, templateService, treatmentProgressService, pointsService, staffService, dataSource) {
         this.courseRepository = courseRepository;
         this.sessionRepository = sessionRepository;
+        this.staffAssignmentRepository = staffAssignmentRepository;
         this.templateService = templateService;
+        this.treatmentProgressService = treatmentProgressService;
         this.pointsService = pointsService;
+        this.staffService = staffService;
         this.dataSource = dataSource;
     }
     async createCourse(dto) {
@@ -105,20 +114,81 @@ let TreatmentCourseService = TreatmentCourseService_1 = class TreatmentCourseSer
         }
         return course;
     }
-    async getPatientCourses(patientId, clinicId) {
+    async getPatientCourses(patientId, clinicId, status) {
         if (!patientId || patientId.trim() === "") {
             throw new common_1.BadRequestException("patientId 不能為空");
         }
         if (!clinicId || clinicId.trim() === "") {
             throw new common_1.BadRequestException("clinicId 不能為空");
         }
+        const whereClause = { patientId, clinicId };
+        if (status) {
+            whereClause.status = status;
+        }
         const courses = await this.courseRepository.find({
-            where: { patientId, clinicId },
+            where: whereClause,
             relations: ["sessions", "sessions.staffAssignments"],
             order: { createdAt: "DESC" },
         });
-        this.logger.log(`查詢患者療程 - patientId: ${patientId}, clinicId: ${clinicId}, count: ${courses.length}`);
+        this.logger.log(`查詢患者療程 - patientId: ${patientId}, clinicId: ${clinicId}, status: ${status || 'all'}, count: ${courses.length}`);
         return courses;
+    }
+    async updateCourse(courseId, dto, clinicId) {
+        const course = await this.courseRepository.findOne({
+            where: { id: courseId, clinicId },
+            relations: ['sessions'],
+        });
+        if (!course) {
+            throw new common_1.NotFoundException('療程不存在');
+        }
+        if (dto.name)
+            course.name = dto.name;
+        if (dto.description)
+            course.description = dto.description;
+        if (typeof dto.costPerSession !== 'undefined') {
+            course.costPerSession = dto.costPerSession;
+        }
+        if (dto.status) {
+            const validStatuses = ['active', 'completed', 'abandoned'];
+            if (!validStatuses.includes(dto.status)) {
+                throw new common_1.BadRequestException('無效的療程狀態');
+            }
+            course.status = dto.status;
+            if (dto.status === 'completed') {
+                course.completedAt = new Date();
+            }
+        }
+        const result = await this.courseRepository.save(course);
+        this.logger.log(`成功更新療程 - courseId: ${courseId}, clinicId: ${clinicId}`);
+        return result;
+    }
+    async deleteCourse(courseId, clinicId) {
+        const course = await this.courseRepository.findOne({
+            where: { id: courseId, clinicId },
+            relations: ['sessions'],
+        });
+        if (!course) {
+            throw new common_1.NotFoundException('療程不存在');
+        }
+        const hasStarted = course.sessions.some((s) => s.completionStatus !== 'pending');
+        if (hasStarted) {
+            throw new common_1.BadRequestException('已開始的療程不能刪除，請標記為 abandoned');
+        }
+        await this.courseRepository.remove(course);
+        this.logger.log(`成功刪除療程 - courseId: ${courseId}, clinicId: ${clinicId}`);
+    }
+    async getCourseSessions(courseId, clinicId) {
+        const course = await this.courseRepository.findOne({
+            where: { id: courseId, clinicId },
+        });
+        if (!course) {
+            throw new common_1.NotFoundException('療程不存在');
+        }
+        return this.sessionRepository.find({
+            where: { treatmentCourseId: courseId },
+            relations: ['staffAssignments'],
+            order: { sessionNumber: 'ASC' },
+        });
     }
     async updateCourseStatus(courseId, clinicId, status) {
         if (!courseId || courseId.trim() === "") {
@@ -144,6 +214,126 @@ let TreatmentCourseService = TreatmentCourseService_1 = class TreatmentCourseSer
         this.logger.log(`成功更新課程狀態 - courseId: ${courseId}, status: ${status}`);
         return result;
     }
+    async getCourseWithProgress(courseId, clinicId) {
+        const course = await this.courseRepository.findOne({
+            where: { id: courseId, clinicId },
+            relations: ["sessions"],
+        });
+        if (!course) {
+            throw new common_1.NotFoundException("療程不存在");
+        }
+        const progress = this.treatmentProgressService.getProgress(course);
+        return {
+            ...course,
+            progress,
+        };
+    }
+    async getPatientCoursesWithProgress(patientId, clinicId) {
+        const courses = await this.courseRepository.find({
+            where: { patientId, clinicId },
+            relations: ["sessions"],
+            order: { createdAt: "DESC" },
+        });
+        return courses.map((course) => ({
+            ...course,
+            progress: this.treatmentProgressService.getProgress(course),
+        }));
+    }
+    async completeSession(sessionId, clinicId) {
+        const session = await this.sessionRepository.findOne({
+            where: { id: sessionId, clinicId },
+            relations: ["treatmentCourse"],
+        });
+        if (!session) {
+            throw new common_1.NotFoundException("課程不存在");
+        }
+        session.completionStatus = "completed";
+        await this.sessionRepository.save(session);
+        const course = await this.courseRepository.findOne({
+            where: { id: session.treatmentCourseId },
+            relations: ["sessions"],
+        });
+        if (course) {
+            const isFinally = this.treatmentProgressService.isCourseFinallyCompleted(course);
+            if (isFinally && course.status !== "completed") {
+                course.status = "completed";
+                course.completedAt = new Date();
+                await this.courseRepository.save(course);
+                this.logger.log(`療程全部完成，自動更新狀態 - courseId: ${course.id}`);
+            }
+        }
+        this.logger.log(`成功完成課程 - sessionId: ${sessionId}`);
+        return session;
+    }
+    async assignStaffToSession(courseId, sessionId, staffId, clinicId, staffRole, ppfPercentage) {
+        const course = await this.courseRepository.findOne({
+            where: { id: courseId, clinicId },
+        });
+        if (!course) {
+            throw new common_1.NotFoundException("療程不存在");
+        }
+        const session = await this.sessionRepository.findOne({
+            where: { id: sessionId, treatmentCourseId: courseId },
+        });
+        if (!session) {
+            throw new common_1.NotFoundException("課程不存在");
+        }
+        const staff = await this.staffService.findOne(staffId);
+        if (!staff) {
+            throw new common_1.NotFoundException("醫護人員不存在");
+        }
+        if (staff.clinicId !== clinicId) {
+            throw new common_1.NotFoundException("醫護人員不屬於此診所");
+        }
+        const existing = await this.staffAssignmentRepository.findOne({
+            where: { sessionId, staffId },
+        });
+        if (existing) {
+            throw new common_1.BadRequestException("該醫護人員已分配到此課程");
+        }
+        const ppfDecimal = new decimal_js_1.default(ppfPercentage);
+        const assignment = this.staffAssignmentRepository.create({
+            sessionId,
+            staffId,
+            staffRole,
+            ppfPercentage: ppfDecimal,
+            ppfAmount: new decimal_js_1.default(0),
+        });
+        const saved = await this.staffAssignmentRepository.save(assignment);
+        this.logger.log(`成功分配醫護人員 - sessionId: ${sessionId}, staffId: ${staffId}, courseId: ${courseId}`);
+        return saved;
+    }
+    async getStaffAssignmentsForCourse(courseId, clinicId) {
+        const course = await this.courseRepository.findOne({
+            where: { id: courseId, clinicId },
+            relations: ["sessions"],
+        });
+        if (!course) {
+            throw new common_1.NotFoundException("療程不存在");
+        }
+        const sessionIds = course.sessions.map((s) => s.id);
+        if (sessionIds.length === 0) {
+            return [];
+        }
+        return this.staffAssignmentRepository.find({
+            where: { sessionId: (0, typeorm_2.In)(sessionIds) },
+            relations: ["session"],
+        });
+    }
+    async unassignStaff(assignmentId, clinicId) {
+        const assignment = await this.staffAssignmentRepository.findOne({
+            where: { id: assignmentId },
+            relations: ["session"],
+        });
+        if (!assignment) {
+            throw new common_1.NotFoundException("分配記錄不存在");
+        }
+        if (assignment.session && assignment.session.clinicId !== clinicId) {
+            throw new common_1.NotFoundException("分配記錄不存在");
+        }
+        await this.staffAssignmentRepository.remove(assignment);
+        this.logger.log(`成功取消醫護人員分配 - assignmentId: ${assignmentId}`);
+    }
     validateCreateCourseInput(dto) {
         if (!dto.patientId || dto.patientId.trim() === "") {
             throw new common_1.BadRequestException("patientId 不能為空");
@@ -161,10 +351,14 @@ exports.TreatmentCourseService = TreatmentCourseService = TreatmentCourseService
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(treatment_course_entity_1.TreatmentCourse)),
     __param(1, (0, typeorm_1.InjectRepository)(treatment_session_entity_1.TreatmentSession)),
+    __param(2, (0, typeorm_1.InjectRepository)(staff_assignment_entity_1.StaffAssignment)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
         typeorm_2.Repository,
+        typeorm_2.Repository,
         treatment_course_template_service_1.TreatmentCourseTemplateService,
+        treatment_progress_service_1.TreatmentProgressService,
         points_service_1.PointsService,
+        staff_service_1.StaffService,
         typeorm_2.DataSource])
 ], TreatmentCourseService);
 //# sourceMappingURL=treatment-course.service.js.map
