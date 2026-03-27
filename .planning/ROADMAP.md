@@ -8,7 +8,7 @@
 
 | # | 階段名 | 目標 | 需求 | 成功標準 |
 |---|--------|------|------|---------|
-| 1 | 3/13 | In Progress|  | 醫護人員能完整管理療程/醫令，患者能查看進度 |
+| 1 | 7/13 完成 | In Progress |  | 醫護人員能完整管理療程/醫令，患者能查看進度 |
 | 2 | 患者通知系統 | 實現多渠道患者進度通知 | NOTIF-01~05 | 患者在關鍵節點（開始/進度/完成）收到通知 |
 | 3 | 財務管理完善 | 完整費用計算、記錄、報表 | FIN-01~06 | 醫護人員能準確追蹤費用，患者收到清晰發票 |
 | 4 | Doctor Toolbox 整合 | 實現與 Doctor Toolbox 雙向同步 | INTEGRATION-01~04 | 兩系統資料一致，以身份證ID+姓名索引 |
@@ -20,7 +20,13 @@
 | 計劃 | 名稱 | 狀態 | 提交 |
 |------|------|------|------|
 | 01 | MedicalOrder 實體與 DTO | ✓ 完成 | 3fc6b9df |
-| 02-13 | 後續計劃 | ○ 待處理 | - |
+| 02 | TreatmentProgressService + 醫護分配 | ✓ 完成 | 93184d6a |
+| 03 | PatientSearch 實體與搜尋服務 | ✓ 完成 | 20143af4 |
+| 04 | MedicalOrderController 醫令 API | ✓ 完成 | 2cf1405d |
+| 05 | TreatmentCourse CRUD API | ✓ 完成 | 9eeb169d |
+| 06 | PatientController 患者 API | ✓ 完成 | 98dd91d4 |
+| 07 | DTO 驗證層與 ValidationErrorFilter | ✓ 完成 | 00b37172 |
+| 08-13 | 後續計劃 | ○ 待處理 | - |
 
 **交付內容：**
 - 療程創建/編輯/刪除完整流程
