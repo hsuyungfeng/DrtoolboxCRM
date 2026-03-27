@@ -51,6 +51,18 @@ const routes: Array<RouteRecordRaw> = [
     meta: { title: '分潤管理' },
   },
   {
+    path: '/medical-orders',
+    name: 'MedicalOrders',
+    component: () => import('@/views/MedicalOrderList.vue'),
+    meta: { title: '醫令管理' },
+  },
+  {
+    path: '/medical-orders/:id',
+    name: 'MedicalOrderDetail',
+    component: () => import('@/views/MedicalOrderDetail.vue'),
+    meta: { title: '醫令詳情' },
+  },
+  {
     path: '/login',
     name: 'Login',
     component: () => import('@/views/LoginView.vue'),
