@@ -70,20 +70,38 @@
 
 ## Phase 3：財務管理完善（約 3-4 週）
 
+**計劃數：** 3 個計劃
+
+**計劃進度：**
+
+| 計劃 | 名稱 | 狀態 | 提交 |
+|------|------|------|------|
+| 01 | Payment 實體、FeeCalculationService 與 PaymentController（FIN-01/02/05） | ○ 待處理 | - |
+| 02 | Invoice 實體、InvoiceService 與 InvoiceController（FIN-03/04） | ○ 待處理 | - |
+| 03 | RevenueReportService 報表 API 與前端 ECharts 視覺化（FIN-06） | ○ 待處理 | - |
+
+計劃清單：
+- [ ] 03-01-PLAN.md — Payment 實體與費用計算服務基礎
+- [ ] 03-02-PLAN.md — 發票生成與管理系統
+- [ ] 03-03-PLAN.md — 收入統計報表與前端視覺化
+
 **交付內容：**
-- 費用精確計算引擎
-- 支付記錄詳細追蹤
-- 發票生成系統
-- 收入統計報表
+- Payment 實體（患者支付記錄，三種付款方式）
+- FeeCalculationService（Decimal.js 精確計算，誤差 < 0.01%）
+- Invoice 實體（自動流水號，draft/issued/cancelled 狀態流）
+- InvoiceService（重複開立防護，費用明細自動生成）
+- RevenueReportService（聚合查詢：月趨勢、支付方式、人員分潤）
+- 前端報表分頁（ECharts 長條圖 + 環形圖 + 人員表格）
 
 **技術重點：**
-- 改進現有 Revenue 模組計算邏輯
-- 發票模板與生成邏輯
-- 報表查詢與視覺化（使用 ECharts）
+- 改進現有 Revenue 模組，新增 Payment + Invoice 實體
+- 使用 decimal.js 進行精確財務計算
+- TypeORM QueryBuilder 聚合查詢（月趨勢 SQLite strftime）
+- ECharts 6.0 + vue-echarts 視覺化
 
 **必達指標：**
 - ✓ 費用計算誤差 < 0.01%
-- ✓ 發票格式符合稅務要求
+- ✓ 發票格式符合台灣稅務要求（invoiceNumber: INV-{YYYYMM}-{序號}）
 - ✓ 報表載入時間 < 2 秒
 
 ---
@@ -122,3 +140,4 @@
 ---
 
 *路線圖建立日期：2026-03-26*
+*最後更新：2026-03-27（Phase 3 計劃建立）*
