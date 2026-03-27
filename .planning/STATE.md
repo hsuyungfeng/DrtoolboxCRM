@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-03-27T11:34:26.106Z"
+last_updated: "2026-03-27T11:39:55.331Z"
 progress:
   total_phases: 2
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 17
-  completed_plans: 16
+  completed_plans: 17
 ---
 
 # 項目狀態：Doctor CRM
@@ -100,6 +100,9 @@ progress:
 - **2026-03-27 [02-02]：** NotificationRecord 記錄每次發送嘗試（含 channel），支援多渠道分別追蹤，偏好缺席預設全渠道啟用
 - **2026-03-27 [02-02]：** in_app 渠道 status 設為 sent（儲存即送達），email/sms 設為 pending（等待 Plan 03）
 - **2026-03-27 [02-02]：** NotificationService 移至 services/ 子目錄，controller import 同步更新（Rule 3）
+- **2026-03-27 [02-03]：** @nestjs/schedule 在 NotificationsModule forRoot()，未在 app.module.ts 中預先載入
+- **2026-03-27 [02-03]：** NotificationEventListener 三個 handler 各自獨立 try/catch，不重新拋出，確保 RevenueEventListener 不受影響
+- **2026-03-27 [02-03]：** Cron 使用 DATE(session.scheduledDate) 而非直接比較 datetime，處理 SQLite 字串日期欄位
 
 ---
 
@@ -121,16 +124,16 @@ progress:
 |------|------|------|------|
 | 01 | 事件基礎架構（course.started / course.completed） | ✓ 完成 | d6a88d0a |
 | 02 | 通知持久化實體與核心服務重構 | ✓ 完成 | 4ad994cc |
-| 03 | 通知管理 API | ○ 待處理 | — |
+| 03 | 通知事件監聽器與排程服務 | ✓ 完成 | a2f496bd |
 
 ---
 
 ## 最後會話
 
-**停止於：** Completed 02-02-PLAN.md（2026-03-27T11:33:23Z）
+**停止於：** Completed 02-03-PLAN.md（2026-03-27T11:39:31Z）
 
-**下一步：** 執行 Phase 2 Plan 03（通知管理 API）
+**下一步：** Phase 2 全部計劃完成
 
 ---
 
-*最後更新：2026-03-27T11:33:23Z*
+*最後更新：2026-03-27T11:39:31Z*
