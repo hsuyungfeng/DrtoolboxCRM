@@ -281,6 +281,33 @@ export class TreatmentCourseController {
       clinicId,
     );
   }
+
+  /**
+   * 標記療程次數為已完成（前端快捷操作）
+   * PATCH /treatments/sessions/:id/complete
+   *
+   * 供前端 treatmentsApi.completeSession 呼叫，路由與前端完全匹配
+   *
+   * @param sessionId 療程次數 ID
+   * @returns 已完成的療程次數
+   * @throws NotFoundException 當療程次數不存在時
+   */
+  @Patch("sessions/:id/complete")
+  async markSessionComplete(
+    @Param("id") sessionId: string,
+    @Req() req?: any,
+  ) {
+    const updateDto: UpdateTreatmentSessionDto = {
+      completionStatus: "completed",
+      actualEndTime: new Date(),
+    };
+
+    return await this.sessionService.completeSession(
+      sessionId,
+      updateDto,
+      req?.user?.clinicId,
+    );
+  }
 }
 
 /**

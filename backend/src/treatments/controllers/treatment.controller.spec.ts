@@ -84,6 +84,11 @@ describe("TreatmentCourseController", () => {
           useValue: {
             createCourse: jest.fn(),
             getCourseById: jest.fn(),
+            getCourseWithProgress: jest.fn(),
+            getPatientCourses: jest.fn(),
+            getCourseSessions: jest.fn(),
+            updateCourse: jest.fn(),
+            deleteCourse: jest.fn(),
           },
         },
         {
@@ -166,12 +171,12 @@ describe("TreatmentCourseController", () => {
 
   describe("GET /treatments/courses/:courseId - getCourseById", () => {
     it("should retrieve a course by ID successfully", async () => {
-      jest.spyOn(courseService, "getCourseById").mockResolvedValue(mockCourse);
+      jest.spyOn(courseService, "getCourseWithProgress").mockResolvedValue(mockCourse);
 
       const result = await controller.getCourseById(mockCourseId, mockClinicId);
 
-      expect(result).toEqual(mockCourse);
-      expect(courseService.getCourseById).toHaveBeenCalledWith(
+      expect(result).toEqual({ statusCode: 200, data: mockCourse });
+      expect(courseService.getCourseWithProgress).toHaveBeenCalledWith(
         mockCourseId,
         mockClinicId,
       );
@@ -179,7 +184,7 @@ describe("TreatmentCourseController", () => {
 
     it("should fail when courseId is not found", async () => {
       jest
-        .spyOn(courseService, "getCourseById")
+        .spyOn(courseService, "getCourseWithProgress")
         .mockRejectedValue(new NotFoundException("療程不存在"));
 
       await expect(
@@ -189,7 +194,7 @@ describe("TreatmentCourseController", () => {
 
     it("should fail when clinicId mismatches", async () => {
       jest
-        .spyOn(courseService, "getCourseById")
+        .spyOn(courseService, "getCourseWithProgress")
         .mockRejectedValue(new NotFoundException("療程不存在"));
 
       await expect(
@@ -343,12 +348,12 @@ describe("TreatmentCourseController", () => {
       expect(createdCourse).toEqual(mockCourse);
 
       // Retrieve course
-      jest.spyOn(courseService, "getCourseById").mockResolvedValue(mockCourse);
+      jest.spyOn(courseService, "getCourseWithProgress").mockResolvedValue(mockCourse);
       const retrievedCourse = await controller.getCourseById(
         mockCourseId,
         mockClinicId,
       );
-      expect(retrievedCourse).toEqual(mockCourse);
+      expect(retrievedCourse).toEqual({ statusCode: 200, data: mockCourse });
     });
 
     it("should retrieve templates and create course in sequence", async () => {
