@@ -1,8 +1,8 @@
 import { Controller, Post, Get, Body, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ChurnPredictionService } from './churn-prediction.service';
-import { NotificationService } from './notification.service';
-import type { SendNotificationDto } from './notification.service';
+import { NotificationService } from './services/notification.service';
+import type { SendNotificationDto } from './services/notification.service';
 import type { ChurnRisk } from './churn-prediction.service';
 
 @ApiTags('notifications')
