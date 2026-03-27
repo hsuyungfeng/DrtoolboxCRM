@@ -3,20 +3,20 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-03-27T06:50:37.424Z"
+last_updated: "2026-03-27T11:28:07.545Z"
 progress:
-  total_phases: 1
+  total_phases: 2
   completed_phases: 1
-  total_plans: 14
-  completed_plans: 14
+  total_plans: 17
+  completed_plans: 15
 ---
 
 # 項目狀態：Doctor CRM
 
 **更新時間：** 2026-03-27
-**當前階段：** Phase 1 執行中
+**當前階段：** Phase 2 執行中
 **里程碑：** v1.0 - 自費醫療管理系統
-**當前計劃：** Phase 01 / Plan 13（已完成）— Phase 1 全部完成
+**當前計劃：** Phase 02 / Plan 01（已完成）— 事件基礎架構完成
 
 ## 項目參考
 
@@ -35,7 +35,7 @@ progress:
 | 需求定義 | ✓ 完成 | 100% |
 | 路線圖規劃 | ✓ 完成 | 100% |
 | **Phase 1** | ✓ 完成 | 100% (13/13 計劃完成) |
-| Phase 2 | ○ 待處理 | 0% |
+| **Phase 2** | 執行中 | 33% (1/3 計劃完成) |
 | Phase 3 | ○ 待處理 | 0% |
 | Phase 4 | ○ 待處理 | 0% |
 
@@ -95,6 +95,8 @@ progress:
 - **2026-03-27 [01-13]：** 架構文檔服務方法簽名採 TypeScript 格式，確保文檔可作為介面參考
 - **2026-03-27 [01-13.1]：** markSessionComplete 使用 PATCH sessions/:id/complete，內部組合 DTO 呼叫 sessionService.completeSession
 - **2026-03-27 [01-13.1]：** Controller 測試 mock 需包含控制器實際呼叫的所有 service 方法（getCourseWithProgress 非 getCourseById）
+- **2026-03-27 [02-01]：** CourseStartedEvent 在事務外 emit，CourseCompletedEvent 在事務內 emit（EventEmitter2 async 模式確保 Listener 在提交後執行）
+- **2026-03-27 [02-01]：** tests/ 目錄的 spec 補入 EventEmitter2 mock，避免 DI 容器初始化失敗（Rule 3 自動修正）
 
 ---
 
@@ -110,12 +112,22 @@ progress:
 
 ---
 
-## 最後會話
+## Phase 2 計劃進度
 
-**停止於：** Phase 01 Plan 13.1 完成（2026-03-27T07:31:00Z）— Phase 1 Gap Closure 完成
-
-**下一步：** 執行 Phase 2（待規劃）
+| 計劃 | 名稱 | 狀態 | 提交 |
+|------|------|------|------|
+| 01 | 事件基礎架構（course.started / course.completed） | ✓ 完成 | d6a88d0a |
+| 02 | 通知 Listener 與傳送服務 | ○ 待處理 | — |
+| 03 | 通知管理 API | ○ 待處理 | — |
 
 ---
 
-*最後更新：2026-03-27T06:37:00Z*
+## 最後會話
+
+**停止於：** Completed 02-01-PLAN.md（2026-03-27T11:27:00Z）
+
+**下一步：** 執行 Phase 2 Plan 02（通知 Listener 與傳送服務）
+
+---
+
+*最後更新：2026-03-27T11:27:00Z*
