@@ -786,6 +786,120 @@ describe("TreatmentSessionService - Task 8", () => {
       expect(courseSaveCalls.length).toBe(0);
     });
 
+    it("最後一個 session 完成時應 emit course.completed", async () => {
+      const updateDto = {
+        actualStartTime: new Date(),
+        actualEndTime: new Date(),
+      };
+
+      const courseWithSessions = {
+        ...mockTreatmentCourse,
+        id: mockCourseId,
+        sessions: [
+          { ...mockSession, completionStatus: "completed" },
+          { ...mockSession, id: "s2", completionStatus: "completed" },
+          { ...mockSession, id: "s3", completionStatus: "completed" },
+        ],
+      };
+
+      const sessionWithRelations = {
+        ...mockSession,
+        completionStatus: "pending",
+        treatmentCourse: courseWithSessions,
+        staffAssignments: [],
+      };
+
+      const mockTransactionManager = {
+        findOne: jest
+          .fn()
+          .mockResolvedValueOnce(sessionWithRelations)
+          .mockResolvedValueOnce(courseWithSessions),
+        find: jest.fn().mockResolvedValue([
+          { ...mockSession, completionStatus: "completed" },
+          { ...mockSession, id: "s2", completionStatus: "completed" },
+          { ...mockSession, id: "s3", completionStatus: "completed" },
+        ]),
+        delete: jest.fn().mockResolvedValue({ affected: 0 }),
+        save: jest.fn().mockImplementation((entity) =>
+          Promise.resolve({
+            ...entity,
+            status: "completed",
+            completedAt: new Date(),
+          }),
+        ),
+      };
+
+      (dataSource.transaction as jest.Mock).mockImplementation(
+        async (callback: any) => {
+          return callback(mockTransactionManager);
+        },
+      );
+
+      eventEmitter.emit = jest.fn();
+      await service.completeSession(mockSessionId, updateDto, mockClinicId);
+
+      expect(eventEmitter.emit).toHaveBeenCalledWith(
+        'course.completed',
+        expect.objectContaining({
+          courseId: expect.any(String),
+          patientId: expect.any(String),
+          clinicId: expect.any(String),
+        }),
+      );
+    });
+
+    it("非最後一個 session 完成時不應 emit course.completed", async () => {
+      const updateDto = {
+        actualStartTime: new Date(),
+        actualEndTime: new Date(),
+      };
+
+      const courseWithSessions = {
+        ...mockTreatmentCourse,
+        status: "active",
+        sessions: [
+          mockSession,
+          { ...mockSession, id: "s2", completionStatus: "pending" },
+        ],
+      };
+
+      const sessionWithRelations = {
+        ...mockSession,
+        completionStatus: "pending",
+        treatmentCourse: courseWithSessions,
+        staffAssignments: [],
+      };
+
+      const mockTransactionManager = {
+        findOne: jest.fn().mockResolvedValueOnce(sessionWithRelations),
+        find: jest.fn().mockResolvedValue([
+          { ...mockSession, completionStatus: "completed" },
+          { ...mockSession, id: "s2", completionStatus: "pending" },
+        ]),
+        delete: jest.fn().mockResolvedValue({ affected: 0 }),
+        save: jest.fn().mockImplementation((entity) =>
+          Promise.resolve({
+            ...entity,
+            completionStatus: "completed",
+          }),
+        ),
+      };
+
+      (dataSource.transaction as jest.Mock).mockImplementation(
+        async (callback: any) => {
+          return callback(mockTransactionManager);
+        },
+      );
+
+      eventEmitter.emit = jest.fn();
+      await service.completeSession(mockSessionId, updateDto, mockClinicId);
+
+      expect(eventEmitter.emit).not.toHaveBeenCalledWith(
+        'course.completed',
+        expect.anything(),
+      );
+    });
+
     it("應該在完成 10 個 sessions 的複雜情景中更新 course", async () => {
       const updateDto = {
         actualStartTime: new Date(),

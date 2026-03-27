@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from "@nestjs/typeorm";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { Repository, DataSource } from "typeorm";
+import { CourseCompletedEvent } from "../../events/course-completed.event";
 import { TreatmentSession } from "../entities/treatment-session.entity";
 import { TreatmentCourse } from "../entities/treatment-course.entity";
 import { StaffAssignment } from "../entities/staff-assignment.entity";
@@ -199,6 +200,16 @@ export class TreatmentSessionService {
           course.status = "completed";
           course.completedAt = new Date();
           await manager.save(TreatmentCourse, course);
+
+          // 發出療程完成事件（用於通知系統）
+          this.eventEmitter.emit(
+            'course.completed',
+            new CourseCompletedEvent(
+              course.id,
+              session.treatmentCourse.patientId,
+              session.clinicId,
+            ),
+          );
         }
       }
 
