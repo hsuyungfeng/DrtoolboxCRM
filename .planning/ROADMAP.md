@@ -20,7 +20,7 @@
 | 計劃 | 名稱 | 狀態 | 提交 |
 |------|------|------|------|
 | 01 | 11/13 | Complete    | 2026-03-27 |
-| 02 | TreatmentProgressService + 醫護分配 | ✓ 完成 | 93184d6a |
+| 02 | TreatmentProgressService + 醫護分配 | Complete    | 2026-03-27 |
 | 03 | PatientSearch 實體與搜尋服務 | ✓ 完成 | 20143af4 |
 | 04 | MedicalOrderController 醫令 API | ✓ 完成 | 2cf1405d |
 | 05 | TreatmentCourse CRUD API | ✓ 完成 | 9eeb169d |
