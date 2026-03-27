@@ -57,6 +57,9 @@
 - **2026-03-26 [01-07]：** ValidationErrorFilter 優先於 HttpExceptionFilter 註冊，確保驗證錯誤以標準格式回應
 - **2026-03-26 [01-07]：** VALIDATION_RULES 使用中文鍵名，與系統既有中文 JSDoc 文件風格一致
 - **2026-03-26 [01-07]：** patient-validators.ts 作為轉接模組重新匯出 dto-validators.ts，保持單一來源
+- **2026-03-27 [01-04]：** MedicalOrderController 使用 JwtAuthGuard + ClinicContextGuard 雙重守衛，clinicId 從 req.user.clinicId 取得
+- **2026-03-27 [01-04]：** recordMedicalOrderUsage 採增量更新（每次傳入本次使用次數），而非絕對值更新
+- **2026-03-27 [01-04]：** patients/:patientId 路由定義在 :id 之前，避免 Express 路由衝突
 - **2026-03-27 [01-05]：** TreatmentCourseController 使用 JwtAuthGuard 而非 ClinicContextGuard，與現有架構一致
 - **2026-03-27 [01-05]：** clinicId 透過 query 參數或 req.user.clinicId 雙重解析，提高 API 彈性
 - **2026-03-27 [01-05]：** 患者視圖 DTO 使用 @Exclude() 在序列化層隱藏敏感欄位（clinicId、patientId）
