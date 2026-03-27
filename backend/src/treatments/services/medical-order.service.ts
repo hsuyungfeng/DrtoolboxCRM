@@ -97,7 +97,7 @@ export class MedicalOrderService {
       throw new BadRequestException('療程數必須大於 0');
     }
 
-    const medicalOrder = this.medicalOrderRepository.create({
+    const orderData: Partial<MedicalOrder> = {
       clinicId,
       patientId: dto.patientId,
       prescribedBy,
@@ -108,9 +108,8 @@ export class MedicalOrderService {
       totalSessions,
       completedSessions: 0,
       status: 'pending',
-      startedAt: null,
-      completedAt: null,
-    });
+    };
+    const medicalOrder = this.medicalOrderRepository.create(orderData as MedicalOrder);
 
     const saved = await this.medicalOrderRepository.save(medicalOrder);
 
