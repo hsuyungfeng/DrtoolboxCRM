@@ -80,6 +80,8 @@
 - **2026-03-27 [01-11]：** Jest coverageThreshold 設定 branches 70%、functions/lines/statements 90%，排除 entity/module/dto/main.ts
 - **2026-03-27 [01-13]：** API 文檔端點路徑不含 `/api` 前綴，基礎 URL 已在文件頂部說明（符合 OpenAPI 規範慣例）
 - **2026-03-27 [01-13]：** 架構文檔服務方法簽名採 TypeScript 格式，確保文檔可作為介面參考
+- **2026-03-27 [01-13.1]：** markSessionComplete 使用 PATCH sessions/:id/complete，內部組合 DTO 呼叫 sessionService.completeSession
+- **2026-03-27 [01-13.1]：** Controller 測試 mock 需包含控制器實際呼叫的所有 service 方法（getCourseWithProgress 非 getCourseById）
 
 ---
 
@@ -97,7 +99,7 @@
 
 ## 最後會話
 
-**停止於：** Phase 01 Plan 13 完成（2026-03-27T06:37:00Z）— Phase 1 全部完成
+**停止於：** Phase 01 Plan 13.1 完成（2026-03-27T07:31:00Z）— Phase 1 Gap Closure 完成
 
 **下一步：** 執行 Phase 2（待規劃）
 
