@@ -6,6 +6,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { DataSource } from 'typeorm';
 import { TreatmentCourseService } from '../services/treatment-course.service';
 import { TreatmentCourse } from '../entities/treatment-course.entity';
@@ -139,6 +140,10 @@ describe('TreatmentCourseService', () => {
         {
           provide: DataSource,
           useValue: dataSource,
+        },
+        {
+          provide: EventEmitter2,
+          useValue: { emit: jest.fn() },
         },
       ],
     }).compile();

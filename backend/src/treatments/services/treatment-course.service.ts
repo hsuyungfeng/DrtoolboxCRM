@@ -5,6 +5,7 @@ import {
   Logger,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 import { Repository, DataSource, In } from "typeorm";
 import { TreatmentCourse } from "../entities/treatment-course.entity";
 import { TreatmentSession } from "../entities/treatment-session.entity";
@@ -15,6 +16,7 @@ import { TreatmentCourseTemplateService } from "./treatment-course-template.serv
 import { TreatmentProgressService } from "./treatment-progress.service";
 import { PointsService } from "../../points/services/points.service";
 import { StaffService } from "../../staff/services/staff.service";
+import { CourseStartedEvent } from "../../events/course-started.event";
 import Decimal from "decimal.js";
 
 /**
@@ -39,6 +41,7 @@ export class TreatmentCourseService {
     private readonly pointsService: PointsService,
     private readonly staffService: StaffService,
     private readonly dataSource: DataSource,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   /**
@@ -139,6 +142,12 @@ export class TreatmentCourseService {
         throw error;
       }
     }
+
+    // 發出療程開始事件（用於通知系統）
+    this.eventEmitter.emit(
+      'course.started',
+      new CourseStartedEvent(course.id, dto.patientId, dto.clinicId),
+    );
 
     return course;
   }

@@ -2,6 +2,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
 import { Repository, DataSource } from "typeorm";
 import { BadRequestException, NotFoundException } from "@nestjs/common";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 import { TreatmentCourseService } from "./treatment-course.service";
 import { TreatmentCourse } from "../entities/treatment-course.entity";
 import { TreatmentSession } from "../entities/treatment-session.entity";
@@ -18,6 +19,7 @@ describe("TreatmentCourseService", () => {
   let templateService: jest.Mocked<TreatmentCourseTemplateService>;
   let pointsService: jest.Mocked<PointsService>;
   let dataSource: jest.Mocked<DataSource>;
+  let mockEventEmitter: { emit: jest.Mock };
 
   const mockClinicId = "clinic-001";
   const mockPatientId = "patient-001";
@@ -42,6 +44,11 @@ describe("TreatmentCourseService", () => {
   };
 
   beforeEach(async () => {
+    // Mock EventEmitter2
+    mockEventEmitter = {
+      emit: jest.fn(),
+    };
+
     // Mock repositories
     const mockCourseRepo = {
       findOne: jest.fn(),
@@ -122,6 +129,10 @@ describe("TreatmentCourseService", () => {
         {
           provide: DataSource,
           useValue: mockDataSource,
+        },
+        {
+          provide: EventEmitter2,
+          useValue: mockEventEmitter,
         },
       ],
     }).compile();
@@ -351,6 +362,101 @@ describe("TreatmentCourseService", () => {
 
       // 驗證是否生成了 10 個 sessions
       expect(dataSource.transaction).toHaveBeenCalled();
+    });
+
+    it("建立療程後應 emit course.started 事件", async () => {
+      const dto = {
+        patientId: mockPatientId,
+        templateId: mockTemplateId,
+        clinicId: mockClinicId,
+        pointsToRedeem: 0,
+      };
+
+      const mockCourse = {
+        id: mockCourseId,
+        patientId: mockPatientId,
+        templateId: mockTemplateId,
+        status: "active",
+        purchaseAmount: new Decimal("5000.00"),
+        pointsRedeemed: new Decimal("0"),
+        actualPayment: new Decimal("5000.00"),
+        clinicId: mockClinicId,
+        purchaseDate: new Date(),
+        completedAt: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        sessions: [],
+        patient: null,
+      };
+
+      templateService.getTemplateById.mockResolvedValue(mockTemplate as any);
+
+      dataSource.transaction.mockImplementation(async (cb) => {
+        const mockManager = {
+          save: jest.fn().mockResolvedValue(mockCourse),
+        };
+        return cb(mockManager as any);
+      });
+
+      mockEventEmitter.emit.mockClear();
+      await service.createCourse(dto as any);
+
+      expect(mockEventEmitter.emit).toHaveBeenCalledWith(
+        'course.started',
+        expect.objectContaining({
+          courseId: mockCourseId,
+          patientId: mockPatientId,
+          clinicId: mockClinicId,
+        }),
+      );
+    });
+
+    it("pointsRedeemed > 0 時，在點數兌換後仍 emit course.started", async () => {
+      const dto = {
+        patientId: mockPatientId,
+        templateId: mockTemplateId,
+        clinicId: mockClinicId,
+        pointsToRedeem: 500,
+      };
+
+      const mockCourse = {
+        id: mockCourseId,
+        patientId: mockPatientId,
+        templateId: mockTemplateId,
+        status: "active",
+        purchaseAmount: new Decimal("5000.00"),
+        pointsRedeemed: new Decimal("500"),
+        actualPayment: new Decimal("4500.00"),
+        clinicId: mockClinicId,
+        purchaseDate: new Date(),
+        completedAt: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        sessions: [],
+        patient: null,
+      };
+
+      templateService.getTemplateById.mockResolvedValue(mockTemplate as any);
+      pointsService.redeemPoints.mockResolvedValue({} as any);
+
+      dataSource.transaction.mockImplementation(async (cb) => {
+        const mockManager = {
+          save: jest.fn().mockResolvedValue(mockCourse),
+        };
+        return cb(mockManager as any);
+      });
+
+      mockEventEmitter.emit.mockClear();
+      await service.createCourse(dto as any);
+
+      expect(mockEventEmitter.emit).toHaveBeenCalledWith(
+        'course.started',
+        expect.objectContaining({
+          courseId: mockCourseId,
+          patientId: mockPatientId,
+          clinicId: mockClinicId,
+        }),
+      );
     });
   });
 
