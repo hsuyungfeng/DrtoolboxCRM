@@ -20,12 +20,14 @@ import { RevenueRuleEngine } from "./services/revenue-rule-engine.service";
 import { PaymentService } from "./services/payment.service";
 import { FeeCalculationService } from "./services/fee-calculation.service";
 import { InvoiceService } from "./services/invoice.service";
+import { RevenueReportService } from "./services/revenue-report.service";
 import { RevenueEventListener } from "./listeners/revenue-event.listener";
 import { RevenueRuleController } from "./controllers/revenue-rule.controller";
 import { RevenueRecordController } from "./controllers/revenue-record.controller";
 import { RevenueAdjustmentController } from "./controllers/revenue-adjustment.controller";
 import { PaymentController } from "./controllers/payment.controller";
 import { InvoiceController } from "./controllers/invoice.controller";
+import { RevenueReportController } from "./controllers/revenue-report.controller";
 
 @Module({
   imports: [
@@ -49,6 +51,7 @@ import { InvoiceController } from "./controllers/invoice.controller";
     RevenueAdjustmentController,
     PaymentController,
     InvoiceController,
+    RevenueReportController,
   ],
   providers: [
     RevenueRuleService,
@@ -60,6 +63,7 @@ import { InvoiceController } from "./controllers/invoice.controller";
     PaymentService,
     FeeCalculationService,
     InvoiceService,
+    RevenueReportService,
     RevenueEventListener,
   ],
   exports: [
@@ -72,6 +76,7 @@ import { InvoiceController } from "./controllers/invoice.controller";
     PaymentService,
     FeeCalculationService,
     InvoiceService,
+    RevenueReportService,
   ],
 })
 export class RevenueModule {}
