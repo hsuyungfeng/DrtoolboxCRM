@@ -3,20 +3,20 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-03-27T11:44:54.081Z"
+last_updated: "2026-03-28T00:42:48.841Z"
 progress:
-  total_phases: 2
+  total_phases: 3
   completed_phases: 2
-  total_plans: 17
-  completed_plans: 17
+  total_plans: 20
+  completed_plans: 18
 ---
 
 # 項目狀態：Doctor CRM
 
-**更新時間：** 2026-03-27
-**當前階段：** Phase 2 執行中
+**更新時間：** 2026-03-28
+**當前階段：** Phase 3 執行中
 **里程碑：** v1.0 - 自費醫療管理系統
-**當前計劃：** Phase 02 / Plan 02（已完成）— 通知持久化實體與核心服務重構完成
+**當前計劃：** Phase 03 / Plan 01（已完成）— 患者支付記錄系統與費用計算服務完成
 
 ## 項目參考
 
@@ -35,8 +35,8 @@ progress:
 | 需求定義 | ✓ 完成 | 100% |
 | 路線圖規劃 | ✓ 完成 | 100% |
 | **Phase 1** | ✓ 完成 | 100% (13/13 計劃完成) |
-| **Phase 2** | 執行中 | 67% (2/3 計劃完成) |
-| Phase 3 | ○ 待處理 | 0% |
+| **Phase 2** | ✓ 完成 | 100% (3/3 計劃完成) |
+| **Phase 3** | 執行中 | 33% (1/3 計劃完成) |
 | Phase 4 | ○ 待處理 | 0% |
 
 ---
@@ -103,6 +103,9 @@ progress:
 - **2026-03-27 [02-03]：** @nestjs/schedule 在 NotificationsModule forRoot()，未在 app.module.ts 中預先載入
 - **2026-03-27 [02-03]：** NotificationEventListener 三個 handler 各自獨立 try/catch，不重新拋出，確保 RevenueEventListener 不受影響
 - **2026-03-27 [02-03]：** Cron 使用 DATE(session.scheduledDate) 而非直接比較 datetime，處理 SQLite 字串日期欄位
+- **2026-03-28 [03-01]：** Payment.paymentMethod 使用聯合型別，Service 層以 as 型別斷言橋接 DTO string 與 Entity 聯合型別
+- **2026-03-28 [03-01]：** FeeCalculationService 使用 finalPrice（扣積點後），null 時 fallback 至 totalPrice，Decimal.max 確保餘額不為負數
+- **2026-03-28 [03-01]：** PaymentController 所有端點從 req.user.clinicId 取得診所 ID，確保多租戶安全隔離
 
 ---
 
@@ -128,12 +131,22 @@ progress:
 
 ---
 
-## 最後會話
+## Phase 3 計劃進度
 
-**停止於：** Completed 02-03-PLAN.md（2026-03-27T11:39:31Z）
-
-**下一步：** Phase 2 全部計劃完成
+| 計劃 | 名稱 | 狀態 | 提交 |
+|------|------|------|------|
+| 01 | 患者支付記錄系統與費用計算服務 | ✓ 完成 | c6711537 |
+| 02 | 發票系統 | ○ 待處理 | — |
+| 03 | 財務報表 | ○ 待處理 | — |
 
 ---
 
-*最後更新：2026-03-27T11:39:31Z*
+## 最後會話
+
+**停止於：** Completed 03-01-PLAN.md（2026-03-28T00:31:43Z）
+
+**下一步：** 執行 Phase 3 Plan 02 — 發票系統
+
+---
+
+*最後更新：2026-03-28T00:31:43Z*
