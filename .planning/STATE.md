@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-03-28T00:42:48.841Z"
+last_updated: "2026-03-28T02:04:25.353Z"
 progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 20
-  completed_plans: 18
+  completed_plans: 19
 ---
 
 # 項目狀態：Doctor CRM
@@ -16,7 +16,7 @@ progress:
 **更新時間：** 2026-03-28
 **當前階段：** Phase 3 執行中
 **里程碑：** v1.0 - 自費醫療管理系統
-**當前計劃：** Phase 03 / Plan 01（已完成）— 患者支付記錄系統與費用計算服務完成
+**當前計劃：** Phase 03 / Plan 02（已完成）— 發票系統完成
 
 ## 項目參考
 
@@ -136,17 +136,26 @@ progress:
 | 計劃 | 名稱 | 狀態 | 提交 |
 |------|------|------|------|
 | 01 | 患者支付記錄系統與費用計算服務 | ✓ 完成 | c6711537 |
-| 02 | 發票系統 | ○ 待處理 | — |
+| 02 | 發票系統 | ✓ 完成 | 2f52c7f7 |
 | 03 | 財務報表 | ○ 待處理 | — |
 
 ---
 
 ## 最後會話
 
-**停止於：** Completed 03-01-PLAN.md（2026-03-28T00:31:43Z）
+**停止於：** Completed 03-02-PLAN.md（2026-03-28T02:14:00Z）
 
-**下一步：** 執行 Phase 3 Plan 02 — 發票系統
+**下一步：** 執行 Phase 3 Plan 03 — 財務報表
 
 ---
 
-*最後更新：2026-03-28T00:31:43Z*
+## 決策記錄（03-02 新增）
+
+- **2026-03-28 [03-02]：** Invoice lineItems 採 JSON 欄位儲存，避免額外建立 invoice_line_items 關聯表，簡化查詢
+- **2026-03-28 [03-02]：** GET treatment/:id 路由定義在 GET :id 之前，避免 Express 路由匹配衝突（同 Plan 01-04 決策模式）
+- **2026-03-28 [03-02]：** invoiceNumber 序號生成查詢加入 clinicId 條件，確保不同診所序號互不干擾
+- **2026-03-28 [03-02]：** cancelReason 長度調整為 varchar(255)（計劃指定 32 字元不足以記錄完整取消原因）
+
+---
+
+*最後更新：2026-03-28T02:14:00Z*
