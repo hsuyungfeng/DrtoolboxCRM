@@ -5,7 +5,9 @@ import { RevenueRule } from "./entities/revenue-rule.entity";
 import { RevenueRecord } from "./entities/revenue-record.entity";
 import { RevenueAdjustment } from "./entities/revenue-adjustment.entity";
 import { Payment } from "./entities/payment.entity";
+import { Invoice } from "./entities/invoice.entity";
 import { Treatment } from "../treatments/entities/treatment.entity";
+import { Patient } from "../patients/entities/patient.entity";
 import { TreatmentSession } from "../treatments/entities/treatment-session.entity";
 import { TreatmentStaffAssignment } from "../staff/entities/treatment-staff-assignment.entity";
 import { Staff } from "../staff/entities/staff.entity";
@@ -17,11 +19,13 @@ import { RevenueCalculationService } from "./services/revenue-calculation.servic
 import { RevenueRuleEngine } from "./services/revenue-rule-engine.service";
 import { PaymentService } from "./services/payment.service";
 import { FeeCalculationService } from "./services/fee-calculation.service";
+import { InvoiceService } from "./services/invoice.service";
 import { RevenueEventListener } from "./listeners/revenue-event.listener";
 import { RevenueRuleController } from "./controllers/revenue-rule.controller";
 import { RevenueRecordController } from "./controllers/revenue-record.controller";
 import { RevenueAdjustmentController } from "./controllers/revenue-adjustment.controller";
 import { PaymentController } from "./controllers/payment.controller";
+import { InvoiceController } from "./controllers/invoice.controller";
 
 @Module({
   imports: [
@@ -30,7 +34,9 @@ import { PaymentController } from "./controllers/payment.controller";
       RevenueRecord,
       RevenueAdjustment,
       Payment,
+      Invoice,
       Treatment,
+      Patient,
       TreatmentSession,
       TreatmentStaffAssignment,
       Staff,
@@ -42,6 +48,7 @@ import { PaymentController } from "./controllers/payment.controller";
     RevenueRecordController,
     RevenueAdjustmentController,
     PaymentController,
+    InvoiceController,
   ],
   providers: [
     RevenueRuleService,
@@ -52,6 +59,7 @@ import { PaymentController } from "./controllers/payment.controller";
     RevenueRuleEngine,
     PaymentService,
     FeeCalculationService,
+    InvoiceService,
     RevenueEventListener,
   ],
   exports: [
@@ -63,6 +71,7 @@ import { PaymentController } from "./controllers/payment.controller";
     RevenueRuleEngine,
     PaymentService,
     FeeCalculationService,
+    InvoiceService,
   ],
 })
 export class RevenueModule {}
