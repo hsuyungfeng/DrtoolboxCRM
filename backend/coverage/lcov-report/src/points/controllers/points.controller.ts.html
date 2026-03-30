@@ -194,7 +194,11 @@
 <a name='L129'></a><a href='#L129'>129</a>
 <a name='L130'></a><a href='#L130'>130</a>
 <a name='L131'></a><a href='#L131'>131</a>
-<a name='L132'></a><a href='#L132'>132</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L132'></a><a href='#L132'>132</a>
+<a name='L133'></a><a href='#L133'>133</a>
+<a name='L134'></a><a href='#L134'>134</a>
+<a name='L135'></a><a href='#L135'>135</a>
+<a name='L136'></a><a href='#L136'>136</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -275,6 +279,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -333,15 +341,15 @@
   Query,
   UseGuards,
   BadRequestException,
-} from '@nestjs/common';
-<span class="cstat-no" title="statement not covered" >import { PointsService } from '../services/points.service';</span>
-<span class="cstat-no" title="statement not covered" >import { CreatePointsTransactionDto } from '../dto/create-points-transaction.dto';</span>
-<span class="cstat-no" title="statement not covered" >import { RedeemPointsDto } from '../dto/redeem-points.dto';</span>
-import { PointsTransaction } from '../entities/points-transaction.entity';
-import { PointsBalance } from '../entities/points-balance.entity';
-<span class="cstat-no" title="statement not covered" >import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';</span>
+} from "@nestjs/common";
+<span class="cstat-no" title="statement not covered" >import { PointsService } from "../services/points.service";</span>
+<span class="cstat-no" title="statement not covered" >import { CreatePointsTransactionDto } from "../dto/create-points-transaction.dto";</span>
+<span class="cstat-no" title="statement not covered" >import { RedeemPointsDto } from "../dto/redeem-points.dto";</span>
+import { PointsTransaction } from "../entities/points-transaction.entity";
+import { PointsBalance } from "../entities/points-balance.entity";
+<span class="cstat-no" title="statement not covered" >import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";</span>
 &nbsp;
-@Controller('points')
+@Controller("points")
 @UseGuards(JwtAuthGuard)
 export <span class="cstat-no" title="statement not covered" >class <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >PointsController </span>{</span></span>
 <span class="fstat-no" title="function not covered" >  constructor(private readonly <span class="cstat-no" title="statement not covered" >p</span>ointsService: P</span>ointsService) {}
@@ -350,7 +358,7 @@ export <span class="cstat-no" title="statement not covered" >class <span class="
    * 獎勵點數
    * POST /points/award
    */
-  @Post('award')
+  @Post("award")
   async <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >awardPoints(</span></span>
     @Body() createDto: CreatePointsTransactionDto,
   ): Promise&lt;PointsTransaction&gt; {
@@ -367,7 +375,7 @@ export <span class="cstat-no" title="statement not covered" >class <span class="
    * 兌換點數
    * POST /points/redeem
    */
-  @Post('redeem')
+  @Post("redeem")
   async <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >redeemPoints(</span></span>
     @Body() redeemDto: RedeemPointsDto,
   ): Promise&lt;PointsTransaction&gt; {
@@ -383,55 +391,59 @@ export <span class="cstat-no" title="statement not covered" >class <span class="
    * 取得點數餘額
    * GET /points/balance?customerId=patient-001&amp;customerType=patient&amp;clinicId=clinic-001
    */
-  @Get('balance')
+  @Get("balance")
   async <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >getBalance(</span></span>
-    @Query('customerId') customerId?: string,
-    @Query('customerType') customerType?: string,
-    @Query('clinicId') clinicId?: string,
+    @Query("customerId") customerId?: string,
+    @Query("customerType") customerType?: string,
+    @Query("clinicId") clinicId?: string,
   ): Promise&lt;PointsBalance&gt; {
     // 驗證必填參數
 <span class="cstat-no" title="statement not covered" >    if (!customerId) {</span>
-<span class="cstat-no" title="statement not covered" >      throw new BadRequestException('customerId 參數必填');</span>
+<span class="cstat-no" title="statement not covered" >      throw new BadRequestException("customerId 參數必填");</span>
     }
 <span class="cstat-no" title="statement not covered" >    if (!customerType) {</span>
-<span class="cstat-no" title="statement not covered" >      throw new BadRequestException('customerType 參數必填');</span>
+<span class="cstat-no" title="statement not covered" >      throw new BadRequestException("customerType 參數必填");</span>
     }
 <span class="cstat-no" title="statement not covered" >    if (!clinicId) {</span>
-<span class="cstat-no" title="statement not covered" >      throw new BadRequestException('clinicId 參數必填');</span>
+<span class="cstat-no" title="statement not covered" >      throw new BadRequestException("clinicId 參數必填");</span>
     }
 &nbsp;
     // 驗證 customerType 值
-<span class="cstat-no" title="statement not covered" >    if (!['patient', 'staff'].includes(customerType)) {</span>
+<span class="cstat-no" title="statement not covered" >    if (!["patient", "staff"].includes(customerType)) {</span>
 <span class="cstat-no" title="statement not covered" >      throw new BadRequestException('customerType 必須是 "patient" 或 "staff"');</span>
     }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    return await this.pointsService.getBalance(customerId, customerType, clinicId);</span>
+<span class="cstat-no" title="statement not covered" >    return await this.pointsService.getBalance(</span>
+      customerId,
+      customerType,
+      clinicId,
+    );
   }
 &nbsp;
   /**
    * 取得交易歷史
    * GET /points/transactions?customerId=patient-001&amp;customerType=patient&amp;clinicId=clinic-001&amp;limit=20
    */
-  @Get('transactions')
+  @Get("transactions")
   async <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >getTransactionHistory(</span></span>
-    @Query('customerId') customerId?: string,
-    @Query('customerType') customerType?: string,
-    @Query('clinicId') clinicId?: string,
-    @Query('limit') limit?: string,
+    @Query("customerId") customerId?: string,
+    @Query("customerType") customerType?: string,
+    @Query("clinicId") clinicId?: string,
+    @Query("limit") limit?: string,
   ): Promise&lt;PointsTransaction[]&gt; {
     // 驗證必填參數
 <span class="cstat-no" title="statement not covered" >    if (!customerId) {</span>
-<span class="cstat-no" title="statement not covered" >      throw new BadRequestException('customerId 參數必填');</span>
+<span class="cstat-no" title="statement not covered" >      throw new BadRequestException("customerId 參數必填");</span>
     }
 <span class="cstat-no" title="statement not covered" >    if (!customerType) {</span>
-<span class="cstat-no" title="statement not covered" >      throw new BadRequestException('customerType 參數必填');</span>
+<span class="cstat-no" title="statement not covered" >      throw new BadRequestException("customerType 參數必填");</span>
     }
 <span class="cstat-no" title="statement not covered" >    if (!clinicId) {</span>
-<span class="cstat-no" title="statement not covered" >      throw new BadRequestException('clinicId 參數必填');</span>
+<span class="cstat-no" title="statement not covered" >      throw new BadRequestException("clinicId 參數必填");</span>
     }
 &nbsp;
     // 驗證 customerType 值
-<span class="cstat-no" title="statement not covered" >    if (!['patient', 'staff'].includes(customerType)) {</span>
+<span class="cstat-no" title="statement not covered" >    if (!["patient", "staff"].includes(customerType)) {</span>
 <span class="cstat-no" title="statement not covered" >      throw new BadRequestException('customerType 必須是 "patient" 或 "staff"');</span>
     }
 &nbsp;
@@ -440,10 +452,10 @@ export <span class="cstat-no" title="statement not covered" >class <span class="
 <span class="cstat-no" title="statement not covered" >    if (limit) {</span>
       const parsed = <span class="cstat-no" title="statement not covered" >parseInt(limit, 10);</span>
 <span class="cstat-no" title="statement not covered" >      if (isNaN(parsed) || parsed &lt; 1) {</span>
-<span class="cstat-no" title="statement not covered" >        throw new BadRequestException('limit 必須是正整數');</span>
+<span class="cstat-no" title="statement not covered" >        throw new BadRequestException("limit 必須是正整數");</span>
       }
 <span class="cstat-no" title="statement not covered" >      if (parsed &gt; 100) {</span>
-<span class="cstat-no" title="statement not covered" >        throw new BadRequestException('limit 最多 100 筆記錄');</span>
+<span class="cstat-no" title="statement not covered" >        throw new BadRequestException("limit 最多 100 筆記錄");</span>
       }
 <span class="cstat-no" title="statement not covered" >      parsedLimit = parsed;</span>
     }
@@ -463,7 +475,7 @@ export <span class="cstat-no" title="statement not covered" >class <span class="
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-02-13T01:46:07.220Z
+                at 2026-03-30T14:14:18.078Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

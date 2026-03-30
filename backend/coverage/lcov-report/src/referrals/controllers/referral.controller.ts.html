@@ -182,7 +182,14 @@
 <a name='L117'></a><a href='#L117'>117</a>
 <a name='L118'></a><a href='#L118'>118</a>
 <a name='L119'></a><a href='#L119'>119</a>
-<a name='L120'></a><a href='#L120'>120</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L120'></a><a href='#L120'>120</a>
+<a name='L121'></a><a href='#L121'>121</a>
+<a name='L122'></a><a href='#L122'>122</a>
+<a name='L123'></a><a href='#L123'>123</a>
+<a name='L124'></a><a href='#L124'>124</a>
+<a name='L125'></a><a href='#L125'>125</a>
+<a name='L126'></a><a href='#L126'>126</a>
+<a name='L127'></a><a href='#L127'>127</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -276,7 +283,14 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -312,17 +326,17 @@
   BadRequestException,
   UseGuards,
   Request,
-} from '@nestjs/common';
-<span class="cstat-no" title="statement not covered" >import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';</span>
-<span class="cstat-no" title="statement not covered" >import { ReferralService, ReferralStats } from '../services/referral.service';</span>
-import { Referral } from '../entities/referral.entity';
-<span class="cstat-no" title="statement not covered" >import { CreateReferralDto } from '../dto/create-referral.dto';</span>
-<span class="cstat-no" title="statement not covered" >import { ConvertReferralDto } from '../dto/convert-referral.dto';</span>
+} from "@nestjs/common";
+<span class="cstat-no" title="statement not covered" >import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";</span>
+<span class="cstat-no" title="statement not covered" >import { ReferralService, ReferralStats } from "../services/referral.service";</span>
+import { Referral } from "../entities/referral.entity";
+<span class="cstat-no" title="statement not covered" >import { CreateReferralDto } from "../dto/create-referral.dto";</span>
+<span class="cstat-no" title="statement not covered" >import { ConvertReferralDto } from "../dto/convert-referral.dto";</span>
 &nbsp;
 /**
  * ReferralController - 推薦 REST API
  */
-@Controller('referrals')
+@Controller("referrals")
 @UseGuards(JwtAuthGuard)
 export <span class="cstat-no" title="statement not covered" >class <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >ReferralController </span>{</span></span>
 <span class="fstat-no" title="function not covered" >  constructor(private readonly <span class="cstat-no" title="statement not covered" >r</span>eferralService: R</span>eferralService) {}
@@ -346,10 +360,10 @@ export <span class="cstat-no" title="statement not covered" >class <span class="
    * GET /referrals/by-referrer/:referrerId/:referrerType
    * 按推薦人查詢推薦記錄
    */
-  @Get('by-referrer/:referrerId/:referrerType')
+  @Get("by-referrer/:referrerId/:referrerType")
   async <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >getReferralsByReferrer(</span></span>
-    @Param('referrerId') referrerId: string,
-    @Param('referrerType') referrerType: string,
+    @Param("referrerId") referrerId: string,
+    @Param("referrerType") referrerType: string,
     @Request() req: any,
   ): Promise&lt;Referral[]&gt; {
     const clinicId = <span class="cstat-no" title="statement not covered" >req.user?.clinicId;</span>
@@ -364,9 +378,9 @@ export <span class="cstat-no" title="statement not covered" >class <span class="
    * GET /referrals/by-patient/:patientId
    * 按患者查詢推薦記錄
    */
-  @Get('by-patient/:patientId')
+  @Get("by-patient/:patientId")
   async <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >getReferralByPatient(</span></span>
-    @Param('patientId') patientId: string,
+    @Param("patientId") patientId: string,
     @Request() req: any,
   ): Promise&lt;Referral | null&gt; {
     const clinicId = <span class="cstat-no" title="statement not covered" >req.user?.clinicId;</span>
@@ -377,9 +391,9 @@ export <span class="cstat-no" title="statement not covered" >class <span class="
    * PUT /referrals/:id/convert
    * 轉化推薦（標記為已轉化並獎勵點數）
    */
-  @Put(':id/convert')
+  @Put(":id/convert")
   async <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >convert(</span></span>
-    @Param('id') id: string,
+    @Param("id") id: string,
     @Body() convertReferralDto: ConvertReferralDto,
     @Request() req: any,
   ): Promise&lt;Referral&gt; {
@@ -387,15 +401,22 @@ export <span class="cstat-no" title="statement not covered" >class <span class="
     // 驗證診所 ID 一致性
 <span class="cstat-no" title="statement not covered" >    this.validateClinicId(convertReferralDto.clinicId, clinicId);</span>
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    return await this.referralService.convertReferral(id, convertReferralDto.treatmentId, clinicId);</span>
+<span class="cstat-no" title="statement not covered" >    return await this.referralService.convertReferral(</span>
+      id,
+      convertReferralDto.treatmentId,
+      clinicId,
+    );
   }
 &nbsp;
   /**
    * DELETE /referrals/:id
    * 取消推薦
    */
-  @Delete(':id')
-  async <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >delete(</span>@Param('id') id: string, @Request() req: any): Promise&lt;Referral&gt; {</span>
+  @Delete(":id")
+  async <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >delete(</span></span>
+    @Param("id") id: string,
+    @Request() req: any,
+  ): Promise&lt;Referral&gt; {
     const clinicId = <span class="cstat-no" title="statement not covered" >req.user?.clinicId;</span>
 <span class="cstat-no" title="statement not covered" >    return await this.referralService.deleteReferral(id, clinicId);</span>
   }
@@ -404,7 +425,7 @@ export <span class="cstat-no" title="statement not covered" >class <span class="
    * GET /referrals/stats
    * 獲取推薦統計數據
    */
-  @Get('stats')
+  @Get("stats")
   async <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >getStats(</span>@Request() req: any): Promise&lt;ReferralStats&gt; {</span>
     const clinicId = <span class="cstat-no" title="statement not covered" >req.user?.clinicId;</span>
 <span class="cstat-no" title="statement not covered" >    return await this.referralService.getReferralStats(clinicId);</span>
@@ -416,7 +437,7 @@ export <span class="cstat-no" title="statement not covered" >class <span class="
    */
   private <span class="fstat-no" title="function not covered" >validateClinicId(</span>dtoClinicId: string, userClinicId: string): void {
 <span class="cstat-no" title="statement not covered" >    if (dtoClinicId !== userClinicId) {</span>
-<span class="cstat-no" title="statement not covered" >      throw new BadRequestException('診所 ID 不匹配，無權限操作其他診所的數據');</span>
+<span class="cstat-no" title="statement not covered" >      throw new BadRequestException("診所 ID 不匹配，無權限操作其他診所的數據");</span>
     }
   }
 }
@@ -427,7 +448,7 @@ export <span class="cstat-no" title="statement not covered" >class <span class="
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-02-13T01:46:07.220Z
+                at 2026-03-30T14:14:18.078Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

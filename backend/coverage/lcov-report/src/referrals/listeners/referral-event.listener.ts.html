@@ -123,7 +123,12 @@
 <a name='L58'></a><a href='#L58'>58</a>
 <a name='L59'></a><a href='#L59'>59</a>
 <a name='L60'></a><a href='#L60'>60</a>
-<a name='L61'></a><a href='#L61'>61</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -161,16 +166,11 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -181,11 +181,21 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" >import { Injectable, Logger } from '@nestjs/common';</span>
-<span class="cstat-no" title="statement not covered" >import { OnEvent } from '@nestjs/event-emitter';</span>
-<span class="cstat-no" title="statement not covered" >import { ReferralService } from '../services/referral.service';</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" >import { Injectable, Logger } from "@nestjs/common";</span>
+<span class="cstat-no" title="statement not covered" >import { OnEvent } from "@nestjs/event-emitter";</span>
+<span class="cstat-no" title="statement not covered" >import { ReferralService } from "../services/referral.service";</span>
 &nbsp;
 /**
  * 治療創建事件有效載荷
@@ -212,27 +222,32 @@ export class <span class="cstat-no" title="statement not covered" ><span class="
    *
    * @param event 治療創建事件
    */
-  @OnEvent('treatment.created')
+  @OnEvent("treatment.created")
   async <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >handleTreatmentCreated(</span>event: TreatmentCreatedEvent): Promise&lt;void&gt; {</span>
     const { treatmentId, patientId, clinicId } = <span class="cstat-no" title="statement not covered" >event;</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    try {</span>
       // 檢查患者是否有推薦記錄
-      const referral = <span class="cstat-no" title="statement not covered" >await this.referralService.getReferralByPatient(patientId, clinicId);</span>
+      const referral = <span class="cstat-no" title="statement not covered" >await this.referralService.getReferralByPatient(</span>
+        patientId,
+        clinicId,
+      );
 &nbsp;
       // 如果沒有推薦記錄或推薦已被處理，則跳過
-<span class="cstat-no" title="statement not covered" >      if (!referral || referral.status !== 'pending') {</span>
-<span class="cstat-no" title="statement not covered" >        this.logger.debug(</span>
-          `患者 ${patientId} 無待處理的推薦記錄，跳過轉化邏輯`
-        );
+<span class="cstat-no" title="statement not covered" >      if (!referral || referral.status !== "pending") {</span>
+<span class="cstat-no" title="statement not covered" >        this.logger.debug(`患者 ${patientId} 無待處理的推薦記錄，跳過轉化邏輯`);</span>
 <span class="cstat-no" title="statement not covered" >        return;</span>
       }
 &nbsp;
       // 轉化推薦記錄
-<span class="cstat-no" title="statement not covered" >      await this.referralService.convertReferral(referral.id, treatmentId, clinicId);</span>
+<span class="cstat-no" title="statement not covered" >      await this.referralService.convertReferral(</span>
+        referral.id,
+        treatmentId,
+        clinicId,
+      );
 &nbsp;
 <span class="cstat-no" title="statement not covered" >      this.logger.log(</span>
-        `成功自動轉化推薦 ${referral.id}（患者：${patientId}，治療：${treatmentId}）`
+        `成功自動轉化推薦 ${referral.id}（患者：${patientId}，治療：${treatmentId}）`,
       );
     } catch (error) {
 <span class="cstat-no" title="statement not covered" >      this.logger.error(</span>
@@ -250,7 +265,7 @@ export class <span class="cstat-no" title="statement not covered" ><span class="
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-02-13T01:46:07.220Z
+                at 2026-03-30T14:14:18.078Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

@@ -173,7 +173,13 @@
 <a name='L108'></a><a href='#L108'>108</a>
 <a name='L109'></a><a href='#L109'>109</a>
 <a name='L110'></a><a href='#L110'>110</a>
-<a name='L111'></a><a href='#L111'>111</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L111'></a><a href='#L111'>111</a>
+<a name='L112'></a><a href='#L112'>112</a>
+<a name='L113'></a><a href='#L113'>113</a>
+<a name='L114'></a><a href='#L114'>114</a>
+<a name='L115'></a><a href='#L115'>115</a>
+<a name='L116'></a><a href='#L116'>116</a>
+<a name='L117'></a><a href='#L117'>117</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -213,8 +219,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -233,18 +237,15 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -257,6 +258,14 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -274,14 +283,17 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" >import {</span>
   ExceptionFilter,
@@ -289,9 +301,9 @@
   ArgumentsHost,
   HttpException,
   HttpStatus,
-} from '@nestjs/common';
-import { Request, Response } from 'express';
-import { ApiErrorResponse } from '../interfaces/api-error-response.interface';
+} from "@nestjs/common";
+import { Request, Response } from "express";
+import { ApiErrorResponse } from "../interfaces/api-error-response.interface";
 &nbsp;
 @Catch(HttpException)
 export <span class="cstat-no" title="statement not covered" >class <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >HttpExceptionFilter </span>implements ExceptionFilter {</span></span>
@@ -316,16 +328,14 @@ export <span class="cstat-no" title="statement not covered" >class <span class="
     };
 &nbsp;
     // 設置響應頭和狀態碼
-<span class="cstat-no" title="statement not covered" >    response</span>
-      .status(status)
-      .json(errorResponse);
+<span class="cstat-no" title="statement not covered" >    response.status(status).json(errorResponse);</span>
   }
 &nbsp;
   /**
    * 從異常響應中提取錯誤信息
    */
   private <span class="fstat-no" title="function not covered" >extractMessage(</span>exceptionResponse: any): string {
-<span class="cstat-no" title="statement not covered" >    if (typeof exceptionResponse === 'string') {</span>
+<span class="cstat-no" title="statement not covered" >    if (typeof exceptionResponse === "string") {</span>
 <span class="cstat-no" title="statement not covered" >      return exceptionResponse;</span>
     }
 &nbsp;
@@ -335,13 +345,16 @@ export <span class="cstat-no" title="statement not covered" >class <span class="
         : exceptionResponse.message;
     }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    return 'Internal server error';</span>
+<span class="cstat-no" title="statement not covered" >    return "Internal server error";</span>
   }
 &nbsp;
   /**
    * 從異常響應中提取錯誤代碼
    */
-  private <span class="fstat-no" title="function not covered" >extractErrorCode(</span>exception: HttpException, exceptionResponse: any): string {
+  private <span class="fstat-no" title="function not covered" >extractErrorCode(</span>
+    exception: HttpException,
+    exceptionResponse: any,
+  ): string {
     // 如果是我們的 BaseException，它有 errorCode 屬性
 <span class="cstat-no" title="statement not covered" >    if (exceptionResponse?.errorCode) {</span>
 <span class="cstat-no" title="statement not covered" >      return exceptionResponse.errorCode;</span>
@@ -351,19 +364,19 @@ export <span class="cstat-no" title="statement not covered" >class <span class="
     const status = <span class="cstat-no" title="statement not covered" >exception.getStatus();</span>
 <span class="cstat-no" title="statement not covered" >    switch (status) {</span>
       case HttpStatus.BAD_REQUEST:
-<span class="cstat-no" title="statement not covered" >        return 'BAD_REQUEST';</span>
+<span class="cstat-no" title="statement not covered" >        return "BAD_REQUEST";</span>
       case HttpStatus.UNAUTHORIZED:
-<span class="cstat-no" title="statement not covered" >        return 'UNAUTHORIZED';</span>
+<span class="cstat-no" title="statement not covered" >        return "UNAUTHORIZED";</span>
       case HttpStatus.FORBIDDEN:
-<span class="cstat-no" title="statement not covered" >        return 'FORBIDDEN';</span>
+<span class="cstat-no" title="statement not covered" >        return "FORBIDDEN";</span>
       case HttpStatus.NOT_FOUND:
-<span class="cstat-no" title="statement not covered" >        return 'NOT_FOUND';</span>
+<span class="cstat-no" title="statement not covered" >        return "NOT_FOUND";</span>
       case HttpStatus.CONFLICT:
-<span class="cstat-no" title="statement not covered" >        return 'CONFLICT';</span>
+<span class="cstat-no" title="statement not covered" >        return "CONFLICT";</span>
       case HttpStatus.UNPROCESSABLE_ENTITY:
-<span class="cstat-no" title="statement not covered" >        return 'VALIDATION_ERROR';</span>
+<span class="cstat-no" title="statement not covered" >        return "VALIDATION_ERROR";</span>
       case HttpStatus.INTERNAL_SERVER_ERROR:
-<span class="cstat-no" title="statement not covered" >        return 'INTERNAL_SERVER_ERROR';</span>
+<span class="cstat-no" title="statement not covered" >        return "INTERNAL_SERVER_ERROR";</span>
       default:
 <span class="cstat-no" title="statement not covered" >        return `HTTP_${status}`;</span>
     }
@@ -372,8 +385,10 @@ export <span class="cstat-no" title="statement not covered" >class <span class="
   /**
    * 從異常響應中提取詳細信息
    */
-  private <span class="fstat-no" title="function not covered" >extractDetails(</span>exceptionResponse: any): Record&lt;string, any&gt; | undefined {
-<span class="cstat-no" title="statement not covered" >    if (typeof exceptionResponse === 'object' &amp;&amp; exceptionResponse !== null) {</span>
+  private <span class="fstat-no" title="function not covered" >extractDetails(</span>
+    exceptionResponse: any,
+  ): Record&lt;string, any&gt; | undefined {
+<span class="cstat-no" title="statement not covered" >    if (typeof exceptionResponse === "object" &amp;&amp; exceptionResponse !== null) {</span>
       const { message, errorCode, errors, ...details } = <span class="cstat-no" title="statement not covered" >exceptionResponse;</span>
 <span class="cstat-no" title="statement not covered" >      return Object.keys(details).length &gt; 0 ? details : undefined;</span>
     }
@@ -383,24 +398,27 @@ export <span class="cstat-no" title="statement not covered" >class <span class="
   /**
    * 從異常響應中提取驗證錯誤
    */
-  private <span class="fstat-no" title="function not covered" >extractValidationErrors(</span>exceptionResponse: any): ApiErrorResponse['errors'] {
+  private <span class="fstat-no" title="function not covered" >extractValidationErrors(</span>
+    exceptionResponse: any,
+  ): ApiErrorResponse["errors"] {
 <span class="cstat-no" title="statement not covered" >    if (exceptionResponse?.errors &amp;&amp; Array.isArray(exceptionResponse.errors)) {</span>
 <span class="cstat-no" title="statement not covered" >      return exceptionResponse.errors.map(<span class="fstat-no" title="function not covered" >(e</span>rror: any) =&gt; (<span class="cstat-no" title="statement not covered" >{</span></span>
-        field: error.field || error.property || 'unknown',
-        message: error.message || 'Validation error',
+        field: error.field || error.property || "unknown",
+        message: error.message || "Validation error",
         constraint: error.constraint,
       }));
     }
 <span class="cstat-no" title="statement not covered" >    return undefined;</span>
   }
-}</pre></td></tr></table></pre>
+}
+&nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-02-13T01:46:07.220Z
+                at 2026-03-30T14:14:18.078Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

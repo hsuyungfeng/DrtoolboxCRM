@@ -2,6 +2,13 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Patient } from '../patients/entities/patient.entity';
 import { SyncPatientIndex } from './entities/sync-patient-index.entity';
+import { MigrationProgress } from './entities/migration-progress.entity';
+import { SyncPatientService } from './services/sync-patient.service';
+import { RetryService } from './services/retry.service';
+import { SyncIndexService } from './services/sync-index.service';
+import { BulkExportService } from './services/bulk-export.service';
+import { MigrationProgressService } from './services/migration-progress.service';
+import { MigrationController } from './controllers/migration.controller';
 
 /**
  * DoctorToolboxSyncModule
@@ -22,10 +29,17 @@ import { SyncPatientIndex } from './entities/sync-patient-index.entity';
     TypeOrmModule.forFeature([
       Patient,
       SyncPatientIndex,
+      MigrationProgress,
     ]),
   ],
-  controllers: [],
-  providers: [],
-  exports: [TypeOrmModule],
+  controllers: [MigrationController],
+  providers: [
+    SyncPatientService,
+    RetryService,
+    SyncIndexService,
+    BulkExportService,
+    MigrationProgressService,
+  ],
+  exports: [TypeOrmModule, SyncPatientService, RetryService, SyncIndexService],
 })
 export class DoctorToolboxSyncModule {}

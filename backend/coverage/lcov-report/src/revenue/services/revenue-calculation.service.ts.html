@@ -249,11 +249,7 @@
 <a name='L184'></a><a href='#L184'>184</a>
 <a name='L185'></a><a href='#L185'>185</a>
 <a name='L186'></a><a href='#L186'>186</a>
-<a name='L187'></a><a href='#L187'>187</a>
-<a name='L188'></a><a href='#L188'>188</a>
-<a name='L189'></a><a href='#L189'>189</a>
-<a name='L190'></a><a href='#L190'>190</a>
-<a name='L191'></a><a href='#L191'>191</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L187'></a><a href='#L187'>187</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -310,8 +306,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -330,11 +324,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -437,21 +431,19 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" >import { Injectable, Logger, NotFoundException } from '@nestjs/common';</span>
-<span class="cstat-no" title="statement not covered" >import { InjectRepository } from '@nestjs/typeorm';</span>
-<span class="cstat-no" title="statement not covered" >import { Repository, In } from 'typeorm';</span>
-<span class="cstat-no" title="statement not covered" >import { RevenueRuleEngine } from './revenue-rule-engine.service';</span>
-<span class="cstat-no" title="statement not covered" >import { RevenueRecord } from '../entities/revenue-record.entity';</span>
-<span class="cstat-no" title="statement not covered" >import { Treatment } from '../../treatments/entities/treatment.entity';</span>
-<span class="cstat-no" title="statement not covered" >import { TreatmentSession } from '../../treatments/entities/treatment-session.entity';</span>
-<span class="cstat-no" title="statement not covered" >import { TreatmentStaffAssignment } from '../../staff/entities/treatment-staff-assignment.entity';</span>
-<span class="cstat-no" title="statement not covered" >import { RevenueRule } from '../entities/revenue-rule.entity';</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" >import { Injectable, Logger, NotFoundException } from "@nestjs/common";</span>
+<span class="cstat-no" title="statement not covered" >import { InjectRepository } from "@nestjs/typeorm";</span>
+<span class="cstat-no" title="statement not covered" >import { Repository, In } from "typeorm";</span>
+<span class="cstat-no" title="statement not covered" >import { RevenueRuleEngine } from "./revenue-rule-engine.service";</span>
+<span class="cstat-no" title="statement not covered" >import { RevenueRecord } from "../entities/revenue-record.entity";</span>
+<span class="cstat-no" title="statement not covered" >import { Treatment } from "../../treatments/entities/treatment.entity";</span>
+<span class="cstat-no" title="statement not covered" >import { TreatmentSession } from "../../treatments/entities/treatment-session.entity";</span>
+<span class="cstat-no" title="statement not covered" >import { TreatmentStaffAssignment } from "../../staff/entities/treatment-staff-assignment.entity";</span>
+<span class="cstat-no" title="statement not covered" >import { RevenueRule } from "../entities/revenue-rule.entity";</span>
 &nbsp;
 /**
  * 營收計算服務
@@ -496,9 +488,7 @@ export class <span class="cstat-no" title="statement not covered" ><span class="
     });
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    if (!treatment) {</span>
-<span class="cstat-no" title="statement not covered" >      throw new NotFoundException(</span>
-        `Treatment with ID ${treatmentId} not found`,
-      );
+<span class="cstat-no" title="statement not covered" >      throw new NotFoundException(`Treatment with ID ${treatmentId} not found`);</span>
     }
 &nbsp;
     // 2. 獲取治療課程信息
@@ -513,26 +503,26 @@ export class <span class="cstat-no" title="statement not covered" ><span class="
     }
 &nbsp;
     // 3. 獲取參與該治療的員工分配信息
-    const staffAssignments = <span class="cstat-no" title="statement not covered" >await this.treatmentStaffAssignmentRepository.find({</span>
-      where: {
-        treatmentId,
-        isActive: true,
+    const staffAssignments = <span class="cstat-no" title="statement not covered" >await this.treatmentStaffAssignmentRepository.find(</span>
+      {
+        where: {
+          treatmentId,
+          isActive: true,
+        },
       },
-    });
+    );
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    if (staffAssignments.length === 0) {</span>
-<span class="cstat-no" title="statement not covered" >      this.logger.warn(</span>
-        `沒有找到治療 ${treatmentId} 的活躍員工分配`,
-      );
+<span class="cstat-no" title="statement not covered" >      this.logger.warn(`沒有找到治療 ${treatmentId} 的活躍員工分配`);</span>
 <span class="cstat-no" title="statement not covered" >      return [];</span>
     }
 &nbsp;
     // 4. 優化：先收集所有唯一的角色（修復 N+1 查詢問題）
-    const roles = <span class="cstat-no" title="statement not covered" >[...new Set(</span>
-      staffAssignments.map(<span class="fstat-no" title="function not covered" >assignment </span>=&gt; <span class="cstat-no" title="statement not covered" >assignment.role)</span>
-    )];
+    const roles = <span class="cstat-no" title="statement not covered" >[</span>
+      ...new Set(staffAssignments.map(<span class="fstat-no" title="function not covered" >(a</span>ssignment) =&gt; <span class="cstat-no" title="statement not covered" >assignment.role)</span>),
+    ];
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    this.logger.debug(`收集到 ${roles.length} 個唯一角色：${roles.join(', ')}`);</span>
+<span class="cstat-no" title="statement not covered" >    this.logger.debug(`收集到 ${roles.length} 個唯一角色：${roles.join(", ")}`);</span>
 &nbsp;
     // 5. 一次性查詢所有角色的規則（批量查詢，不是迴圈查詢）
     const allRules = <span class="cstat-no" title="statement not covered" >await this.revenueRuleRepository.find({</span>
@@ -541,19 +531,19 @@ export class <span class="cstat-no" title="statement not covered" ><span class="
         clinicId: treatment.clinicId,
         isActive: true,
       },
-      order: { effectiveFrom: 'DESC' },
+      order: { effectiveFrom: "DESC" },
     });
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    if (allRules.length === 0) {</span>
 <span class="cstat-no" title="statement not covered" >      this.logger.warn(</span>
-        `診所 ${treatment.clinicId} 的角色 [${roles.join(', ')}] 未找到營收規則`,
+        `診所 ${treatment.clinicId} 的角色 [${roles.join(", ")}] 未找到營收規則`,
       );
 <span class="cstat-no" title="statement not covered" >      return [];</span>
     }
 &nbsp;
     // 6. 建立角色-&gt;規則的映射表，以便快速查找（O(1) 時間複雜度）
     const roleRulesMap = <span class="cstat-no" title="statement not covered" >new Map&lt;string, RevenueRule&gt;();</span>
-<span class="cstat-no" title="statement not covered" >    allRules.forEach(<span class="fstat-no" title="function not covered" >rule </span>=&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    allRules.forEach(<span class="fstat-no" title="function not covered" >(r</span>ule) =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >      if (!roleRulesMap.has(rule.role)) {</span>
 <span class="cstat-no" title="statement not covered" >        roleRulesMap.set(rule.role, rule);</span>
       }
@@ -584,7 +574,7 @@ export class <span class="cstat-no" title="statement not covered" ><span class="
 &nbsp;
         // 9. 根據規則計算最終營收金額
         const rulePayload = <span class="cstat-no" title="statement not covered" >{</span>
-          rule_type: rule.ruleType as 'fixed' | 'percentage' | 'tiered',
+          rule_type: rule.ruleType as "fixed" | "percentage" | "tiered",
           rule_payload: rule.rulePayload,
         };
 &nbsp;
@@ -600,8 +590,8 @@ export class <span class="cstat-no" title="statement not covered" ><span class="
 <span class="cstat-no" title="statement not covered" >        record.staffId = assignment.staffId;</span>
 <span class="cstat-no" title="statement not covered" >        record.role = role;</span>
 <span class="cstat-no" title="statement not covered" >        record.amount = calculatedAmount;</span>
-<span class="cstat-no" title="statement not covered" >        record.calculationType = 'session';</span>
-<span class="cstat-no" title="statement not covered" >        record.status = 'calculated';</span>
+<span class="cstat-no" title="statement not covered" >        record.calculationType = "session";</span>
+<span class="cstat-no" title="statement not covered" >        record.status = "calculated";</span>
 <span class="cstat-no" title="statement not covered" >        record.clinicId = treatment.clinicId;</span>
 <span class="cstat-no" title="statement not covered" >        record.ruleId = rule.id;</span>
 <span class="cstat-no" title="statement not covered" >        record.calculationDetails = {</span>
@@ -626,9 +616,7 @@ export class <span class="cstat-no" title="statement not covered" ><span class="
       }
     }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    this.logger.log(</span>
-      `課程營收計算完成：生成了 ${createdRecords.length} 條記錄`,
-    );
+<span class="cstat-no" title="statement not covered" >    this.logger.log(`課程營收計算完成：生成了 ${createdRecords.length} 條記錄`);</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    return createdRecords;</span>
   }
@@ -640,7 +628,7 @@ export class <span class="cstat-no" title="statement not covered" ><span class="
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-02-13T01:46:07.220Z
+                at 2026-03-30T14:14:18.078Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

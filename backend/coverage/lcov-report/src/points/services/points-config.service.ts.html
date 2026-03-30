@@ -178,7 +178,8 @@
 <a name='L113'></a><a href='#L113'>113</a>
 <a name='L114'></a><a href='#L114'>114</a>
 <a name='L115'></a><a href='#L115'>115</a>
-<a name='L116'></a><a href='#L116'>116</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L116'></a><a href='#L116'>116</a>
+<a name='L117'></a><a href='#L117'>117</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -206,8 +207,6 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -270,18 +269,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -293,10 +283,22 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" >import { Injectable, NotFoundException } from '@nestjs/common';</span>
-<span class="cstat-no" title="statement not covered" >import { InjectRepository } from '@nestjs/typeorm';</span>
-<span class="cstat-no" title="statement not covered" >import { Repository } from 'typeorm';</span>
-<span class="cstat-no" title="statement not covered" >import { PointsConfig } from '../entities/points-config.entity';</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" >import { Injectable, NotFoundException } from "@nestjs/common";</span>
+<span class="cstat-no" title="statement not covered" >import { InjectRepository } from "@nestjs/typeorm";</span>
+<span class="cstat-no" title="statement not covered" >import { Repository } from "typeorm";</span>
+<span class="cstat-no" title="statement not covered" >import { PointsConfig } from "../entities/points-config.entity";</span>
 &nbsp;
 @Injectable()
 export <span class="cstat-no" title="statement not covered" >class <span class="cstat-no" title="statement not covered" ><span class="cstat-no" title="statement not covered" >PointsConfigService </span>{</span></span>
@@ -318,9 +320,7 @@ export <span class="cstat-no" title="statement not covered" >class <span class="
     });
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    if (!config) {</span>
-<span class="cstat-no" title="statement not covered" >      throw new NotFoundException(</span>
-        `配置 ${configKey} 不存在於診所 ${clinicId}`,
-      );
+<span class="cstat-no" title="statement not covered" >      throw new NotFoundException(`配置 ${configKey} 不存在於診所 ${clinicId}`);</span>
     }
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    return config;</span>
@@ -332,7 +332,7 @@ export <span class="cstat-no" title="statement not covered" >class <span class="
 <span class="fstat-no" title="function not covered" >  async </span>getAll(clinicId: string): Promise&lt;PointsConfig[]&gt; {
 <span class="cstat-no" title="statement not covered" >    return await this.configRepository.find({</span>
       where: { clinicId, isActive: true },
-      order: { createdAt: 'DESC' },
+      order: { createdAt: "DESC" },
     });
   }
 &nbsp;
@@ -384,7 +384,10 @@ export <span class="cstat-no" title="statement not covered" >class <span class="
   /**
    * 停用配置
    */
-<span class="fstat-no" title="function not covered" >  async </span>disableConfig(configId: string, clinicId: string): Promise&lt;PointsConfig&gt; {
+<span class="fstat-no" title="function not covered" >  async </span>disableConfig(
+    configId: string,
+    clinicId: string,
+  ): Promise&lt;PointsConfig&gt; {
     const config = <span class="cstat-no" title="statement not covered" >await this.configRepository.findOne({</span>
       where: {
         id: configId,
@@ -415,7 +418,7 @@ export <span class="cstat-no" title="statement not covered" >class <span class="
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-02-13T01:46:07.220Z
+                at 2026-03-30T14:14:18.078Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
