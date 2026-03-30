@@ -1,10 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { SyncPatientService } from './sync-patient.service';
 import { RetryService } from './retry.service';
 import { MigrationProgressService } from './migration-progress.service';
 import { MigrationProgress } from '../entities/migration-progress.entity';
-import { WebhookPayloadDto, ToolboxPatientDto } from '../dto/webhook-payload.dto';
+import { WebhookPayloadDto, ToolboxPatientDto, WebhookAction } from '../dto/webhook-payload.dto';
 
 /**
  * BulkExportService — 批量患者匯入（初始遷移）
@@ -31,7 +30,6 @@ export class BulkExportService {
     private readonly syncPatientService: SyncPatientService,
     private readonly retryService: RetryService,
     private readonly migrationProgressService: MigrationProgressService,
-    private readonly configService: ConfigService,
   ) {}
 
   /**
@@ -204,9 +202,7 @@ export class BulkExportService {
   private async fetchAllPatientsFromToolbox(
     clinicId: string,
   ): Promise<ToolboxPatientDto[]> {
-    const toolboxUrl = this.configService.get<string>(
-      'DOCTOR_TOOLBOX_API_URL',
-    );
+    const toolboxUrl = process.env.DOCTOR_TOOLBOX_API_URL;
     if (!toolboxUrl) {
       throw new Error('DOCTOR_TOOLBOX_API_URL not configured');
     }
@@ -236,7 +232,7 @@ export class BulkExportService {
       const payload: WebhookPayloadDto = {
         webhookId: `migration-${Date.now()}-${Math.random()}`,
         patientId: patient.id,
-        action: 'patient_created',
+        action: WebhookAction.PATIENT_CREATED,
         timestamp: Math.floor(Date.now() / 1000),
         patient,
       };

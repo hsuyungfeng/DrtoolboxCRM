@@ -4,7 +4,6 @@ import {
   ExecutionContext,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 import { Request } from 'express';
 
@@ -30,9 +29,10 @@ export class WebhookSignatureGuard implements CanActivate {
    * Webhook 時間戳有效期（秒）
    * 防止舊的重放請求被接受
    */
-  private readonly TIMESTAMP_VALIDITY_WINDOW_SECONDS = 300; // 5 分鐘
+  private readonly TIMESTAMP_VALIDITY_WINDOW_SECONDS =
+    parseInt(process.env.WEBHOOK_TIMESTAMP_WINDOW || '300', 10); // 5 分鐘
 
-  constructor(private configService: ConfigService) {}
+  constructor() {}
 
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest<Request>();
@@ -64,9 +64,7 @@ export class WebhookSignatureGuard implements CanActivate {
     }
 
     // 取得 Webhook 密鑰
-    const secret = this.configService.get<string>(
-      'DOCTOR_TOOLBOX_WEBHOOK_SECRET',
-    );
+    const secret = process.env.DOCTOR_TOOLBOX_WEBHOOK_SECRET;
     if (!secret) {
       throw new Error(
         'DOCTOR_TOOLBOX_WEBHOOK_SECRET not configured in environment',
