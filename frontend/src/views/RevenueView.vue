@@ -27,7 +27,7 @@
     </div>
 
     <n-card>
-      <n-tabs type="line" animated>
+      <n-tabs type="line" animated @update:value="onTabChange">
         <n-tab-pane name="records" tab="分潤記錄">
           <n-data-table
             :columns="recordColumns"
@@ -108,6 +108,83 @@
               </n-card>
             </div>
           </n-tab-pane>
+        <n-tab-pane name="reports" tab="收入報表">
+          <div class="report-section">
+            <!-- 日期範圍選擇器 -->
+            <n-card style="margin-bottom: 16px">
+              <n-space align="center">
+                <span>日期範圍：</span>
+                <n-date-picker
+                  v-model:value="reportDateRange"
+                  type="daterange"
+                  clearable
+                  :shortcuts="dateShortcuts"
+                  style="width: 280px"
+                  @update:value="handleDateRangeChange"
+                />
+                <n-button type="primary" @click="refreshReportData" :loading="revenueStore.loading">
+                  重新整理
+                </n-button>
+              </n-space>
+            </n-card>
+
+            <!-- 統計卡片行 -->
+            <n-grid :cols="3" :x-gap="16" style="margin-bottom: 16px">
+              <n-gi>
+                <n-card>
+                  <n-statistic label="本期總收入（元）" :value="revenueStore.summary?.totalRevenue ?? 0">
+                    <template #prefix>$</template>
+                  </n-statistic>
+                </n-card>
+              </n-gi>
+              <n-gi>
+                <n-card>
+                  <n-statistic label="付款筆數" :value="revenueStore.summary?.paymentCount ?? 0" />
+                </n-card>
+              </n-gi>
+              <n-gi>
+                <n-card>
+                  <n-statistic label="平均單筆金額（元）" :value="revenueStore.averagePaymentAmount">
+                    <template #prefix>$</template>
+                  </n-statistic>
+                </n-card>
+              </n-gi>
+            </n-grid>
+
+            <!-- 圖表區域 -->
+            <n-grid :cols="2" :x-gap="16" style="margin-bottom: 16px">
+              <n-gi>
+                <n-card title="月收入趨勢（近 12 個月）">
+                  <v-chart
+                    :option="revenueStore.monthlyTrendChartOption"
+                    autoresize
+                    style="height: 300px"
+                  />
+                </n-card>
+              </n-gi>
+              <n-gi>
+                <n-card title="支付方式分布">
+                  <v-chart
+                    :option="revenueStore.paymentMethodChartOption"
+                    autoresize
+                    style="height: 280px"
+                  />
+                </n-card>
+              </n-gi>
+            </n-grid>
+
+            <!-- 醫護人員分潤明細表 -->
+            <n-card title="醫護人員分潤統計">
+              <n-data-table
+                :columns="staffRevenueColumns"
+                :data="revenueStore.staffRevenue"
+                :loading="revenueStore.loading"
+                :pagination="{ pageSize: 10 }"
+                :row-key="(row) => row.staffId + row.role"
+              />
+            </n-card>
+          </div>
+        </n-tab-pane>
       </n-tabs>
     </n-card>
 
@@ -337,10 +414,117 @@ import {
   NButton, NTag, NSpace, NIcon, NDataTable, NCard, NModal,
   NForm, NFormItem, NSelect, NDatePicker, NSwitch, NTabs, NTabPane,
   NInput, NInputNumber, useDialog, useMessage, NStatistic,
+  NGrid, NGi,
 } from 'naive-ui';
 import type { DataTableColumns, FormInst, FormRules, SelectOption } from 'naive-ui';
 import type { RevenueRecord, RevenueRule, RevenueAdjustment } from '@/types';
 import { revenueApi, revenueAdjustmentApi } from '@/services/api';
+
+// ECharts 元件（收入報表用）
+import VChart from 'vue-echarts';
+import { use } from 'echarts/core';
+import { BarChart, PieChart } from 'echarts/charts';
+import {
+  GridComponent,
+  TooltipComponent,
+  LegendComponent,
+  TitleComponent,
+} from 'echarts/components';
+import { CanvasRenderer } from 'echarts/renderers';
+use([BarChart, PieChart, GridComponent, TooltipComponent, LegendComponent, TitleComponent, CanvasRenderer]);
+
+// 收入報表 Store
+import { useRevenueStore } from '@/stores/revenue.store';
+
+// 收入報表 Store 初始化
+const revenueStore = useRevenueStore();
+
+// 報表日期範圍（timestamp pair for n-date-picker type="daterange"）
+const reportDateRange = ref<[number, number] | null>(null);
+
+// 日期快捷鍵
+const dateShortcuts = {
+  本月: (): [number, number] => {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+    const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    return [start.getTime(), end.getTime()];
+  },
+  上月: (): [number, number] => {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const end = new Date(now.getFullYear(), now.getMonth(), 0);
+    return [start.getTime(), end.getTime()];
+  },
+  本季: (): [number, number] => {
+    const now = new Date();
+    const quarter = Math.floor(now.getMonth() / 3);
+    const start = new Date(now.getFullYear(), quarter * 3, 1);
+    const end = new Date(now.getFullYear(), quarter * 3 + 3, 0);
+    return [start.getTime(), end.getTime()];
+  },
+};
+
+// 醫護人員分潤統計表格欄位
+const staffRevenueColumns: DataTableColumns<{
+  staffId: string;
+  staffName: string;
+  role: string;
+  totalAmount: number;
+  recordCount: number;
+}> = [
+  {
+    title: '人員名稱',
+    key: 'staffName',
+  },
+  {
+    title: '角色',
+    key: 'role',
+    render(row) {
+      const roleMap: Record<string, string> = {
+        doctor: '醫師',
+        therapist: '治療師',
+        assistant: '助理',
+        consultant: '顧問',
+        admin: '管理員',
+      };
+      return roleMap[row.role] ?? row.role;
+    },
+  },
+  {
+    title: '分潤金額（元）',
+    key: 'totalAmount',
+    render(row) {
+      return h('span', { style: 'font-weight: bold;' }, `$${Number(row.totalAmount).toLocaleString()}`);
+    },
+  },
+  {
+    title: '記錄筆數',
+    key: 'recordCount',
+  },
+];
+
+// 處理日期範圍變更
+function handleDateRangeChange(value: [number, number] | null) {
+  if (value) {
+    const startDate = new Date(value[0]).toISOString().split('T')[0];
+    const endDate = new Date(value[1]).toISOString().split('T')[0];
+    revenueStore.loadReportData(startDate, endDate);
+  } else {
+    revenueStore.loadReportData();
+  }
+}
+
+// 手動重新整理報表
+function refreshReportData() {
+  if (reportDateRange.value) {
+    const startDate = new Date(reportDateRange.value[0]).toISOString().split('T')[0];
+    const endDate = new Date(reportDateRange.value[1]).toISOString().split('T')[0];
+    revenueStore.loadReportData(startDate, endDate);
+  } else {
+    revenueStore.loadReportData();
+  }
+}
 
 const loadingRecords = ref(false);
 const loadingRules = ref(false);
@@ -1145,6 +1329,13 @@ async function reviewAdjustment(id: string) {
     message.error('加載調整詳情失敗');
   }
 }
+
+// 切換分頁時自動載入報表資料
+function onTabChange(tabName: string) {
+  if (tabName === 'reports' && !revenueStore.summary && !revenueStore.loading) {
+    revenueStore.loadReportData();
+  }
+}
 </script>
 
 <style scoped>
@@ -1165,6 +1356,10 @@ h1 {
 }
 
 .calculator-section {
+  padding: 8px;
+}
+
+.report-section {
   padding: 8px;
 }
 
