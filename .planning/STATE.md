@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-03-28T02:04:25.353Z"
+last_updated: "2026-03-30T02:13:24.645Z"
 progress:
   total_phases: 3
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 20
-  completed_plans: 19
+  completed_plans: 20
 ---
 
 # 項目狀態：Doctor CRM
@@ -16,7 +16,7 @@ progress:
 **更新時間：** 2026-03-28
 **當前階段：** Phase 3 執行中
 **里程碑：** v1.0 - 自費醫療管理系統
-**當前計劃：** Phase 03 / Plan 02（已完成）— 發票系統完成
+**當前計劃：** Phase 03 / Plan 03（已完成）— 財務報表完成
 
 ## 項目參考
 
@@ -36,7 +36,7 @@ progress:
 | 路線圖規劃 | ✓ 完成 | 100% |
 | **Phase 1** | ✓ 完成 | 100% (13/13 計劃完成) |
 | **Phase 2** | ✓ 完成 | 100% (3/3 計劃完成) |
-| **Phase 3** | 執行中 | 33% (1/3 計劃完成) |
+| **Phase 3** | ✓ 完成 | 100% (3/3 計劃完成) |
 | Phase 4 | ○ 待處理 | 0% |
 
 ---
@@ -137,15 +137,15 @@ progress:
 |------|------|------|------|
 | 01 | 患者支付記錄系統與費用計算服務 | ✓ 完成 | c6711537 |
 | 02 | 發票系統 | ✓ 完成 | 2f52c7f7 |
-| 03 | 財務報表 | ○ 待處理 | — |
+| 03 | 財務報表 | ✓ 完成 | cea4d16d |
 
 ---
 
 ## 最後會話
 
-**停止於：** Completed 03-02-PLAN.md（2026-03-28T02:14:00Z）
+**停止於：** Completed 03-03-PLAN.md（2026-03-30T09:25:00Z）
 
-**下一步：** 執行 Phase 3 Plan 03 — 財務報表
+**下一步：** Phase 3 全部完成，等待 Phase 4 啟動
 
 ---
 
@@ -156,6 +156,13 @@ progress:
 - **2026-03-28 [03-02]：** invoiceNumber 序號生成查詢加入 clinicId 條件，確保不同診所序號互不干擾
 - **2026-03-28 [03-02]：** cancelReason 長度調整為 varchar(255)（計劃指定 32 字元不足以記錄完整取消原因）
 
+## 決策記錄（03-03 新增）
+
+- **2026-03-30 [03-03]：** getMonthlyTrend 使用 SQLite strftime('%Y-%m', paidAt) 群組，確保 SQLite 相容性
+- **2026-03-30 [03-03]：** Pinia store computed 直接回傳 ECharts option，View 層無需額外轉換
+- **2026-03-30 [03-03]：** RevenueView.vue 報表分頁採懶載入（onTabChange 觸發），避免初始載入時的不必要請求
+- **2026-03-30 [03-03]：** ECharts 元件使用 use() 按需載入（BarChart、PieChart 等），降低 bundle 大小
+
 ---
 
-*最後更新：2026-03-28T02:14:00Z*
+*最後更新：2026-03-30T09:25:00Z*
