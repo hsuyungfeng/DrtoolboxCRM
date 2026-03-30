@@ -15,6 +15,7 @@ import { TreatmentTemplatesModule } from "./treatment-templates/treatment-templa
 import { AuditModule } from "./common/audit";
 import { AiModule } from "./ai/ai.module";
 import { NotificationsModule } from "./notifications/notifications.module";
+import { DoctorToolboxSyncModule } from "./doctor-toolbox-sync/doctor-toolbox-sync.module";
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { NotificationsModule } from "./notifications/notifications.module";
     RevenueModule,
     PointsModule,
     ReferralsModule,
+    DoctorToolboxSyncModule,
   ],
   controllers: [AppController],
   providers: [AppService],

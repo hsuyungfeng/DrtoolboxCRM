@@ -19,6 +19,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.TreatmentCourseService = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
+const event_emitter_1 = require("@nestjs/event-emitter");
 const typeorm_2 = require("typeorm");
 const treatment_course_entity_1 = require("../entities/treatment-course.entity");
 const treatment_session_entity_1 = require("../entities/treatment-session.entity");
@@ -27,6 +28,7 @@ const treatment_course_template_service_1 = require("./treatment-course-template
 const treatment_progress_service_1 = require("./treatment-progress.service");
 const points_service_1 = require("../../points/services/points.service");
 const staff_service_1 = require("../../staff/services/staff.service");
+const course_started_event_1 = require("../../events/course-started.event");
 const decimal_js_1 = __importDefault(require("decimal.js"));
 let TreatmentCourseService = TreatmentCourseService_1 = class TreatmentCourseService {
     courseRepository;
@@ -37,8 +39,9 @@ let TreatmentCourseService = TreatmentCourseService_1 = class TreatmentCourseSer
     pointsService;
     staffService;
     dataSource;
+    eventEmitter;
     logger = new common_1.Logger(TreatmentCourseService_1.name);
-    constructor(courseRepository, sessionRepository, staffAssignmentRepository, templateService, treatmentProgressService, pointsService, staffService, dataSource) {
+    constructor(courseRepository, sessionRepository, staffAssignmentRepository, templateService, treatmentProgressService, pointsService, staffService, dataSource, eventEmitter) {
         this.courseRepository = courseRepository;
         this.sessionRepository = sessionRepository;
         this.staffAssignmentRepository = staffAssignmentRepository;
@@ -47,6 +50,7 @@ let TreatmentCourseService = TreatmentCourseService_1 = class TreatmentCourseSer
         this.pointsService = pointsService;
         this.staffService = staffService;
         this.dataSource = dataSource;
+        this.eventEmitter = eventEmitter;
     }
     async createCourse(dto) {
         this.validateCreateCourseInput(dto);
@@ -95,6 +99,7 @@ let TreatmentCourseService = TreatmentCourseService_1 = class TreatmentCourseSer
                 throw error;
             }
         }
+        this.eventEmitter.emit('course.started', new course_started_event_1.CourseStartedEvent(course.id, dto.patientId, dto.clinicId));
         return course;
     }
     async getCourseById(courseId, clinicId) {
@@ -359,6 +364,7 @@ exports.TreatmentCourseService = TreatmentCourseService = TreatmentCourseService
         treatment_progress_service_1.TreatmentProgressService,
         points_service_1.PointsService,
         staff_service_1.StaffService,
-        typeorm_2.DataSource])
+        typeorm_2.DataSource,
+        event_emitter_1.EventEmitter2])
 ], TreatmentCourseService);
 //# sourceMappingURL=treatment-course.service.js.map

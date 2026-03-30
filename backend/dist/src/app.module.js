@@ -24,6 +24,7 @@ const treatment_templates_module_1 = require("./treatment-templates/treatment-te
 const audit_1 = require("./common/audit");
 const ai_module_1 = require("./ai/ai.module");
 const notifications_module_1 = require("./notifications/notifications.module");
+const doctor_toolbox_sync_module_1 = require("./doctor-toolbox-sync/doctor-toolbox-sync.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -43,6 +44,7 @@ exports.AppModule = AppModule = __decorate([
             revenue_module_1.RevenueModule,
             points_module_1.PointsModule,
             referrals_module_1.ReferralsModule,
+            doctor_toolbox_sync_module_1.DoctorToolboxSyncModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

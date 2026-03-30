@@ -20,6 +20,7 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const event_emitter_1 = require("@nestjs/event-emitter");
 const typeorm_2 = require("typeorm");
+const course_completed_event_1 = require("../../events/course-completed.event");
 const treatment_session_entity_1 = require("../entities/treatment-session.entity");
 const treatment_course_entity_1 = require("../entities/treatment-course.entity");
 const staff_assignment_entity_1 = require("../entities/staff-assignment.entity");
@@ -127,6 +128,7 @@ let TreatmentSessionService = class TreatmentSessionService {
                     course.status = "completed";
                     course.completedAt = new Date();
                     await manager.save(treatment_course_entity_1.TreatmentCourse, course);
+                    this.eventEmitter.emit('course.completed', new course_completed_event_1.CourseCompletedEvent(course.id, session.treatmentCourse.patientId, session.clinicId));
                 }
             }
             return savedSession;

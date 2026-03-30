@@ -1,3 +1,4 @@
+import { EventEmitter2 } from "@nestjs/event-emitter";
 import { Repository, DataSource } from "typeorm";
 import { TreatmentCourse } from "../entities/treatment-course.entity";
 import { TreatmentSession } from "../entities/treatment-session.entity";
@@ -17,8 +18,9 @@ export declare class TreatmentCourseService {
     private readonly pointsService;
     private readonly staffService;
     private readonly dataSource;
+    private readonly eventEmitter;
     private readonly logger;
-    constructor(courseRepository: Repository<TreatmentCourse>, sessionRepository: Repository<TreatmentSession>, staffAssignmentRepository: Repository<StaffAssignment>, templateService: TreatmentCourseTemplateService, treatmentProgressService: TreatmentProgressService, pointsService: PointsService, staffService: StaffService, dataSource: DataSource);
+    constructor(courseRepository: Repository<TreatmentCourse>, sessionRepository: Repository<TreatmentSession>, staffAssignmentRepository: Repository<StaffAssignment>, templateService: TreatmentCourseTemplateService, treatmentProgressService: TreatmentProgressService, pointsService: PointsService, staffService: StaffService, dataSource: DataSource, eventEmitter: EventEmitter2);
     createCourse(dto: CreateTreatmentCourseDto): Promise<TreatmentCourse>;
     getCourseById(courseId: string, clinicId: string): Promise<TreatmentCourse>;
     getPatientCourses(patientId: string, clinicId: string, status?: string): Promise<TreatmentCourse[]>;
