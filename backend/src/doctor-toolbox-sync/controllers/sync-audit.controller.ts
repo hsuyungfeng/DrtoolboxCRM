@@ -88,9 +88,9 @@ export class SyncAuditController {
   @ApiQuery({ name: 'startDate', required: false, description: '開始日期' })
   @ApiQuery({ name: 'endDate', required: false, description: '結束日期' })
   async getClinicLogs(
-    @Query('limit') limit: number = 1000,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
+    @Query('limit') limit: number = 1000,
     @Req() req: any,
   ): Promise<{
     statusCode: number;

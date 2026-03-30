@@ -5,12 +5,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   Index,
-  OneToOne,
-  JoinColumn,
-  ManyToOne,
 } from 'typeorm';
-import { Patient } from '../../patients/entities/patient.entity';
-import { Clinic } from '../../common/clinic/clinic.entity';
 import { SyncStatus } from '../../common/enums/sync-status.enum';
 
 /**
@@ -109,11 +104,4 @@ export class SyncPatientIndex {
    */
   @UpdateDateColumn()
   updatedAt: Date;
-
-  /**
-   * 關係：CRM 患者
-   */
-  @OneToOne(() => Patient, { eager: true, nullable: true })
-  @JoinColumn({ name: 'crmPatientId' })
-  patient: Patient;
 }

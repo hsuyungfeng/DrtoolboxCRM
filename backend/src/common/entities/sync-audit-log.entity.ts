@@ -20,20 +20,20 @@ import {
  * - 多診所隔離
  */
 @Entity('sync_audit_logs')
-@Index(['clinicId', 'timestamp'], { name: 'idx_audit_clinic_timestamp' })
-@Index(['patientId', 'timestamp'], { name: 'idx_audit_patient_timestamp' })
-@Index(['action', 'timestamp'], { name: 'idx_audit_action_timestamp' })
 export class SyncAuditLog {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
+  @Index()
   clinicId: string;
 
   @Column({ nullable: true })
+  @Index()
   patientId?: string;
 
   @Column()
+  @Index()
   action: string;
 
   @Column()
@@ -49,5 +49,6 @@ export class SyncAuditLog {
   eventData?: Record<string, any>;
 
   @CreateDateColumn()
+  @Index()
   timestamp: Date;
 }

@@ -141,15 +141,20 @@ export class SyncIndexService {
   async updateStatus(
     crmPatientId: string,
     syncStatus: SyncStatus,
-    errorMessage: string | null = null,
+    errorMessage?: string | null,
   ): Promise<void> {
+    const updateData: any = {
+      syncStatus,
+      lastSyncAt: new Date(),
+    };
+
+    if (errorMessage !== undefined) {
+      updateData.errorMessage = errorMessage;
+    }
+
     await this.syncIndexRepository.update(
       { crmPatientId },
-      {
-        syncStatus,
-        errorMessage: errorMessage || null,
-        lastSyncAt: new Date(),
-      },
+      updateData,
     );
   }
 
