@@ -108,22 +108,49 @@
 
 ## Phase 4：Doctor Toolbox 整合（約 4-5 週）
 
+**計劃數：** 4 個計劃
+
+**計劃進度：**
+
+| 計劃 | 名稱 | 狀態 | Wave | 相依性 |
+|------|------|------|------|---------|
+| 01 | Webhook 基礎設施 & 患者同步索引 | ○ 規劃中 | 1 | None |
+| 02 | 雙向同步引擎（衝突解決、重試邏輯）| ○ 規劃中 | 1 | 04-01 |
+| 03 | 初始診所遷移（批量匯入、進度追蹤）| ○ 規劃中 | 2 | 04-01, 04-02 |
+| 04 | 審計追蹤 & 監控（日誌、API 文檔） | ○ 規劃中 | 2 | 04-01, 04-02, 04-03 |
+
+計劃清單：
+- [ ] 04-01-PLAN.md — Webhook 基礎設施 & 患者同步索引（INTEGRATION-01, 02）
+- [ ] 04-02-PLAN.md — 雙向同步引擎（INTEGRATION-02, 03）
+- [ ] 04-03-PLAN.md — 初始診所遷移（INTEGRATION-01, 04）
+- [ ] 04-04-PLAN.md — 審計追蹤 & 監控（INTEGRATION-01, 02, 03, 04）
+
 **交付內容：**
-- Doctor Toolbox API 對接
-- 資料同步機制（雙向實時）
-- 身份證ID + 姓名唯一索引
-- 衝突解決策略
+- WebhookController（POST /sync/webhook，HMAC-SHA256 簽名驗證）
+- SyncPatientIndexEntity（患者身份映射表，精確查詢）
+- SyncPatientService（轉換、查詢、衝突解決、合併邏輯）
+- RetryService（指數退避重試：2s, 4s, 8s, 16s）
+- BulkExportService（批量匯入，進度追蹤，恢復機制）
+- SyncAuditLogEntity & SyncAuditService（完整審計追蹤）
+- SyncMonitoringService（故障告警、重試分析）
+- API 整合文檔（中文 繁體，Webhook 合約、錯誤碼）
+- 整合安裝指南（新診所設定步驟）
 
 **技術重點：**
-- 設計 Webhook 或 Polling 同步機制
-- 實現事務一致性
-- 資料驗證與轉換層
-- 同步失敗重試邏輯
+- 使用 NestJS EventEmitter 驅動患者生命週期事件
+- HMAC-SHA256 webhook 簽名驗證 + 時戳防重放
+- 指數退避重試（無訊息佇列依賴）
+- 精確患者匹配（idNumber + name）+ 備用查詢（name + phone）
+- CRM 為患者身份權威來源（冪等性設計）
+- 多診所隔離（clinicId 篩選）
+- 最終一致性同步（異步處理，審計記錄）
 
 **必達指標：**
 - ✓ 同步延遲 < 5 秒
 - ✓ 資料一致性 99.9%
 - ✓ 沒有重複或遺漏記錄
+- ✓ 測試覆蓋率 ≥ 90%
+- ✓ 衝突自動解決（CRM 為主控）
 
 ---
 
@@ -140,4 +167,4 @@
 ---
 
 *路線圖建立日期：2026-03-26*
-*最後更新：2026-03-27（Phase 3 計劃建立）*
+*最後更新：2026-03-30（Phase 4 計劃建立完成）*
