@@ -41,16 +41,15 @@
           />
         </n-card>
 
-        <!-- 建立/編輯對話框 -->
+        <!-- 建立療程對話框 -->
         <n-modal
           v-model:show="showFormDialog"
           preset="card"
-          title="療程資訊"
+          title="購買新療程"
           style="width: 640px"
           :mask-closable="false"
         >
           <TreatmentForm
-            :treatment="editingTreatment"
             @save="handleSave"
             @cancel="closeFormDialog"
           />
@@ -81,13 +80,12 @@ import { treatmentsApi } from '@/services/treatments-api';
 import { useUserStore } from '@/stores/user';
 import TreatmentForm from '@/components/TreatmentForm.vue';
 
+/** 表單資料（用於新增療程） */
 interface TreatmentFormData {
-  name: string;
   patientId: string;
-  description?: string;
   templateId?: string;
-  totalSessions: number;
-  costPerSession?: number;
+  clinicId?: string;
+  pointsToRedeem?: number;
 }
 
 /** 療程列表行資料型別 */
@@ -170,18 +168,13 @@ const columns: DataTableColumns<TreatmentRow> = [
   {
     title: '操作',
     key: 'actions',
-    width: 180,
+    width: 150,
     render: (row) =>
       h(NSpace, {}, [
         h(
           NButton,
           { size: 'small', onClick: () => viewTreatment(row.id) },
           { default: () => '查看' },
-        ),
-        h(
-          NButton,
-          { size: 'small', type: 'warning', onClick: () => openEditDialog(row) },
-          { default: () => '編輯' },
         ),
         h(
           NButton,
@@ -217,28 +210,23 @@ const openCreateDialog = () => {
   showFormDialog.value = true;
 };
 
-/** 開啟編輯對話框 */
-const openEditDialog = (treatment: TreatmentRow) => {
-  editingTreatment.value = { ...treatment };
-  showFormDialog.value = true;
-};
-
 /** 關閉對話框 */
 const closeFormDialog = () => {
   showFormDialog.value = false;
   editingTreatment.value = null;
 };
 
-/** 儲存療程（新增或更新） */
-const handleSave = async (data: TreatmentFormData) => {
+/** 儲存療程（新增） */
+const handleSave = async (data: any) => {
   try {
-    if (editingTreatment.value?.id) {
-      await treatmentsApi.updateTreatment(editingTreatment.value.id, data);
-      message.success('療程已更新');
-    } else {
-      await treatmentsApi.createTreatment(data);
-      message.success('療程已建立');
-    }
+    // 新增療程：使用新的表單格式（基於範本選擇）
+    await treatmentsApi.createTreatment({
+      patientId: data.patientId,
+      templateId: data.templateId,
+      clinicId: clinicId.value,
+      pointsToRedeem: data.pointsToRedeem,
+    });
+    message.success('療程已建立');
     closeFormDialog();
     await loadTreatments();
   } catch (error) {

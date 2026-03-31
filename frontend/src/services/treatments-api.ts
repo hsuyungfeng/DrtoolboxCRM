@@ -131,16 +131,13 @@ export const treatmentsApi = {
     http.get<TreatmentCourse>(`/treatments/courses/${id}`, { params }),
 
   /**
-   * 建立新療程
+   * 建立新療程（基於範本選擇）
    */
   createTreatment: (data: {
     patientId: string;
-    name: string;
-    type?: string;
-    costPerSession?: number;
-    totalSessions: number;
-    description?: string;
-    clinicId?: string;
+    templateId: string;
+    clinicId: string;
+    pointsToRedeem?: number;
   }) => http.post<TreatmentCourse>('/treatments/courses', data),
 
   /**
@@ -156,7 +153,7 @@ export const treatmentsApi = {
       description?: string;
       status?: string;
     },
-  ) => http.put<TreatmentCourse>(`/treatments/courses/${id}`, data),
+  ) => http.patch<TreatmentCourse>(`/treatments/courses/${id}`, data),
 
   /**
    * 刪除療程

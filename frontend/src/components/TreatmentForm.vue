@@ -19,102 +19,94 @@
       />
     </n-form-item>
 
-    <!-- 療程名稱 -->
-    <n-form-item label="療程名稱" path="name">
-      <n-input v-model:value="formData.name" placeholder="請輸入療程名稱" />
-    </n-form-item>
-
-    <!-- 療程類型 -->
-    <n-form-item label="類型" path="type">
+    <!-- 療程範本選擇 -->
+    <n-form-item label="療程範本" path="templateId">
       <n-select
-        v-model:value="formData.type"
-        :options="typeOptions"
-        placeholder="請選擇療程類型"
+        v-model:value="formData.templateId"
+        :options="treatmentTemplateOptions"
+        filterable
         clearable
+        :loading="loadingTemplates"
+        placeholder="請選擇療程範本..."
+        @update:value="handleTemplateSelect"
       />
     </n-form-item>
 
-    <!-- 每堂費用 -->
-    <n-form-item label="費用（每堂課）" path="costPerSession">
+    <!-- 顯示選定範本的資訊（只讀） -->
+    <n-alert
+      v-if="selectedTemplate"
+      type="info"
+      closable
+      style="margin-bottom: 16px"
+    >
+      <div class="template-info">
+        <div><strong>療程名稱：</strong> {{ selectedTemplate.name }}</div>
+        <div><strong>預設課程數：</strong> {{ selectedTemplate.defaultSessions }} 堂</div>
+        <div><strong>預設價格：</strong> NT$ {{ selectedTemplate.defaultPrice }}</div>
+        <div v-if="selectedTemplate.description" class="mt-8">
+          <strong>說明：</strong> {{ selectedTemplate.description }}
+        </div>
+      </div>
+    </n-alert>
+
+    <!-- 可選：點數抵扣 -->
+    <n-form-item label="積分抵扣（選填）" path="pointsToRedeem">
       <n-input-number
-        v-model:value="formData.costPerSession"
+        v-model:value="formData.pointsToRedeem"
         :min="0"
-        :precision="0"
-        placeholder="請輸入每堂費用"
+        :precision="2"
+        placeholder="請輸入要抵扣的積分數..."
         style="width: 100%"
       >
-        <template #prefix>NT$</template>
+        <template #prefix>點</template>
       </n-input-number>
-    </n-form-item>
-
-    <!-- 總課程數 -->
-    <n-form-item label="療程數（總課程數）" path="totalSessions">
-      <n-input-number
-        v-model:value="formData.totalSessions"
-        :min="1"
-        :precision="0"
-        placeholder="請輸入總課程數"
-        style="width: 100%"
-      />
-    </n-form-item>
-
-    <!-- 說明 -->
-    <n-form-item label="說明" path="description">
-      <n-input
-        v-model:value="formData.description"
-        type="textarea"
-        :rows="4"
-        placeholder="請輸入療程說明（選填）"
-      />
     </n-form-item>
 
     <!-- 操作按鈕 -->
     <div class="form-actions">
       <n-space justify="end">
         <n-button @click="$emit('cancel')">取消</n-button>
-        <n-button type="primary" :loading="saving" @click="handleSave">保存</n-button>
+        <n-button type="primary" :loading="saving" :disabled="!formData.templateId" @click="handleSave">購買療程</n-button>
       </n-space>
     </div>
   </n-form>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue';
+import { ref, reactive, watch, onMounted, computed } from 'vue';
 import {
   NForm,
   NFormItem,
-  NInput,
   NInputNumber,
   NSelect,
   NButton,
   NSpace,
+  NAlert,
 } from 'naive-ui';
 import type { FormInst, FormRules, SelectOption } from 'naive-ui';
 import { patientsApi } from '@/services/api';
+import { treatmentCoursesApi } from '@/services/treatments-api';
+import { useUserStore } from '@/stores/user';
 
-/** 療程表單資料型別 */
-interface TreatmentFormData {
-  patientId: string;
+/** 治療範本型別 */
+interface TreatmentTemplate {
+  id: string;
   name: string;
-  type: string;
-  costPerSession: number;
-  totalSessions: number;
-  description: string;
+  description?: string;
+  defaultPrice: number;
+  defaultSessions: number;
 }
 
-/** 父元件傳入的療程資料（編輯模式） */
-interface TreatmentProp {
-  id?: string;
-  patientId?: string;
-  name?: string;
-  type?: string;
-  costPerSession?: number;
-  totalSessions?: number;
-  description?: string;
+/** 療程表單資料型別（對應後端 CreateTreatmentCourseDto） */
+interface TreatmentFormData {
+  patientId: string;
+  templateId?: string;
+  clinicId?: string;
+  pointsToRedeem?: number;
 }
 
 const props = defineProps<{
-  treatment?: TreatmentProp | null;
+  treatment?: any | null;
 }>();
 
 const emit = defineEmits<{
@@ -122,44 +114,51 @@ const emit = defineEmits<{
   (e: 'cancel'): void;
 }>();
 
+const userStore = useUserStore();
 const formRef = ref<FormInst | null>(null);
 const saving = ref(false);
 const searchingPatients = ref(false);
 const patientOptions = ref<SelectOption[]>([]);
+const loadingTemplates = ref(false);
+const treatmentTemplateOptions = ref<SelectOption[]>([]);
+const allTemplates = ref<TreatmentTemplate[]>([]);
 
 const formData = reactive<TreatmentFormData>({
   patientId: '',
-  name: '',
-  type: '',
-  costPerSession: 0,
-  totalSessions: 1,
-  description: '',
+  templateId: undefined,
+  clinicId: userStore.clinicId || 'clinic_001',
+  pointsToRedeem: undefined,
 });
 
-/** 療程類型選項 */
-const typeOptions: SelectOption[] = [
-  { label: '復健治療', value: 'rehabilitation' },
-  { label: '美容療程', value: 'cosmetic' },
-  { label: '牙科療程', value: 'dental' },
-  { label: '其他', value: 'other' },
-];
+/** 根據選定的 templateId 取得對應的範本詳情 */
+const selectedTemplate = computed(() => {
+  if (!formData.templateId) return null;
+  return allTemplates.value.find(t => t.id === formData.templateId) || null;
+});
+
+/** 載入治療範本清單 */
+const loadTreatmentTemplates = async () => {
+  const clinicId = userStore.clinicId || 'clinic_001';
+  loadingTemplates.value = true;
+  try {
+    const templates = await treatmentCoursesApi.getTemplates(clinicId);
+    const list = Array.isArray(templates) ? templates : [];
+    allTemplates.value = list as TreatmentTemplate[];
+    treatmentTemplateOptions.value = list.map((t: TreatmentTemplate) => ({
+      label: `${t.name} (${t.defaultSessions} 堂 × NT$${t.defaultPrice})`,
+      value: t.id,
+    }));
+  } catch (error) {
+    console.error('載入治療範本失敗:', error);
+  } finally {
+    loadingTemplates.value = false;
+  }
+};
 
 /** 表單驗證規則 */
 const rules: FormRules = {
   patientId: [{ required: true, message: '請選擇患者', trigger: 'change' }],
-  name: [
-    { required: true, message: '請填寫療程名稱', trigger: 'blur' },
-    { min: 2, max: 100, message: '療程名稱需在 2 到 100 個字符之間', trigger: 'blur' },
-  ],
-  totalSessions: [
-    { required: true, type: 'number', message: '請填寫療程數', trigger: ['input', 'change'] },
-    {
-      type: 'number',
-      min: 1,
-      message: '療程數至少為 1',
-      trigger: ['input', 'change'],
-    },
-  ],
+  templateId: [{ required: true, message: '請選擇療程範本', trigger: 'change' }],
 };
 
 /** 搜尋患者（遠端搜尋） */
@@ -180,6 +179,13 @@ const handlePatientSearch = async (query: string) => {
   }
 };
 
+/** 處理範本選擇變更 */
+const handleTemplateSelect = (templateId: string | null) => {
+  if (!templateId) {
+    formData.templateId = undefined;
+  }
+};
+
 /** 保存表單 */
 const handleSave = async () => {
   if (!formRef.value) return;
@@ -196,29 +202,17 @@ const handleSave = async () => {
   }
 };
 
-/** 監聽傳入的療程資料（編輯模式初始化） */
-watch(
-  () => props.treatment,
-  (treatment) => {
-    if (treatment) {
-      formData.patientId = treatment.patientId ?? '';
-      formData.name = treatment.name ?? '';
-      formData.type = treatment.type ?? '';
-      formData.costPerSession = treatment.costPerSession ?? 0;
-      formData.totalSessions = treatment.totalSessions ?? 1;
-      formData.description = treatment.description ?? '';
-    } else {
-      // 新增模式：重置表單
-      formData.patientId = '';
-      formData.name = '';
-      formData.type = '';
-      formData.costPerSession = 0;
-      formData.totalSessions = 1;
-      formData.description = '';
-    }
-  },
-  { immediate: true },
-);
+/** 重置表單 */
+const resetForm = () => {
+  formData.patientId = '';
+  formData.templateId = undefined;
+  formData.pointsToRedeem = undefined;
+};
+
+/** 元件掛載時載入治療範本 */
+onMounted(() => {
+  loadTreatmentTemplates();
+});
 </script>
 
 <style scoped>
@@ -226,5 +220,19 @@ watch(
   margin-top: 16px;
   padding-top: 16px;
   border-top: 1px solid #e0e0e0;
+}
+
+.template-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.template-info div {
+  line-height: 1.6;
+}
+
+.mt-8 {
+  margin-top: 8px;
 }
 </style>
