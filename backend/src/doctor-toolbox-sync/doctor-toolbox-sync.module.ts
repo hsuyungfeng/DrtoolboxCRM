@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Patient } from '../patients/entities/patient.entity';
+import { PatientsModule } from '../patients/patients.module';
 import { SyncPatientIndex } from './entities/sync-patient-index.entity';
 import { MigrationProgress } from './entities/migration-progress.entity';
 import { SyncAuditLog } from '../common/entities/sync-audit-log.entity';
@@ -30,6 +31,7 @@ import { SyncAuditController } from './controllers/sync-audit.controller';
  */
 @Module({
   imports: [
+    PatientsModule,
     TypeOrmModule.forFeature([
       Patient,
       SyncPatientIndex,
