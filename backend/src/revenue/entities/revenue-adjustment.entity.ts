@@ -36,7 +36,24 @@ export class RevenueAdjustment {
   @Column({ type: "varchar", length: 32 })
   clinicId: string;
 
-  @Column({ type: "json", nullable: true })
+  @Column({
+    type: "text",
+    nullable: true,
+    transformer: {
+      to: (value: any): string | null => {
+        if (!value) return null;
+        return JSON.stringify(value);
+      },
+      from: (value: string | null): any => {
+        if (!value) return null;
+        try {
+          return JSON.parse(value);
+        } catch {
+          return null;
+        }
+      },
+    },
+  })
   metadata: any;
 
   @Column({

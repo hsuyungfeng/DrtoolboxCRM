@@ -63,7 +63,27 @@ __decorate([
     __metadata("design:type", String)
 ], RevenueAdjustment.prototype, "clinicId", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: "json", nullable: true }),
+    (0, typeorm_1.Column)({
+        type: "text",
+        nullable: true,
+        transformer: {
+            to: (value) => {
+                if (!value)
+                    return null;
+                return JSON.stringify(value);
+            },
+            from: (value) => {
+                if (!value)
+                    return null;
+                try {
+                    return JSON.parse(value);
+                }
+                catch {
+                    return null;
+                }
+            },
+        },
+    }),
     __metadata("design:type", Object)
 ], RevenueAdjustment.prototype, "metadata", void 0);
 __decorate([

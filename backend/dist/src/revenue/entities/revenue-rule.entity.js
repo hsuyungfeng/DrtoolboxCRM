@@ -38,7 +38,26 @@ __decorate([
     __metadata("design:type", String)
 ], RevenueRule.prototype, "ruleType", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: "json" }),
+    (0, typeorm_1.Column)({
+        type: "text",
+        transformer: {
+            to: (value) => {
+                if (!value)
+                    return null;
+                return JSON.stringify(value);
+            },
+            from: (value) => {
+                if (!value)
+                    return null;
+                try {
+                    return JSON.parse(value);
+                }
+                catch {
+                    return null;
+                }
+            },
+        },
+    }),
     __metadata("design:type", Object)
 ], RevenueRule.prototype, "rulePayload", void 0);
 __decorate([

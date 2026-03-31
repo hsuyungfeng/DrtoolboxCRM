@@ -59,7 +59,24 @@ export class RevenueRecord {
   @Column({ type: "datetime", nullable: true })
   paidAt: Date | null;
 
-  @Column({ type: "json", nullable: true })
+  @Column({
+    type: "text",
+    nullable: true,
+    transformer: {
+      to: (value: Record<string, unknown> | null): string | null => {
+        if (!value) return null;
+        return JSON.stringify(value);
+      },
+      from: (value: string | null): Record<string, unknown> | null => {
+        if (!value) return null;
+        try {
+          return JSON.parse(value);
+        } catch {
+          return null;
+        }
+      },
+    },
+  })
   calculationDetails: Record<string, unknown> | null; // 计算明细
 
   @UpdateDateColumn()

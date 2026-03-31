@@ -65,7 +65,26 @@ __decorate([
     __metadata("design:type", decimal_js_1.default)
 ], TreatmentCourseTemplate.prototype, "totalPrice", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: "json" }),
+    (0, typeorm_1.Column)({
+        type: "text",
+        transformer: {
+            to: (value) => {
+                if (!value)
+                    return null;
+                return JSON.stringify(value);
+            },
+            from: (value) => {
+                if (!value)
+                    return null;
+                try {
+                    return JSON.parse(value);
+                }
+                catch {
+                    return [];
+                }
+            },
+        },
+    }),
     __metadata("design:type", Array)
 ], TreatmentCourseTemplate.prototype, "stageConfig", void 0);
 __decorate([

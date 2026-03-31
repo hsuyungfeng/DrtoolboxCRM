@@ -17,7 +17,23 @@ export class RevenueRule {
   @Column({ type: "varchar", length: 50 })
   ruleType: string; // percentage, fixed, tiered
 
-  @Column({ type: "json" })
+  @Column({
+    type: "text",
+    transformer: {
+      to: (value: any): string | null => {
+        if (!value) return null;
+        return JSON.stringify(value);
+      },
+      from: (value: string | null): any => {
+        if (!value) return null;
+        try {
+          return JSON.parse(value);
+        } catch {
+          return null;
+        }
+      },
+    },
+  })
   rulePayload: any; // 规则参数，如百分比、金额、阶梯条件
 
   @Column({ type: "date" })

@@ -67,7 +67,23 @@ export class Invoice {
    * 費用明細（JSON 陣列）
    * 格式：[{ paymentId, amount, paymentMethod, paidAt, description }]
    */
-  @Column({ type: "json" })
+  @Column({
+    type: "text",
+    transformer: {
+      to: (value: InvoiceLineItem[] | null): string | null => {
+        if (!value) return null;
+        return JSON.stringify(value);
+      },
+      from: (value: string | null): InvoiceLineItem[] | null => {
+        if (!value) return null;
+        try {
+          return JSON.parse(value);
+        } catch {
+          return [];
+        }
+      },
+    },
+  })
   lineItems: InvoiceLineItem[];
 
   /** 發票總金額（已付總額）*/
