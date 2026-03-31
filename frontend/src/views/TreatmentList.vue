@@ -81,6 +81,15 @@ import { treatmentsApi } from '@/services/treatments-api';
 import { useUserStore } from '@/stores/user';
 import TreatmentForm from '@/components/TreatmentForm.vue';
 
+interface TreatmentFormData {
+  name: string;
+  patientId: string;
+  description?: string;
+  templateId?: string;
+  totalSessions: number;
+  costPerSession?: number;
+}
+
 /** 療程列表行資料型別 */
 interface TreatmentRow {
   id: string;
@@ -221,13 +230,13 @@ const closeFormDialog = () => {
 };
 
 /** 儲存療程（新增或更新） */
-const handleSave = async (data: Record<string, unknown>) => {
+const handleSave = async (data: TreatmentFormData) => {
   try {
     if (editingTreatment.value?.id) {
-      await treatmentsApi.updateTreatment(editingTreatment.value.id, data as Parameters<typeof treatmentsApi.updateTreatment>[1]);
+      await treatmentsApi.updateTreatment(editingTreatment.value.id, data);
       message.success('療程已更新');
     } else {
-      await treatmentsApi.createTreatment(data as Parameters<typeof treatmentsApi.createTreatment>[0]);
+      await treatmentsApi.createTreatment(data);
       message.success('療程已建立');
     }
     closeFormDialog();
