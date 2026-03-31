@@ -46,7 +46,23 @@ export class TreatmentCourseTemplate {
   })
   totalPrice: Decimal;
 
-  @Column({ type: "json" })
+  @Column({
+    type: "text",
+    transformer: {
+      to: (value: StageConfig[] | null): string | null => {
+        if (!value) return null;
+        return JSON.stringify(value);
+      },
+      from: (value: string | null): StageConfig[] | null => {
+        if (!value) return null;
+        try {
+          return JSON.parse(value);
+        } catch {
+          return [];
+        }
+      },
+    },
+  })
   stageConfig: StageConfig[];
 
   @Column({ type: "varchar", length: 32 })
