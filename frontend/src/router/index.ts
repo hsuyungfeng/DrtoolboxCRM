@@ -23,8 +23,14 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/treatments',
     name: 'Treatments',
-    component: () => import('@/views/TreatmentsView.vue'),
+    component: () => import('@/views/TreatmentList.vue'),
     meta: { title: '療程管理' },
+  },
+  {
+    path: '/treatments/:id',
+    name: 'TreatmentDetail',
+    component: () => import('@/views/TreatmentDetail.vue'),
+    meta: { title: '療程詳情' },
   },
   {
     path: '/schedule',
