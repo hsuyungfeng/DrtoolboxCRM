@@ -22,7 +22,7 @@
 | 01 | 11/13 | Complete    | 2026-03-27 |
 | 02 | TreatmentProgressService + 醫護分配 | Complete    | 2026-03-27 |
 | 03 | PatientSearch 實體與搜尋服務 | Complete    | 2026-03-30 |
-| 04 | MedicalOrderController 醫令 API | ✓ 完成 | 2cf1405d |
+| 04 | MedicalOrderController 醫令 API | Complete    | 2026-04-01 |
 | 05 | TreatmentCourse CRUD API | ✓ 完成 | 9eeb169d |
 | 06 | PatientController 患者 API | ✓ 完成 | 98dd91d4 |
 | 07 | DTO 驗證層與 ValidationErrorFilter | ✓ 完成 | 00b37172 |
