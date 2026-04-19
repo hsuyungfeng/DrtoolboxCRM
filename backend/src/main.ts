@@ -9,11 +9,14 @@ import { ClinicAuthMiddleware } from "./common/middlewares/clinic-auth.middlewar
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // 註冊全域異常過濾器（ValidationErrorFilter 優先處理驗證錯誤）
+  // 註冊全域異常過濾器（LIFO 順序：最後註冊 = 最先執行）
+  // AllExceptionsFilter 最先註冊 → 最後執行（兜底）
+  // HttpExceptionFilter 次之 → 處理所有 HttpException（401/403/404 等）
+  // ValidationErrorFilter 最後 → 最先執行，優先捕獲驗證錯誤
   app.useGlobalFilters(
-    new ValidationErrorFilter(),
-    new HttpExceptionFilter(),
     new AllExceptionsFilter(),
+    new HttpExceptionFilter(),
+    new ValidationErrorFilter(),
   );
 
   // 啟用 CORS
