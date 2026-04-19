@@ -1,4 +1,5 @@
 import { DataSource } from "typeorm";
+import * as bcrypt from "bcrypt";
 import { Patient } from "../src/patients/entities/patient.entity";
 import { Staff } from "../src/staff/entities/staff.entity";
 import { Treatment } from "../src/treatments/entities/treatment.entity";
@@ -91,7 +92,30 @@ async function seed() {
     therapist.baseSalary = 50000;
     therapist.status = "active";
 
-    await staffRepository.save([doctor, therapist]);
+    // 建立初始 admin 使用者
+    const initialPassword = "InitialPassword123!";
+    const passwordHash = await bcrypt.hash(initialPassword, 10);
+
+    const admin = new Staff();
+    admin.id = "staff_admin";
+    admin.clinicId = clinicId;
+    admin.name = "系統管理員";
+    admin.username = "admin";
+    admin.email = "admin@example.com";
+    admin.passwordHash = passwordHash;
+    admin.role = "admin";
+    admin.baseSalary = 100000;
+    admin.status = "active";
+
+    await staffRepository.save([doctor, therapist, admin]);
+
+    // 輸出初始帳號資訊
+    console.log("========== 初始 Admin 帳號 ==========");
+    console.log(`用戶名: admin`);
+    console.log(`密碼: ${initialPassword}`);
+    console.log(`診所 ID: ${clinicId}`);
+    console.log("註: 請妥善保管初始密碼，生產環境應立即更改");
+    console.log("====================================");
 
     // 3. 創建分潤規則
     console.log("創建分潤規則...");
@@ -283,7 +307,7 @@ async function seed() {
     console.log("========== 測試數據摘要 ==========");
     console.log(`診所ID: ${clinicId}`);
     console.log(`患者: ${patient.name} (${patient.id})`);
-    console.log(`員工: 醫生 ${doctor.name}, 治療師 ${therapist.name}`);
+    console.log(`員工: 管理員 admin, 醫生 ${doctor.name}, 治療師 ${therapist.name}`);
     console.log(`療程: ${treatment.name} - 已完成 ${treatment.completedSessions}/${treatment.totalSessions} 次`);
     console.log(`分潤規則: 3條規則已創建`);
     console.log(`療程次數: 5次已創建 (3次完成, 2次待執行)`);

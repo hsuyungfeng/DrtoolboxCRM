@@ -90,14 +90,19 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useMessage } from 'naive-ui';
 import {
   NButton, NForm, NFormItem, NInput, NIcon, NCheckbox, NCard,
 } from 'naive-ui';
 import type { FormInst, FormRules } from 'naive-ui';
 import { useUserStore } from '@/stores/user';
+import { authService } from '@/services/auth.service';
+import { useI18n } from 'vue-i18n';
 
 const router = useRouter();
 const userStore = useUserStore();
+const message = useMessage();
+const { t } = useI18n();
 
 const formRef = ref<FormInst | null>(null);
 const loading = ref(false);
@@ -105,38 +110,48 @@ const rememberMe = ref(false);
 const formValue = ref({
   username: '',
   password: '',
-  clinicId: 'clinic-1',
+  clinicId: 'clinic_001',
 });
 
 const rules: FormRules = {
   username: [
-    { required: true, message: '請輸入用戶名', trigger: 'blur' },
+    { required: true, message: t('auth.username') + t('common.required'), trigger: 'blur' },
   ],
   password: [
-    { required: true, message: '請輸入密碼', trigger: 'blur' },
+    { required: true, message: t('auth.password') + t('common.required'), trigger: 'blur' },
   ],
   clinicId: [
-    { required: true, message: '請輸入診所 ID', trigger: 'blur' },
+    { required: true, message: t('clinic.clinicId') + t('common.required'), trigger: 'blur' },
   ],
 };
 
 async function handleLogin() {
   try {
     loading.value = true;
-    
+
     // 驗證表單
     await formRef.value?.validate();
 
-    // 模擬登入（TODO: 替換為實際的 API 呼叫）
-    await userStore.login({
+    // 呼叫後端 API
+    const response = await authService.login({
       username: formValue.value.username,
       password: formValue.value.password,
       clinicId: formValue.value.clinicId,
     });
 
-    // 跳轉到首頁
-    router.push('/');
-  } catch (error) {
+    // 保存用戶資訊和 token
+    userStore.setUser(response.user);
+    userStore.setToken(response.accessToken);
+    userStore.setClinicId(response.user.clinicId);
+
+    message.success(t('auth.loginSuccess'));
+
+    // 跳轉到首頁（或原始目標 URL）
+    const redirect = router.currentRoute.value.query.redirect as string;
+    router.push(redirect || '/');
+  } catch (error: any) {
+    const errorMessage = error?.message || t('auth.loginFailed');
+    message.error(errorMessage);
     console.error('登入失敗:', error);
   } finally {
     loading.value = false;

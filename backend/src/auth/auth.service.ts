@@ -29,9 +29,7 @@ export class AuthService {
     }
 
     // 驗證密碼
-    // 注意：實際應用中應該在 Staff 實體中添加 password 欄位
-    // 這裡暫時使用簡單驗證（開發環境）
-    const isPasswordValid = await this.validatePassword(password, staff.id);
+    const isPasswordValid = await this.validatePassword(password, staff.passwordHash);
 
     if (!isPasswordValid) {
       this.logger.warn(`登入失敗：使用者 ${username} 密碼錯誤`);
@@ -67,23 +65,20 @@ export class AuthService {
 
   /**
    * 驗證密碼
-   * 注意：這是簡化版本，實際應用應使用 bcrypt 比對
    */
   private async validatePassword(
     password: string,
-    staffId: string,
+    passwordHash: string | null,
   ): Promise<boolean> {
-    // 開發環境：允許使用 "password123" 作為通用密碼
-    if (process.env.NODE_ENV !== "production") {
-      return password === "password123" || password === staffId;
+    if (!passwordHash) {
+      return false;
     }
 
-    // 生產環境：應該從資料庫獲取密碼雜湊並比對
-    // const hashedPassword = await this.getHashedPassword(staffId);
-    // return bcrypt.compare(password, hashedPassword);
-
-    // 暫時返回 false（生產環境需要實現完整的密碼驗證）
-    return false;
+    try {
+      return await bcrypt.compare(password, passwordHash);
+    } catch {
+      return false;
+    }
   }
 
   /**
