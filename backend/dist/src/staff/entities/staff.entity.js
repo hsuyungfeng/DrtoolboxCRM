@@ -16,6 +16,8 @@ let Staff = class Staff {
     id;
     name;
     email;
+    username;
+    passwordHash;
     phone;
     role;
     specialty;
@@ -41,6 +43,14 @@ __decorate([
     (0, typeorm_1.Column)({ type: "varchar", length: 255, unique: true }),
     __metadata("design:type", String)
 ], Staff.prototype, "email", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 255, unique: true, nullable: true }),
+    __metadata("design:type", String)
+], Staff.prototype, "username", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: "varchar", length: 255, nullable: true }),
+    __metadata("design:type", String)
+], Staff.prototype, "passwordHash", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: "varchar", length: 30, nullable: true }),
     __metadata("design:type", String)
@@ -86,6 +96,7 @@ __decorate([
     __metadata("design:type", Array)
 ], Staff.prototype, "assignments", void 0);
 exports.Staff = Staff = __decorate([
-    (0, typeorm_1.Entity)("staff")
+    (0, typeorm_1.Entity)("staff"),
+    (0, typeorm_1.Index)(["clinicId", "username"])
 ], Staff);
 //# sourceMappingURL=staff.entity.js.map

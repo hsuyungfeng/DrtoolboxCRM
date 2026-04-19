@@ -1,7 +1,41 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.seed = seed;
 const typeorm_1 = require("typeorm");
+const bcrypt = __importStar(require("bcrypt"));
 const patient_entity_1 = require("../src/patients/entities/patient.entity");
 const staff_entity_1 = require("../src/staff/entities/staff.entity");
 const treatment_entity_1 = require("../src/treatments/entities/treatment.entity");
@@ -73,7 +107,25 @@ async function seed() {
         therapist.specialty = "物理治療";
         therapist.baseSalary = 50000;
         therapist.status = "active";
-        await staffRepository.save([doctor, therapist]);
+        const initialPassword = "InitialPassword123!";
+        const passwordHash = await bcrypt.hash(initialPassword, 10);
+        const admin = new staff_entity_1.Staff();
+        admin.id = "staff_admin";
+        admin.clinicId = clinicId;
+        admin.name = "系統管理員";
+        admin.username = "admin";
+        admin.email = "admin@example.com";
+        admin.passwordHash = passwordHash;
+        admin.role = "admin";
+        admin.baseSalary = 100000;
+        admin.status = "active";
+        await staffRepository.save([doctor, therapist, admin]);
+        console.log("========== 初始 Admin 帳號 ==========");
+        console.log(`用戶名: admin`);
+        console.log(`密碼: ${initialPassword}`);
+        console.log(`診所 ID: ${clinicId}`);
+        console.log("註: 請妥善保管初始密碼，生產環境應立即更改");
+        console.log("====================================");
         console.log("創建分潤規則...");
         const revenueRuleRepository = dataSource.getRepository(revenue_rule_entity_1.RevenueRule);
         const doctorRule = new revenue_rule_entity_1.RevenueRule();
@@ -239,7 +291,7 @@ async function seed() {
         console.log("========== 測試數據摘要 ==========");
         console.log(`診所ID: ${clinicId}`);
         console.log(`患者: ${patient.name} (${patient.id})`);
-        console.log(`員工: 醫生 ${doctor.name}, 治療師 ${therapist.name}`);
+        console.log(`員工: 管理員 admin, 醫生 ${doctor.name}, 治療師 ${therapist.name}`);
         console.log(`療程: ${treatment.name} - 已完成 ${treatment.completedSessions}/${treatment.totalSessions} 次`);
         console.log(`分潤規則: 3條規則已創建`);
         console.log(`療程次數: 5次已創建 (3次完成, 2次待執行)`);

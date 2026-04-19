@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
+import { MigrationInterface, QueryRunner, TableColumn, TableIndex } from 'typeorm';
 
 export class AddStaffAuthFields1704067200000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -28,10 +28,10 @@ export class AddStaffAuthFields1704067200000 implements MigrationInterface {
     // 新增複合索引 (clinicId, username)
     await queryRunner.createIndex(
       'staff',
-      {
+      new TableIndex({
         name: 'IDX_staff_clinic_username',
         columnNames: ['clinicId', 'username'],
-      },
+      }),
     );
   }
 

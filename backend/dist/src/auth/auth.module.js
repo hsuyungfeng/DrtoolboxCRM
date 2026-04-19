@@ -17,6 +17,10 @@ const staff_module_1 = require("../staff/staff.module");
 const signOptions = {
     expiresIn: process.env.JWT_EXPIRES_IN || "7d",
 };
+const jwtSecret = process.env.JWT_SECRET;
+if (!jwtSecret) {
+    throw new Error("JWT_SECRET environment variable is required. Please set it before starting the application.");
+}
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
@@ -25,7 +29,7 @@ exports.AuthModule = AuthModule = __decorate([
         imports: [
             passport_1.PassportModule.register({ defaultStrategy: "jwt" }),
             jwt_1.JwtModule.register({
-                secret: process.env.JWT_SECRET || "your-super-secret-key-change-in-production",
+                secret: jwtSecret,
                 signOptions,
             }),
             staff_module_1.StaffModule,

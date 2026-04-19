@@ -3,6 +3,8 @@ export declare class Staff {
     id: string;
     name: string;
     email: string;
+    username: string;
+    passwordHash: string;
     phone: string;
     role: string;
     specialty: string;

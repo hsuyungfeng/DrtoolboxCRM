@@ -150,6 +150,24 @@ progress:
 
 ---
 
+## Phase 4 P0 任務進度（2026-04-19）
+
+**P0 Task 1：** ✅ 完成 — 後端 API 端點實現
+
+**P0 Task 2 - 前端整合：**
+- Task 2a ✅ — API 客戶端集成
+- Task 2b ✅ — UI 組件實現
+- Task 2c ✅ — Pinia store 修改（狀態管理同步）
+- Task 2d ✅ — i18n 多語言支援
+
+**P0 Task 3：** ✅ 完成 — 路由守衛（Route Guards）實現
+
+**P0 Task 4：** ✅ 完成 — 安全加固（Helmet + CORS 配置）
+
+**當前進度：** 🎯 P0 層已完成，準備 Wave 2（Webhook 接收與患者同步）
+
+---
+
 ## 項目完成清單
 
 - ✅ Phase 1：治療處方核心（13 計劃完成）

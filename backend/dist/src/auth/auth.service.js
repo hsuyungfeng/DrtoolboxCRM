@@ -63,7 +63,7 @@ let AuthService = AuthService_1 = class AuthService {
             this.logger.warn(`登入失敗：使用者 ${username} 不存在於診所 ${clinicId}`);
             throw new common_1.UnauthorizedException("使用者名稱或密碼錯誤");
         }
-        const isPasswordValid = await this.validatePassword(password, staff.id);
+        const isPasswordValid = await this.validatePassword(password, staff.passwordHash);
         if (!isPasswordValid) {
             this.logger.warn(`登入失敗：使用者 ${username} 密碼錯誤`);
             throw new common_1.UnauthorizedException("使用者名稱或密碼錯誤");
@@ -90,11 +90,16 @@ let AuthService = AuthService_1 = class AuthService {
             },
         };
     }
-    async validatePassword(password, staffId) {
-        if (process.env.NODE_ENV !== "production") {
-            return password === "password123" || password === staffId;
+    async validatePassword(password, passwordHash) {
+        if (!passwordHash) {
+            return false;
         }
-        return false;
+        try {
+            return await bcrypt.compare(password, passwordHash);
+        }
+        catch {
+            return false;
+        }
     }
     async hashPassword(password) {
         const saltRounds = 10;
