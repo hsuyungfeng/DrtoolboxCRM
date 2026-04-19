@@ -140,7 +140,10 @@ async function handleLogin() {
     });
 
     // 保存用戶資訊和 token
-    userStore.setUser(response.user);
+    userStore.setUser({
+      ...response.user,
+      createdAt: new Date().toISOString(),
+    });
     userStore.setToken(response.accessToken);
     userStore.setClinicId(response.user.clinicId);
 
