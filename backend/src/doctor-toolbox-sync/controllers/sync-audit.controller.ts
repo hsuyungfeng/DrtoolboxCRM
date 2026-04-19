@@ -51,8 +51,8 @@ export class SyncAuditController {
   @ApiQuery({ name: 'limit', required: false, description: '回傳筆數（預設 100）' })
   async getPatientLogs(
     @Param('patientId') patientId: string,
-    @Req() req: any,
     @Query('limit') limit: number = 100,
+    @Req() req: any,
   ): Promise<{
     statusCode: number;
     data: SyncAuditLog[];
@@ -88,10 +88,10 @@ export class SyncAuditController {
   @ApiQuery({ name: 'startDate', required: false, description: '開始日期' })
   @ApiQuery({ name: 'endDate', required: false, description: '結束日期' })
   async getClinicLogs(
-    @Req() req: any,
+    @Query('limit') limit: number = 1000,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
-    @Query('limit') limit: number = 1000,
+    @Req() req: any,
   ): Promise<{
     statusCode: number;
     data: SyncAuditLog[];

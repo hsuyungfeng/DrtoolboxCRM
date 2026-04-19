@@ -149,13 +149,12 @@ describe('SyncPatientService', () => {
         name: toolboxPatient.name,
         phoneNumber: '0987654321', // 舊電話
         email: null, // 舊郵箱為空
-      } as Patient;
+      } as unknown as Patient;
 
       const updatedPatient = { ...existingPatient };
 
-      patientRepository.findOne
-        .mockResolvedValueOnce(existingPatient) // 精確匹配找到
-        .mockResolvedValueOnce(updatedPatient); // save 返回更新後的患者
+      patientRepository.findOne.mockResolvedValueOnce(existingPatient); // 精確匹配找到
+      patientRepository.save.mockResolvedValueOnce(updatedPatient); // 更新後的患者
 
       const result = await service.syncFromToolbox(payload, clinicId);
 
@@ -175,15 +174,15 @@ describe('SyncPatientService', () => {
         name: toolboxPatient.name,
         phoneNumber: toolboxPatient.phone,
         email: null,
-      } as Patient;
+      } as unknown as Patient;
 
       const mergedPatient = { ...existingPatient };
-      mergedPatient.email = toolboxPatient.email; // 更新郵箱
+      mergedPatient.email = toolboxPatient.email ?? ''; // 更新郵箱
 
       patientRepository.findOne
         .mockResolvedValueOnce(null) // 精確匹配失敗
-        .mockResolvedValueOnce(existingPatient) // 備用匹配成功
-        .mockResolvedValueOnce(mergedPatient); // save 返回合併後的患者
+        .mockResolvedValueOnce(existingPatient); // 備用匹配成功
+      patientRepository.save.mockResolvedValueOnce(mergedPatient); // 合併後的患者
 
       const result = await service.syncFromToolbox(payload, clinicId);
 
@@ -259,7 +258,7 @@ describe('SyncPatientService', () => {
         idNumber: '111111111', // CRM 身份證號優先
         phoneNumber: '0912345678', // CRM 已有電話
         email: null, // CRM 郵箱為空
-      } as Patient;
+      } as unknown as Patient;
 
       const toolboxData: ToolboxPatientDto = {
         idNumber: '222222222', // Toolbox 身份證號被忽略

@@ -45,7 +45,7 @@ export class SyncAuditLog {
   @Column({ nullable: true })
   errorMessage?: string;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'simple-json', nullable: true })
   eventData?: Record<string, any>;
 
   @CreateDateColumn()

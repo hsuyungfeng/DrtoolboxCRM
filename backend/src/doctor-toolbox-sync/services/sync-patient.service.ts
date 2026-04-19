@@ -119,7 +119,6 @@ export class SyncPatientService {
         idNumber: toolboxPatient.idNumber,
         email: toolboxPatient.email,
         phone: toolboxPatient.phone,
-        clinicId,
       },
       clinicId,
     );
