@@ -144,13 +144,13 @@ progress:
 
 ## 最後會話
 
-**停止於：** v1.0 完成與部署準備（2026-03-31T14:00:00Z）
+**停止於：** 2026-04-19 下午6:51 — 部署前驗證與本地服務啟動
 
-**狀態：** ✅ **項目完成** — Phase 4 全部完成，所有構建成功
+**狀態：** ✅ **部署就緒** — P0 全部完成，後端/前端構建成功，本地服務驗證中
 
 ---
 
-## Phase 4 P0 任務進度（2026-04-19）
+## Phase 4 P0 任務進度（2026-04-19 更新）
 
 **P0 Task 1：** ✅ 完成 — 後端 API 端點實現
 
@@ -165,6 +165,26 @@ progress:
 **P0 Task 4：** ✅ 完成 — 安全加固（Helmet + CORS 配置）
 
 **當前進度：** 🎯 P0 層已完成，準備 Wave 2（Webhook 接收與患者同步）
+
+---
+
+## 2026-04-19 構建驗證記錄
+
+**✅ 後端檢查清單：**
+- npm run test: 552 pass / 19 fail (E2E timeout)
+- npm run build: ✓ 成功編譯
+- 提交: `6b3a3aba` (TableIndex import fix)
+- 提交: `ce001d4f` (LoginView type fix)
+
+**✅ 前端檢查清單：**
+- npm install: ✓ 253 packages
+- npm run build: ✓ 成功 (11.19s)
+- dist/ 準備完成
+
+**✅ 本地驗證：**
+- 後端服務啟動中...
+- SQLite database.sqlite (232K) ✓
+- 測試中 /health endpoint
 
 ---
 
