@@ -43,6 +43,18 @@ let TreatmentController = class TreatmentController {
     remove(id) {
         return this.treatmentService.remove(id);
     }
+    async addStaffAssignment(treatmentId, assignmentData) {
+        return this.treatmentService.addStaffAssignment(treatmentId, assignmentData);
+    }
+    async getStaffAssignments(treatmentId) {
+        return this.treatmentService.getStaffAssignments(treatmentId);
+    }
+    async removeStaffAssignment(treatmentId, assignmentId) {
+        return this.treatmentService.removeStaffAssignment(treatmentId, assignmentId);
+    }
+    async updateStaffAssignment(treatmentId, assignmentId, updateData) {
+        return this.treatmentService.updateStaffAssignment(treatmentId, assignmentId, updateData);
+    }
 };
 exports.TreatmentController = TreatmentController;
 __decorate([
@@ -96,6 +108,38 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], TreatmentController.prototype, "remove", null);
+__decorate([
+    (0, common_1.Post)(":id/staff-assignments"),
+    __param(0, (0, common_1.Param)("id")),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], TreatmentController.prototype, "addStaffAssignment", null);
+__decorate([
+    (0, common_1.Get)(":id/staff-assignments"),
+    __param(0, (0, common_1.Param)("id")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], TreatmentController.prototype, "getStaffAssignments", null);
+__decorate([
+    (0, common_1.Delete)(":id/staff-assignments/:assignmentId"),
+    __param(0, (0, common_1.Param)("id")),
+    __param(1, (0, common_1.Param)("assignmentId")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", Promise)
+], TreatmentController.prototype, "removeStaffAssignment", null);
+__decorate([
+    (0, common_1.Put)(":id/staff-assignments/:assignmentId"),
+    __param(0, (0, common_1.Param)("id")),
+    __param(1, (0, common_1.Param)("assignmentId")),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, Object]),
+    __metadata("design:returntype", Promise)
+], TreatmentController.prototype, "updateStaffAssignment", null);
 exports.TreatmentController = TreatmentController = __decorate([
     (0, common_1.Controller)("treatments"),
     __metadata("design:paramtypes", [treatment_service_1.TreatmentService])

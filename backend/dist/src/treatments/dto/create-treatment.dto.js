@@ -9,8 +9,32 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CreateTreatmentDto = void 0;
+exports.CreateTreatmentDto = exports.StaffAssignmentCreateDto = void 0;
 const class_validator_1 = require("class-validator");
+const class_transformer_1 = require("class-transformer");
+class StaffAssignmentCreateDto {
+    staffId;
+    role;
+    revenuePercentage;
+}
+exports.StaffAssignmentCreateDto = StaffAssignmentCreateDto;
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.Length)(1, 32),
+    __metadata("design:type", String)
+], StaffAssignmentCreateDto.prototype, "staffId", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.Length)(1, 50),
+    __metadata("design:type", String)
+], StaffAssignmentCreateDto.prototype, "role", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0),
+    (0, class_validator_1.Max)(100),
+    __metadata("design:type", Number)
+], StaffAssignmentCreateDto.prototype, "revenuePercentage", void 0);
 class CreateTreatmentDto {
     patientId;
     name;
@@ -24,6 +48,7 @@ class CreateTreatmentDto {
     actualEndDate;
     notes;
     clinicId;
+    staffAssignments;
 }
 exports.CreateTreatmentDto = CreateTreatmentDto;
 __decorate([
@@ -92,4 +117,11 @@ __decorate([
     (0, class_validator_1.Length)(1, 32),
     __metadata("design:type", String)
 ], CreateTreatmentDto.prototype, "clinicId", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.ValidateNested)({ each: true }),
+    (0, class_transformer_1.Type)(() => StaffAssignmentCreateDto),
+    __metadata("design:type", Array)
+], CreateTreatmentDto.prototype, "staffAssignments", void 0);
 //# sourceMappingURL=create-treatment.dto.js.map

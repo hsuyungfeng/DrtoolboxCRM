@@ -167,4 +167,34 @@ export const treatmentsApi = {
     http.patch<TreatmentCourseSession>(`/treatments/sessions/${sessionId}/complete`, {}),
 };
 
+/**
+ * 療程員工分配 API
+ * 預留端點用於管理治療和員工之間的關聯
+ */
+export const treatmentStaffAssignmentApi = {
+  /**
+   * 為療程添加員工分配
+   */
+  addStaffAssignment: (treatmentId: string, data: { staffId: string; role: string; revenuePercentage?: number }) =>
+    http.post(`/treatments/${treatmentId}/staff-assignments`, data),
+
+  /**
+   * 取得療程的所有員工分配
+   */
+  getStaffAssignments: (treatmentId: string) =>
+    http.get(`/treatments/${treatmentId}/staff-assignments`),
+
+  /**
+   * 更新員工分配
+   */
+  updateStaffAssignment: (treatmentId: string, assignmentId: string, data: Partial<{ role: string; revenuePercentage: number }>) =>
+    http.put(`/treatments/${treatmentId}/staff-assignments/${assignmentId}`, data),
+
+  /**
+   * 刪除員工分配
+   */
+  removeStaffAssignment: (treatmentId: string, assignmentId: string) =>
+    http.delete(`/treatments/${treatmentId}/staff-assignments/${assignmentId}`),
+};
+
 export default treatmentCoursesApi;

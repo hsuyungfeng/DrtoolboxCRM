@@ -19,28 +19,45 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const event_emitter_1 = require("@nestjs/event-emitter");
 const treatment_entity_1 = require("../entities/treatment.entity");
+const treatment_staff_assignment_entity_1 = require("../../staff/entities/treatment-staff-assignment.entity");
 let TreatmentService = TreatmentService_1 = class TreatmentService {
     treatmentRepository;
+    staffAssignmentRepository;
     eventEmitter;
     logger = new common_1.Logger(TreatmentService_1.name);
-    constructor(treatmentRepository, eventEmitter) {
+    constructor(treatmentRepository, staffAssignmentRepository, eventEmitter) {
         this.treatmentRepository = treatmentRepository;
+        this.staffAssignmentRepository = staffAssignmentRepository;
         this.eventEmitter = eventEmitter;
     }
     async create(createTreatmentDto) {
-        const treatment = this.treatmentRepository.create(createTreatmentDto);
+        const { staffAssignments, ...treatmentData } = createTreatmentDto;
+        const treatment = this.treatmentRepository.create(treatmentData);
         const savedTreatment = await this.treatmentRepository.save(treatment);
+        if (staffAssignments && staffAssignments.length > 0) {
+            for (const assignment of staffAssignments) {
+                const staffAssignment = this.staffAssignmentRepository.create({
+                    treatmentId: savedTreatment.id,
+                    staffId: assignment.staffId,
+                    role: assignment.role,
+                    revenuePercentage: assignment.revenuePercentage || 0,
+                    isActive: true,
+                });
+                await this.staffAssignmentRepository.save(staffAssignment);
+            }
+        }
         try {
             this.eventEmitter.emit("treatment.created", {
                 treatmentId: savedTreatment.id,
                 patientId: savedTreatment.patientId,
                 clinicId: savedTreatment.clinicId,
+                staffAssignments: staffAssignments?.length || 0,
             });
         }
         catch (error) {
             this.logger.warn(`Failed to emit treatment.created event: ${error.message}`);
         }
-        return savedTreatment;
+        return await this.findOne(savedTreatment.id);
     }
     async findAll(clinicId) {
         return await this.treatmentRepository.find({
@@ -88,12 +105,51 @@ let TreatmentService = TreatmentService_1 = class TreatmentService {
         }
         return await this.treatmentRepository.save(treatment);
     }
+    async addStaffAssignment(treatmentId, assignmentData) {
+        await this.findOne(treatmentId);
+        const assignment = this.staffAssignmentRepository.create({
+            treatmentId,
+            staffId: assignmentData.staffId,
+            role: assignmentData.role,
+            revenuePercentage: assignmentData.revenuePercentage || 0,
+            isActive: true,
+        });
+        return await this.staffAssignmentRepository.save(assignment);
+    }
+    async getStaffAssignments(treatmentId) {
+        return await this.staffAssignmentRepository.find({
+            where: { treatmentId, isActive: true },
+            relations: ["staff"],
+        });
+    }
+    async removeStaffAssignment(treatmentId, assignmentId) {
+        const assignment = await this.staffAssignmentRepository.findOne({
+            where: { id: assignmentId, treatmentId },
+        });
+        if (!assignment) {
+            throw new common_1.NotFoundException(`Staff assignment ${assignmentId} not found`);
+        }
+        assignment.isActive = false;
+        await this.staffAssignmentRepository.save(assignment);
+    }
+    async updateStaffAssignment(treatmentId, assignmentId, updateData) {
+        const assignment = await this.staffAssignmentRepository.findOne({
+            where: { id: assignmentId, treatmentId },
+        });
+        if (!assignment) {
+            throw new common_1.NotFoundException(`Staff assignment ${assignmentId} not found`);
+        }
+        Object.assign(assignment, updateData);
+        return await this.staffAssignmentRepository.save(assignment);
+    }
 };
 exports.TreatmentService = TreatmentService;
 exports.TreatmentService = TreatmentService = TreatmentService_1 = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(treatment_entity_1.Treatment)),
+    __param(1, (0, typeorm_1.InjectRepository)(treatment_staff_assignment_entity_1.TreatmentStaffAssignment)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
         event_emitter_1.EventEmitter2])
 ], TreatmentService);
 //# sourceMappingURL=treatment.service.js.map

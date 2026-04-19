@@ -1,3 +1,8 @@
+export declare class StaffAssignmentCreateDto {
+    staffId: string;
+    role: string;
+    revenuePercentage?: number;
+}
 export declare class CreateTreatmentDto {
     patientId: string;
     name: string;
@@ -11,4 +16,5 @@ export declare class CreateTreatmentDto {
     actualEndDate?: Date;
     notes?: string;
     clinicId: string;
+    staffAssignments?: StaffAssignmentCreateDto[];
 }

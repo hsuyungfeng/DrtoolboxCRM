@@ -57,4 +57,35 @@ export class TreatmentController {
   remove(@Param("id") id: string) {
     return this.treatmentService.remove(id);
   }
+
+  // 員工分配 API 端點 (API 預留)
+  @Post(":id/staff-assignments")
+  async addStaffAssignment(
+    @Param("id") treatmentId: string,
+    @Body() assignmentData: any,
+  ) {
+    return this.treatmentService.addStaffAssignment(treatmentId, assignmentData);
+  }
+
+  @Get(":id/staff-assignments")
+  async getStaffAssignments(@Param("id") treatmentId: string) {
+    return this.treatmentService.getStaffAssignments(treatmentId);
+  }
+
+  @Delete(":id/staff-assignments/:assignmentId")
+  async removeStaffAssignment(
+    @Param("id") treatmentId: string,
+    @Param("assignmentId") assignmentId: string,
+  ) {
+    return this.treatmentService.removeStaffAssignment(treatmentId, assignmentId);
+  }
+
+  @Put(":id/staff-assignments/:assignmentId")
+  async updateStaffAssignment(
+    @Param("id") treatmentId: string,
+    @Param("assignmentId") assignmentId: string,
+    @Body() updateData: any,
+  ) {
+    return this.treatmentService.updateStaffAssignment(treatmentId, assignmentId, updateData);
+  }
 }
