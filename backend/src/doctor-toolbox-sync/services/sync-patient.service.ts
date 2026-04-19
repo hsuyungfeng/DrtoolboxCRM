@@ -8,6 +8,7 @@ import { SyncIndexService } from './sync-index.service';
 import { RetryService } from './retry.service';
 import { WebhookPayloadDto, ToolboxPatientDto } from '../dto/webhook-payload.dto';
 import { SyncStatus } from '../../common/enums/sync-status.enum';
+import { CreatePatientDto } from '../../patients/dto/create-patient.dto';
 
 /**
  * SyncPatientService - 患者雙向同步邏輯
@@ -119,7 +120,7 @@ export class SyncPatientService {
         idNumber: toolboxPatient.idNumber,
         email: toolboxPatient.email,
         phone: toolboxPatient.phone,
-      },
+      } as CreatePatientDto,
       clinicId,
     );
 

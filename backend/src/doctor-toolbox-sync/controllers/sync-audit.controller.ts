@@ -91,7 +91,7 @@ export class SyncAuditController {
     @Query('limit') limit: number = 1000,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
-    @Req() req: any,
+    @Req() req: any = {},
   ): Promise<{
     statusCode: number;
     data: SyncAuditLog[];
