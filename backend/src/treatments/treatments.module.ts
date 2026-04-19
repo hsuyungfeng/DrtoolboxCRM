@@ -24,6 +24,7 @@ import {
 import { MedicalOrderController } from "./controllers/medical-order.controller";
 import { PointsModule } from "../points/points.module";
 import { StaffModule } from "../staff/staff.module";
+import { TreatmentStaffAssignment } from "../staff/entities/treatment-staff-assignment.entity";
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { StaffModule } from "../staff/staff.module";
       MedicalOrder,
       ScriptTemplate,
       Patient,
+      TreatmentStaffAssignment,
     ]),
     PointsModule,
     StaffModule,

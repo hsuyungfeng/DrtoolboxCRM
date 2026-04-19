@@ -30,6 +30,7 @@ const treatment_course_controller_1 = require("./controllers/treatment-course.co
 const medical_order_controller_1 = require("./controllers/medical-order.controller");
 const points_module_1 = require("../points/points.module");
 const staff_module_1 = require("../staff/staff.module");
+const treatment_staff_assignment_entity_1 = require("../staff/entities/treatment-staff-assignment.entity");
 let TreatmentsModule = class TreatmentsModule {
 };
 exports.TreatmentsModule = TreatmentsModule;
@@ -45,6 +46,7 @@ exports.TreatmentsModule = TreatmentsModule = __decorate([
                 medical_order_entity_1.MedicalOrder,
                 script_template_entity_1.ScriptTemplate,
                 patient_entity_1.Patient,
+                treatment_staff_assignment_entity_1.TreatmentStaffAssignment,
             ]),
             points_module_1.PointsModule,
             staff_module_1.StaffModule,
