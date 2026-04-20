@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import { SyncPatientService } from './sync-patient.service';
 import { RetryService } from './retry.service';
 import { MigrationProgressService } from './migration-progress.service';
@@ -134,9 +135,13 @@ export class BulkExportService {
     try {
       // 重新取得患者列表並從 lastBatchId 繼續
       const toolboxPatients = await this.fetchAllPatientsFromToolbox(clinicId);
-      const resumeIndex = progress.lastBatchId
-        ? parseInt(progress.lastBatchId.split('-')[1]) * this.BATCH_SIZE
-        : progress.processedPatients;
+      let resumeIndex: number;
+      if (progress.lastBatchId) {
+        const batchNum = parseInt(progress.lastBatchId.split('-')[1], 10);
+        resumeIndex = isNaN(batchNum) ? progress.processedPatients : batchNum * this.BATCH_SIZE;
+      } else {
+        resumeIndex = progress.processedPatients;
+      }
 
       this.logger.log(
         `從第 ${resumeIndex} 個患者恢復：clinicId=${clinicId}`,
@@ -210,7 +215,9 @@ export class BulkExportService {
     // 使用 retryService 包裝 API 呼叫
     return this.retryService.executeWithRetry(
       async () => {
-        const response = await fetch(`${toolboxUrl}/patients?clinicId=${clinicId}`);
+        const url = new URL(`${toolboxUrl}/patients`);
+        url.searchParams.set('clinicId', clinicId);
+        const response = await fetch(url.toString());
         if (!response.ok) {
           throw new Error(`Toolbox API returned ${response.status}`);
         }
@@ -230,7 +237,7 @@ export class BulkExportService {
   ): Promise<void> {
     for (const patient of patients) {
       const payload: WebhookPayloadDto = {
-        webhookId: `migration-${Date.now()}-${Math.random()}`,
+        webhookId: `migration-${clinicId}-${patient.id}`,
         patientId: patient.id,
         action: WebhookAction.PATIENT_CREATED,
         timestamp: Math.floor(Date.now() / 1000),

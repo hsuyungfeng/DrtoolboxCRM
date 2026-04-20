@@ -330,6 +330,7 @@ describe('SyncPatientService', () => {
 
         expect(retryService.executeWithRetry).toHaveBeenCalled();
         expect(syncIndexService.updateStatus).toHaveBeenCalledWith(
+          clinicId,
           patient.id,
           SyncStatus.SYNCED,
           null,
@@ -359,6 +360,7 @@ describe('SyncPatientService', () => {
         await service.pushPatientToToolbox(patient, clinicId);
 
         expect(syncIndexService.updateStatus).toHaveBeenCalledWith(
+          clinicId,
           patient.id,
           SyncStatus.FAILED,
           expect.stringContaining('Network timeout'),

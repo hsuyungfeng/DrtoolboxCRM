@@ -7,7 +7,7 @@ import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { ClinicAuthMiddleware } from "./common/middlewares/clinic-auth.middleware";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { rawBody: true });
 
   // 註冊全域異常過濾器（LIFO 順序：最後註冊 = 最先執行）
   // AllExceptionsFilter 最先註冊 → 最後執行（兜底）

@@ -62,12 +62,10 @@ export class SyncPatientService {
   ): Promise<Patient> {
     const { patient: toolboxPatient } = payload;
 
-    // 步驟 1：精確匹配
-    let crmPatient = await this.findPatientExact(
-      clinicId,
-      toolboxPatient.idNumber,
-      toolboxPatient.name,
-    );
+    // 步驟 1：精確匹配（idNumber 存在時才嘗試）
+    let crmPatient = toolboxPatient.idNumber
+      ? await this.findPatientExact(clinicId, toolboxPatient.idNumber, toolboxPatient.name)
+      : null;
 
     if (crmPatient) {
       this.logger.debug(
@@ -77,12 +75,10 @@ export class SyncPatientService {
       return await this.applyToolboxUpdate(crmPatient, toolboxPatient);
     }
 
-    // 步驟 2：備用匹配
-    const fallbackPatient = await this.findPatientFallback(
-      clinicId,
-      toolboxPatient.name,
-      toolboxPatient.phone,
-    );
+    // 步驟 2：備用匹配（phone 存在時才嘗試）
+    const fallbackPatient = toolboxPatient.phone
+      ? await this.findPatientFallback(clinicId, toolboxPatient.name, toolboxPatient.phone)
+      : null;
 
     if (fallbackPatient) {
       this.logger.debug(
@@ -280,6 +276,7 @@ export class SyncPatientService {
 
       // 步驟 4：成功，更新索引
       await this.syncIndexService.updateStatus(
+        clinicId,
         patient.id,
         SyncStatus.SYNCED,
         null,
@@ -294,6 +291,7 @@ export class SyncPatientService {
 
       try {
         await this.syncIndexService.updateStatus(
+          clinicId,
           patient.id,
           SyncStatus.FAILED,
           errorMsg,

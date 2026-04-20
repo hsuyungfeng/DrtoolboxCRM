@@ -134,11 +134,13 @@ export class SyncIndexService {
   /**
    * 更新同步狀態
    *
+   * @param clinicId 診所 ID（多租戶隔離）
    * @param crmPatientId CRM 患者 ID
    * @param syncStatus 新的同步狀態
    * @param errorMessage 錯誤訊息（若失敗時記錄）
    */
   async updateStatus(
+    clinicId: string,
     crmPatientId: string,
     syncStatus: SyncStatus,
     errorMessage?: string | null,
@@ -153,7 +155,7 @@ export class SyncIndexService {
     }
 
     await this.syncIndexRepository.update(
-      { crmPatientId },
+      { clinicId, crmPatientId },
       updateData,
     );
   }

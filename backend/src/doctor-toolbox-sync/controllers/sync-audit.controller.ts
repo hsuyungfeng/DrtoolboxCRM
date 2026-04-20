@@ -88,10 +88,10 @@ export class SyncAuditController {
   @ApiQuery({ name: 'startDate', required: false, description: '開始日期' })
   @ApiQuery({ name: 'endDate', required: false, description: '結束日期' })
   async getClinicLogs(
+    @Req() req: any,
     @Query('limit') limit: number = 1000,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
-    @Req() req: any = {},
   ): Promise<{
     statusCode: number;
     data: SyncAuditLog[];
@@ -132,8 +132,8 @@ export class SyncAuditController {
   @ApiOperation({ summary: '查詢診所同步統計與失敗警告' })
   @ApiQuery({ name: 'days', required: false, description: '統計天數（預設 7）' })
   async getStats(
-    @Query('days') days: number = 7,
     @Req() req: any,
+    @Query('days') daysStr: string = '7',
   ): Promise<{
     statusCode: number;
     data: {
@@ -150,9 +150,10 @@ export class SyncAuditController {
       };
     };
   }> {
+    const days = Math.min(Math.max(parseInt(daysStr, 10) || 7, 1), 365);
     const stats = await this.monitoringService.getClinicSyncStats(
       req.user.clinicId,
-      Number(days),
+      days,
     );
 
     const failureAlert = await this.monitoringService.checkFailurePattern(

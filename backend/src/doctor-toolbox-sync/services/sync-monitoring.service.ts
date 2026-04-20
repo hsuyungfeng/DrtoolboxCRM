@@ -50,8 +50,9 @@ export class SyncMonitoringService {
         failureCount: failures.length,
       };
     } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
       this.logger.error(
-        `檢測失敗模式錯誤：clinicId=${clinicId}，錯誤=${error.message}`,
+        `檢測失敗模式錯誤：clinicId=${clinicId}，錯誤=${msg}`,
       );
 
       return {
@@ -94,8 +95,9 @@ export class SyncMonitoringService {
         successRateAfterRetry: Math.round(successRateAfterRetry * 100) / 100,
       };
     } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
       this.logger.error(
-        `分析重試模式錯誤：clinicId=${clinicId}，錯誤=${error.message}`,
+        `分析重試模式錯誤：clinicId=${clinicId}，錯誤=${msg}`,
       );
 
       return {
@@ -145,8 +147,9 @@ export class SyncMonitoringService {
         avgSyncTime: Math.round(avgSyncTime),
       };
     } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
       this.logger.error(
-        `取得診所統計錯誤：clinicId=${clinicId}，錯誤=${error.message}`,
+        `取得診所統計錯誤：clinicId=${clinicId}，錯誤=${msg}`,
       );
 
       return {

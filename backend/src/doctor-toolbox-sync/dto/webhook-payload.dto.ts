@@ -7,6 +7,7 @@ import {
   ValidateNested,
   MinLength,
   MaxLength,
+  IsNotEmpty,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -41,20 +42,22 @@ export class ToolboxPatientDto {
   name: string;
 
   /**
-   * 患者身份證號
+   * 患者身份證號（可選）
    */
+  @IsOptional()
   @IsString()
-  @MinLength(1)
+  @IsNotEmpty()
   @MaxLength(50)
-  idNumber: string;
+  idNumber?: string;
 
   /**
-   * 患者電話
+   * 患者電話（可選）
    */
+  @IsOptional()
   @IsString()
-  @MinLength(1)
+  @IsNotEmpty()
   @MaxLength(20)
-  phone: string;
+  phone?: string;
 
   /**
    * 患者電子郵件（可選）

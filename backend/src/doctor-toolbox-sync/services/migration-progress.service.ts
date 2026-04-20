@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MigrationProgress } from '../entities/migration-progress.entity';
@@ -33,6 +33,14 @@ export class MigrationProgressService {
     clinicId: string,
     totalPatients: number,
   ): Promise<MigrationProgress> {
+    const existing = await this.getProgress(clinicId);
+    if (existing && existing.status === 'in-progress') {
+      throw new ConflictException(`診所 ${clinicId} 已有進行中的遷移`);
+    }
+    if (existing) {
+      await this.progressRepository.delete({ clinicId });
+    }
+
     const progress = this.progressRepository.create({
       clinicId,
       totalPatients,
