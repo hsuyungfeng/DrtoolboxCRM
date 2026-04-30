@@ -5,12 +5,10 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
-  Index,
 } from "typeorm";
 import { TreatmentStaffAssignment } from "./treatment-staff-assignment.entity";
 
 @Entity("staff")
-@Index(["clinicId", "username"])
 export class Staff {
   @PrimaryGeneratedColumn("uuid")
   id: string;
@@ -20,12 +18,6 @@ export class Staff {
 
   @Column({ type: "varchar", length: 255, unique: true })
   email: string;
-
-  @Column({ type: "varchar", length: 255, unique: true, nullable: true })
-  username: string;
-
-  @Column({ type: "varchar", length: 255, nullable: true })
-  passwordHash: string;
 
   @Column({ type: "varchar", length: 30, nullable: true })
   phone: string;

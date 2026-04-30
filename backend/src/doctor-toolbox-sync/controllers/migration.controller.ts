@@ -4,11 +4,9 @@ import {
   Get,
   Delete,
   Param,
-  Req,
   UseGuards,
   HttpCode,
   HttpStatus,
-  ForbiddenException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { BulkExportService } from '../services/bulk-export.service';
@@ -46,11 +44,7 @@ export class MigrationController {
   @HttpCode(HttpStatus.OK)
   async startMigration(
     @Param('clinicId') clinicId: string,
-    @Req() req: any,
   ): Promise<MigrationProgressDto> {
-    if (req.user.clinicId !== clinicId) {
-      throw new ForbiddenException('無法存取其他診所的遷移資料');
-    }
     const progress = await this.bulkExportService.startMigration(clinicId);
     return this.toDto(progress);
   }
@@ -67,11 +61,7 @@ export class MigrationController {
   @HttpCode(HttpStatus.OK)
   async resumeMigration(
     @Param('clinicId') clinicId: string,
-    @Req() req: any,
   ): Promise<MigrationProgressDto> {
-    if (req.user.clinicId !== clinicId) {
-      throw new ForbiddenException('無法存取其他診所的遷移資料');
-    }
     const progress = await this.bulkExportService.resumeMigration(clinicId);
     return this.toDto(progress);
   }
@@ -88,11 +78,7 @@ export class MigrationController {
   @HttpCode(HttpStatus.OK)
   async getProgress(
     @Param('clinicId') clinicId: string,
-    @Req() req: any,
   ): Promise<MigrationProgressDto | null> {
-    if (req.user.clinicId !== clinicId) {
-      throw new ForbiddenException('無法存取其他診所的遷移資料');
-    }
     const progress = await this.migrationProgressService.getProgress(clinicId);
     return progress ? this.toDto(progress) : null;
   }
@@ -106,13 +92,7 @@ export class MigrationController {
    */
   @Delete(':clinicId')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async abortMigration(
-    @Param('clinicId') clinicId: string,
-    @Req() req: any,
-  ): Promise<void> {
-    if (req.user.clinicId !== clinicId) {
-      throw new ForbiddenException('無法存取其他診所的遷移資料');
-    }
+  async abortMigration(@Param('clinicId') clinicId: string): Promise<void> {
     await this.bulkExportService.abortMigration(clinicId);
   }
 

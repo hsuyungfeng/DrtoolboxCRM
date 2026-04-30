@@ -7,7 +7,6 @@ import {
   ValidateNested,
   MinLength,
   MaxLength,
-  IsNotEmpty,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -42,22 +41,20 @@ export class ToolboxPatientDto {
   name: string;
 
   /**
-   * 患者身份證號（可選）
+   * 患者身份證號
    */
-  @IsOptional()
   @IsString()
-  @IsNotEmpty()
+  @MinLength(1)
   @MaxLength(50)
-  idNumber?: string;
+  idNumber: string;
 
   /**
-   * 患者電話（可選）
+   * 患者電話
    */
-  @IsOptional()
   @IsString()
-  @IsNotEmpty()
+  @MinLength(1)
   @MaxLength(20)
-  phone?: string;
+  phone: string;
 
   /**
    * 患者電子郵件（可選）
@@ -82,6 +79,14 @@ export class WebhookPayloadDto {
   @MinLength(1)
   @MaxLength(100)
   webhookId: string;
+
+  /**
+   * 診所 ID — 用於多診所隔離
+   */
+  @IsString()
+  @MinLength(1)
+  @MaxLength(32)
+  clinicId: string;
 
   /**
    * Doctor Toolbox 患者ID

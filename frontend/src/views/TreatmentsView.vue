@@ -75,6 +75,7 @@ interface FormData {
   expectedEndDate: number | null;
   enableReminder: boolean;
   notes: string;
+  customFields?: Record<string, any>;
 }
 
 const userStore = useUserStore();
@@ -163,6 +164,7 @@ async function handleCreate(formData: FormData) {
       expectedEndDate: formData.expectedEndDate ? new Date(formData.expectedEndDate).toISOString() : undefined,
       notes: formData.notes,
       clinicId: clinicId.value,
+      customFields: formData.customFields,
     };
     await treatmentsApi.create(createData);
     showCreateModal.value = false;
@@ -184,6 +186,7 @@ async function handleEdit(formData: FormData) {
       totalSessions: formData.totalSessions,
       expectedEndDate: formData.expectedEndDate ? new Date(formData.expectedEndDate).toISOString() : undefined,
       notes: formData.notes,
+      customFields: formData.customFields,
     };
     await treatmentsApi.update(editingTreatment.value.id, updateData);
     showEditModal.value = false;

@@ -102,6 +102,9 @@ export class TreatmentSession {
   @Column({ type: "varchar", length: 32, nullable: true })
   executedBy: string; // 執行人員 ID
 
+  @Column({ type: "varchar", length: 50, nullable: true })
+  executedRole: string; // 執行人員角色 (doctor, therapist, etc.)
+
   @Column({ type: "varchar", length: 32 })
   clinicId: string;
 

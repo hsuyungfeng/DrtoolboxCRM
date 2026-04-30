@@ -7,6 +7,7 @@ import {
   Request,
   HttpCode,
   HttpStatus,
+  Query,
 } from "@nestjs/common";
 import {
   ApiTags,
@@ -37,6 +38,21 @@ export class AuthController {
   @ApiResponse({ status: 401, description: "使用者名稱或密碼錯誤" })
   async login(@Body() loginDto: LoginDto): Promise<LoginResponseDto> {
     return this.authService.login(loginDto);
+  }
+
+  @Public()
+  @Get("sso")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "透過 Doctor Toolbox SSO 登入" })
+  async sso(
+    @Query("clinicId") clinicId: string,
+    @Query("staffId") staffId: string,
+    @Query("ts") ts: string,
+    @Query("sig") sig: string,
+    @Query("name") name?: string,
+    @Query("role") role?: string,
+  ): Promise<LoginResponseDto> {
+    return this.authService.loginViaToolbox(clinicId, staffId, ts, sig, name, role);
   }
 
   @UseGuards(JwtAuthGuard)

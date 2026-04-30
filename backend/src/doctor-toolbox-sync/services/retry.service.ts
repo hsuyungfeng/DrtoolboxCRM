@@ -28,7 +28,7 @@ export class RetryService {
    * - 指數退避：2s → 4s → 8s → 16s
    * - 索引對應嘗試編號（attempt 1 後的延遲）
    */
-  private readonly backoffDelays: number[] = [2000, 4000, 8000, 16000, 32000];
+  private readonly backoffDelays: number[] = [2000, 4000, 8000, 16000];
 
   /**
    * 使用指數退避重試執行非同步函式
@@ -59,7 +59,7 @@ export class RetryService {
 
         // 若非最後一次嘗試，應用延遲後重試
         if (attempt < maxAttempts - 1) {
-          const delayMs = this.backoffDelays[attempt] ?? this.backoffDelays[this.backoffDelays.length - 1];
+          const delayMs = this.backoffDelays[attempt];
           this.logger.warn(
             `嘗試 ${attempt + 1} 失敗，將在 ${delayMs}ms 後進行第 ${attempt + 2} 次重試。錯誤：${lastError.message}`,
           );

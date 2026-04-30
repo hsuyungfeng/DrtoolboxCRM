@@ -1,188 +1,109 @@
-# Doctor CRM v1.0 — 後續步驟
+# Doctor CRM v1.1 — 後續步驟
 
-**生成日期：** 2026-03-31
-**項目狀態：** ✅ 完成，部署就緒
+**生成日期：** 2026-04-27
+**項目狀態：** ✅ v1.1 生產級優化完成
 
 ---
 
 ## 現在的位置
 
-Doctor CRM v1.0 已完成所有 4 個階段，包括：
-- ✅ Phase 1：治療處方核心（13 計劃）
-- ✅ Phase 2：患者通知系統（3 計劃）
-- ✅ Phase 3：財務管理（3 計劃）
-- ✅ Phase 4：Doctor Toolbox 整合（4 波次）
+Doctor CRM v1.1 已完成所有 5 個階段，系統已從原型進化為生產級架構：
+- ✅ Phase 1：治療處方核心
+- ✅ Phase 2：患者通知系統
+- ✅ Phase 3：財務管理
+- ✅ Phase 4：Doctor Toolbox 整合（入站同步）
+- ✅ Phase 5：系統精煉與進階功能（出站同步、動態屬性、ClinicGuard、PostgreSQL）
 
-**最新提交：** `a753ae17` — v1.0 完成並歸檔
+**最新狀態：** 已完成 1300 行組件拆解、全局安全守衛、自定義欄位系統及效能優化。
 
 ---
 
 ## 立即行動（本周）
 
-### 1️⃣ 部署前檢查清單
+### 1️⃣ 生產環境準備：PostgreSQL 遷移
+
+由於 Phase 5 引入了 JSONB 支援與 GIN 索引，強烈建議在生產環境使用 **PostgreSQL 16+**。
 
 ```bash
-# 後端
-cd backend
-npm run test          # 執行全部單元測試
-npm run build         # 編譯
+# 設定 .env.production
+DB_TYPE=postgres
+DB_HOST=your-postgres-host
+DB_PORT=5432
+DB_USERNAME=crm_user
+DB_PASSWORD=your_password
+DB_NAME=doctor_crm
+```
 
-# 前端（可選）
+### 2️⃣ 部署前驗證
+
+```bash
+# 後端編譯與測試
+cd backend
+npm run build
+npm test              # 確保所有同步與審計測試通過
+
+# 前端編譯
 cd ../frontend
-npm run test          # 前端測試
-npm run build         # 前端構建
+npm run build
 ```
 
-### 2️⃣ 環境設定
+### 3️⃣ 動態屬性初始化
 
-編輯 `.env.production`，設定以下變數：
-
-```bash
-# Doctor Toolbox 整合
-DOCTOR_TOOLBOX_WEBHOOK_SECRET=<from-toolbox-admin>
-DOCTOR_TOOLBOX_API_URL=<toolbox-api-endpoint>
-WEBHOOK_TIMESTAMP_WINDOW=300
-
-# 其他生產設定
-NODE_ENV=production
-DATABASE_URL=<production-db>
-JWT_SECRET=<secure-secret>
-```
-
-### 3️⃣ 資料庫遷移
-
-執行 TypeORM 遷移以建立新表：
-- `sync_audit_logs`
-- `sync_patient_index`
-- `migration_progress`
-
-```bash
-cd backend
-npm run typeorm migration:run
-```
+在系統上線後，管理員應先透過 API 或資料庫初始化 `attribute_definitions`，以便診所開始使用自定義欄位。
 
 ---
 
-## 下週：生產部署
+## 安全與效能監控
 
-### 部署步驟
+### 1️⃣ 頻率限制 (Rate Limiting)
+Phase 5 已整合 `@nestjs/throttler`。請在 `.env` 中根據負載調整：
+- `THROTTLE_TTL=60` (秒)
+- `THROTTLE_LIMIT=100` (次數)
 
-1. **構建 Docker 鏡像**
-   ```bash
-   docker build -f Dockerfile -t doctor-crm:1.0 .
-   ```
+### 2️⃣ 全局安全守衛 (ClinicGuard)
+所有標註為 `@ClinicScoped()` 的控制器現在都會強制檢查 `clinicId`。
+- 確保所有前端請求 Header 包含 `x-clinic-id`。
+- 監控 403 錯誤日誌以辨識潛在的非法跨診所存取嘗試。
 
-2. **部署至伺服器**
-   ```bash
-   docker-compose -f docker-compose.prod.yml up -d
-   ```
-
-3. **驗證部署**
-   ```bash
-   curl http://localhost:3000/health
-   ```
-
-4. **測試 Webhook**
-   - 在 Doctor Toolbox 中設定 Webhook 端點
-   - 發送測試事件
-   - 驗證 `GET /sync/audit/clinic` 能看到日誌
-
-### 監控清單
-
-- [ ] 應用程式健康檢查
-- [ ] 資料庫連線
-- [ ] Webhook 簽名驗證
-- [ ] 患者同步
-- [ ] 審計日誌記錄
+### 3️⃣ 出站同步監控
+- 定期檢查 `sync_outbound_logs` 表，查看 CRM 推送至 Toolbox 的成功率。
+- 若失敗次數過高，檢核 `RetryService` 的退避策略是否生效。
 
 ---
 
-## 可選的增強（Phase 5）
+## 下一步規劃（Phase 6 可選）
 
-如果需要進一步功能，考慮以下選項：
+### 方案 A：高級數據分析
+**目標：** 利用 PostgreSQL 的 JSONB 查詢能力，對自定義欄位進行深度統計。
+**技術：** 建立針對 `customFields` 的聚合查詢 API。
 
-### 方案 A：出站同步
-**目標：** CRM 變更推送回 Doctor Toolbox
-**工作量：** 1-2 週
-**技術：** `SyncPatientService.pushPatientToToolbox()` 已備好基礎
+### 方案 B：自動化對帳 (Reconciliation)
+**目標：** 每天凌晨比對 CRM 與 Toolbox 的數據摘要，自動修正不一致。
+**技術：** 擴展 `SyncMonitoringService` 實現對帳邏輯。
 
-### 方案 B：定期對帳
-**目標：** 夜間自動對帳確保一致性
-**工作量：** 1 週
-**技術：** @nestjs/schedule 已整合
-
-### 方案 C：UI 儀表板
-**目標：** Doctor Toolbox 內的整合視圖
-**工作量：** 2 週
-**技術：** 前端已準備好 API 整合
-
-### 方案 D：高級衝突解決
-**目標：** 欄位層級衝突規則
-**工作量：** 1 週
-**技術：** `SyncPatientService.mergePatients()` 易於擴展
+### 方案 C：UI 擴展性優化
+**目標：** 支援更多動態欄位類型（如：多選清單、檔案上傳）。
+**技術：** 擴充 `DynamicFieldRenderer.vue` 與後端驗證邏輯。
 
 ---
 
-## 文件位置
+## 關鍵文檔參考
 
 | 文檔 | 路徑 | 用途 |
 |------|------|------|
-| **v1.0 完成報告** | `.planning/V1.0-COMPLETION.md` | 完整交付總結 |
-| **整合指南** | `docs/INTEGRATION_GUIDE.md` | Doctor Toolbox 設定 |
-| **API 文檔** | `docs/api/integration-api.md` | Webhook 合約 |
-| **部署指南** | `DEPLOYMENT.md` | 生產部署步驟 |
-| **項目路線圖** | `.planning/ROADMAP.md` | 分階段計劃 |
-| **項目狀態** | `.planning/STATE.md` | 當前位置 |
+| **改進計劃** | `Crmimprove0427.md` | Phase 5 戰略設計背景 |
+| **整合指南** | `docs/INTEGRATION_GUIDE.md` | Toolbox 雙向同步設定 |
+| **代碼地圖** | `.planning/codebase/` | 最新的系統架構與結構說明 |
+| **項目狀態** | `.planning/STATE.md` | 28 個計劃的完整執行記錄 |
 
 ---
 
-## 技術支援
+## 簽核資訊
 
-### 常見問題
-
-**Q1: Webhook 測試失敗？**
-- 檢查 `DOCTOR_TOOLBOX_WEBHOOK_SECRET` 設定
-- 驗證簽名計算（使用 curl + HMAC-SHA256）
-- 查看 `GET /sync/audit/clinic` 的失敗日誌
-
-**Q2: 患者沒有同步？**
-- 檢查 `GET /sync/audit/logs/{patientId}` 的審計記錄
-- 驗證患者身份證 ID + 姓名符合 Toolbox 記錄
-- 查看 `SyncMonitoringService.checkFailurePattern()` 的故障分析
-
-**Q3: 性能問題？**
-- 監控 `SyncMonitoringService.getClinicSyncStats()` 的平均同步時間
-- 批量遷移預期：~16 分鐘 / 1000 患者
-- 實時同步預期：< 5 秒
-
----
-
-## 聯繫資訊
-
-**項目完成者：**
-- Claude Code（AI 助手）
-- Happy Engineering（工作流協調）
-
+**完成者：** Gemini CLI (Orchestrator) & gsd-executor
 **GitHub 倉庫：** https://github.com/hsuyungfeng/DrtoolboxCRM
-
-**最後更新：** 2026-03-31
-
----
-
-## 檢查清單：準備就緒？
-
-使用此清單確認項目就緒：
-
-- [ ] 讀過 `.planning/V1.0-COMPLETION.md`
-- [ ] 後端編譯成功（npm run build）
-- [ ] 單元測試通過（npm run test）
-- [ ] 環境變數已設定（.env.production）
-- [ ] 資料庫遷移已執行
-- [ ] Docker 鏡像已構建
-- [ ] 部署伺服器已準備
-- [ ] Doctor Toolbox 端點已獲得
-- [ ] 監控系統已配置
+**最後更新：** 2026-04-27
 
 ---
 
-**準備好部署了嗎？現在就開始吧！ 🚀**
+**v1.1 核心價值：** 透過代碼模組化、數據庫效能提升與嚴格的安全隔離，為大規模診所連鎖提供可靠的底層支援。 🚀

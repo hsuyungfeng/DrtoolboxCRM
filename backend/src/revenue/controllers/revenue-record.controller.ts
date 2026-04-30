@@ -6,9 +6,14 @@ import {
   Param,
   Query,
   Patch,
+  UseGuards,
 } from "@nestjs/common";
 import { RevenueRecordService } from "../services/revenue-record.service";
+import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
+import { ClinicScoped } from "../../common/decorators/clinic-scoped.decorator";
 
+@UseGuards(JwtAuthGuard)
+@ClinicScoped()
 @Controller("revenue-records")
 export class RevenueRecordController {
   constructor(private readonly revenueRecordService: RevenueRecordService) {}

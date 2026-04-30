@@ -2,13 +2,17 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Logger,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 import { Patient } from "../entities/patient.entity";
 import { CreatePatientDto } from "../dto/create-patient.dto";
 import { UpdatePatientDto } from "../dto/update-patient.dto";
 import { PatientSearchService } from "./patient-search.service";
+import { AttributeService } from "../../common/attributes/services/attribute.service";
+import { AttributeTarget } from "../../common/attributes/entities/attribute-definition.entity";
 
 /**
  * 患者業務邏輯服務
@@ -20,10 +24,14 @@ import { PatientSearchService } from "./patient-search.service";
  */
 @Injectable()
 export class PatientService {
+  private readonly logger = new Logger(PatientService.name);
+
   constructor(
     @InjectRepository(Patient)
     private readonly patientRepository: Repository<Patient>,
     private readonly patientSearchService: PatientSearchService,
+    private readonly attributeService: AttributeService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   /**
@@ -34,6 +42,15 @@ export class PatientService {
     dto: CreatePatientDto,
     clinicId: string,
   ): Promise<Patient> {
+    // 驗證自定義欄位
+    if (dto.customFields) {
+      await this.attributeService.validateCustomFields(
+        clinicId,
+        AttributeTarget.PATIENT,
+        dto.customFields,
+      );
+    }
+
     // 驗證身份證ID在診所內的唯一性
     const available =
       await this.patientSearchService.validateIdNumberAvailability(
@@ -53,7 +70,12 @@ export class PatientService {
       status: "active",
     });
 
-    return this.patientRepository.save(patient);
+    const savedPatient = await this.patientRepository.save(patient);
+
+    // 發送事件
+    this.emitEvent("patient.created", savedPatient);
+
+    return savedPatient;
   }
 
   /**
@@ -73,6 +95,15 @@ export class PatientService {
     if (!patient) {
       throw new NotFoundException(
         `患者不存在或不屬於本診所（ID: ${patientId}）`,
+      );
+    }
+
+    // 驗證自定義欄位
+    if (dto.customFields) {
+      await this.attributeService.validateCustomFields(
+        clinicId,
+        AttributeTarget.PATIENT,
+        dto.customFields,
       );
     }
 
@@ -97,7 +128,23 @@ export class PatientService {
 
     Object.assign(patient, safeDto);
 
-    return this.patientRepository.save(patient);
+    const savedPatient = await this.patientRepository.save(patient);
+
+    // 發送事件
+    this.emitEvent("patient.updated", savedPatient);
+
+    return savedPatient;
+  }
+
+  /**
+   * 發送事件助手方法
+   */
+  private emitEvent(eventName: string, patient: Patient) {
+    try {
+      this.eventEmitter.emit(eventName, patient);
+    } catch (error) {
+      this.logger.warn(`Failed to emit ${eventName} event: ${error.message}`);
+    }
   }
 
   // ─── 向後相容的方法（保留原有 API）──────────────────────────────────
@@ -107,7 +154,9 @@ export class PatientService {
    */
   async create(createPatientDto: CreatePatientDto): Promise<Patient> {
     const patient = this.patientRepository.create(createPatientDto);
-    return await this.patientRepository.save(patient);
+    const savedPatient = await this.patientRepository.save(patient);
+    this.emitEvent("patient.created", savedPatient);
+    return savedPatient;
   }
 
   async findAll(clinicId: string): Promise<Patient[]> {
@@ -136,7 +185,9 @@ export class PatientService {
   ): Promise<Patient> {
     const patient = await this.findOne(id);
     Object.assign(patient, updatePatientDto);
-    return await this.patientRepository.save(patient);
+    const savedPatient = await this.patientRepository.save(patient);
+    this.emitEvent("patient.updated", savedPatient);
+    return savedPatient;
   }
 
   async remove(id: string): Promise<void> {
@@ -144,5 +195,7 @@ export class PatientService {
     // 軟刪除：標記為 inactive，保留資料可稽核
     patient.status = "inactive";
     await this.patientRepository.save(patient);
+    this.emitEvent("patient.deleted", patient);
   }
 }
+

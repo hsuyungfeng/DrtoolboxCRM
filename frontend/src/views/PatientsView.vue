@@ -23,8 +23,9 @@ import {
 } from 'naive-ui';
 import type { DataTableColumns, FormInst, FormRules } from 'naive-ui';
 import type { Patient } from '@/types';
-import { patientsApi } from '@/services/api';
+import { patientsApi, attributesApi } from '@/services/api';
 import { useUserStore } from '@/stores/user';
+import DynamicFieldRenderer from '@/components/common/DynamicFieldRenderer.vue';
 
 // 初始化 Naive UI 工具
 const dialog = useDialog();
@@ -34,6 +35,7 @@ const router = useRouter();
 
 const loading = ref(false);
 const patients = ref<Patient[]>([]);
+const attributeDefinitions = ref<any[]>([]);
 const showCreateModal = ref(false);
 const showEditModal = ref(false);
 const editingPatientId = ref<string | null>(null);
@@ -44,6 +46,7 @@ const formValue = ref({
   phone: '',
   email: '',
   gender: 'male' as 'male' | 'female' | 'other',
+  customFields: {} as Record<string, any>,
 });
 
 // 搜尋相關的狀態
@@ -149,6 +152,7 @@ const columns: DataTableColumns<Patient> = [
 // 生命周期
 onMounted(async () => {
   await loadPatients();
+  await loadAttributeDefinitions();
 });
 
 // 加載患者列表
@@ -161,6 +165,16 @@ async function loadPatients() {
     message.error('加載患者數據失敗');
   } finally {
     loading.value = false;
+  }
+}
+
+// 加載自定義欄位定義
+async function loadAttributeDefinitions() {
+  try {
+    const defs = await attributesApi.getAll(clinicId.value, 'patient');
+    attributeDefinitions.value = defs;
+  } catch (error) {
+    console.error('加載自定義欄位定義失敗:', error);
   }
 }
 
@@ -178,6 +192,7 @@ function editPatient(patient: Patient) {
     phone: patient.phone || '',
     email: patient.email || '',
     gender: patient.gender || 'male',
+    customFields: patient.customFields || {},
   };
   showEditModal.value = true;
 }
@@ -255,6 +270,7 @@ function resetForm() {
     phone: '',
     email: '',
     gender: 'male',
+    customFields: {},
   };
   if (formRef.value) {
     formRef.value.restoreValidation();
@@ -385,6 +401,14 @@ function clearSearch() {
                 <n-radio value="other">其他</n-radio>
               </n-radio-group>
             </n-form-item>
+
+            <!-- 自定義欄位 -->
+            <DynamicFieldRenderer
+              v-if="attributeDefinitions.length > 0"
+              v-model="formValue.customFields"
+              :definitions="attributeDefinitions"
+              path-prefix="customFields"
+            />
           </n-form>
         </n-modal>
 
@@ -418,6 +442,14 @@ function clearSearch() {
                 <n-radio value="other">其他</n-radio>
               </n-radio-group>
             </n-form-item>
+
+            <!-- 自定義欄位 -->
+            <DynamicFieldRenderer
+              v-if="attributeDefinitions.length > 0"
+              v-model="formValue.customFields"
+              :definitions="attributeDefinitions"
+              path-prefix="customFields"
+            />
           </n-form>
         </n-modal>
       </div>

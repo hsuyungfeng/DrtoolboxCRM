@@ -7,6 +7,7 @@ import { TreatmentCourse } from "./entities/treatment-course.entity";
 import { StaffAssignment } from "./entities/staff-assignment.entity";
 import { MedicalOrder } from "./entities/medical-order.entity";
 import { ScriptTemplate } from "./entities/script-template.entity";
+import { TreatmentTemplate } from "../treatment-templates/entities/treatment-template.entity";
 import { Patient } from "../patients/entities/patient.entity";
 import { TreatmentService } from "./services/treatment.service";
 import { TreatmentSessionService } from "./services/treatment-session.service";
@@ -24,7 +25,9 @@ import {
 import { MedicalOrderController } from "./controllers/medical-order.controller";
 import { PointsModule } from "../points/points.module";
 import { StaffModule } from "../staff/staff.module";
-import { TreatmentStaffAssignment } from "../staff/entities/treatment-staff-assignment.entity";
+import { NotificationsModule } from "../notifications/notifications.module";
+import { AttributesModule } from "../common/attributes/attributes.module";
+import { TreatmentEventListener } from "./listeners/treatment-event.listener";
 
 @Module({
   imports: [
@@ -36,18 +39,20 @@ import { TreatmentStaffAssignment } from "../staff/entities/treatment-staff-assi
       StaffAssignment,
       MedicalOrder,
       ScriptTemplate,
+      TreatmentTemplate,
       Patient,
-      TreatmentStaffAssignment,
     ]),
     PointsModule,
     StaffModule,
+    NotificationsModule,
+    AttributesModule,
   ],
   controllers: [
-    TreatmentController,
-    TreatmentSessionController,
     TreatmentCourseController,
+    TreatmentSessionController,
     StaffSessionController,
     MedicalOrderController,
+    TreatmentController,
   ],
   providers: [
     TreatmentService,
@@ -57,6 +62,7 @@ import { TreatmentStaffAssignment } from "../staff/entities/treatment-staff-assi
     TreatmentProgressService,
     PPFCalculationService,
     MedicalOrderService,
+    TreatmentEventListener,
   ],
   exports: [
     TreatmentService,

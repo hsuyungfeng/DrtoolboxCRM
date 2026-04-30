@@ -14,7 +14,7 @@ import {
   HttpCode,
   HttpStatus,
 } from "@nestjs/common";
-import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiTags, ApiOperation } from "@nestjs/swagger";
 import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
 import { TreatmentCourseService } from "../services/treatment-course.service";
 import { TreatmentSessionService } from "../services/treatment-session.service";
@@ -30,10 +30,12 @@ import { UpdateTreatmentSessionDto } from "../dto/update-treatment-session.dto";
  * Treatment REST API Controller
  * Handles treatment-related HTTP requests with complete CRUD operations
  */
+import { ClinicScoped } from "../../common/decorators/clinic-scoped.decorator";
+
 @ApiBearerAuth()
 @ApiTags('Treatment Courses')
-@Controller("treatments")
-@UseGuards(JwtAuthGuard)
+@Controller("treatment-courses")
+@ClinicScoped()
 export class TreatmentCourseController {
   constructor(
     private readonly courseService: TreatmentCourseService,
@@ -70,27 +72,33 @@ export class TreatmentCourseController {
    * @throws BadRequestException 當必要參數缺失時
    */
   @Get()
+  @ApiOperation({ summary: "查詢療程套餐列表" })
   async getPatientCourses(
-    @Query("patientId") patientId: string,
     @Query("clinicId") clinicId: string,
+    @Query("patientId") patientId?: string,
     @Query("status") status?: string,
   ) {
-    if (!patientId || patientId.trim() === "") {
-      throw new BadRequestException("patientId 不能為空");
-    }
-
     if (!clinicId || clinicId.trim() === "") {
       throw new BadRequestException("clinicId 不能為空");
     }
 
-    const courses = await this.courseService.getPatientCourses(patientId, clinicId, status);
+    if (patientId) {
+      const courses = await this.courseService.getPatientCourses(patientId, clinicId, status);
+      return {
+        statusCode: 200,
+        data: courses,
+        count: courses.length,
+      };
+    }
+
+    // 如果沒有 patientId，則返回該診所的所有療程
+    const courses = await this.courseService.findAll(clinicId);
     return {
       statusCode: 200,
       data: courses,
       count: courses.length,
     };
   }
-
   /**
    * 查詢患者所有療程（路由參數模式）
    * GET /treatments/patient/:patientId
@@ -314,8 +322,8 @@ export class TreatmentCourseController {
  * 員工療程會話 REST API 控制器
  * 負責處理員工相關的療程查詢
  */
-@Controller("staff")
-@UseGuards(JwtAuthGuard)
+@Controller("staff-sessions")
+@ClinicScoped()
 export class StaffSessionController {
   constructor(private readonly sessionService: TreatmentSessionService) {}
 

@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Query,
+  UseGuards,
 } from "@nestjs/common";
 import {
   ApiTags,
@@ -19,9 +20,13 @@ import { RevenueAdjustmentService } from "../services/revenue-adjustment.service
 import { CreateRevenueAdjustmentDto } from "../dto/create-revenue-adjustment.dto";
 import { UpdateRevenueAdjustmentDto } from "../dto/update-revenue-adjustment.dto";
 import { RevenueAdjustment } from "../entities/revenue-adjustment.entity";
+import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
+import { ClinicScoped } from "../../common/decorators/clinic-scoped.decorator";
 
 @ApiTags("分潤調整")
 @ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
+@ClinicScoped()
 @Controller("revenue-adjustments")
 export class RevenueAdjustmentController {
   constructor(private readonly adjustmentService: RevenueAdjustmentService) {}

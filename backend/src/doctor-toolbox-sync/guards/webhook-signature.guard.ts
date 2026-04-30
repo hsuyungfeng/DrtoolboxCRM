@@ -71,13 +71,8 @@ export class WebhookSignatureGuard implements CanActivate {
       );
     }
 
-    // 使用原始請求體計算簽名（避免 JSON.stringify 與原始位元組不一致）
-    const rawBody = (request as any).rawBody as Buffer | undefined;
-    if (!rawBody) {
-      throw new UnauthorizedException('Raw body not available');
-    }
-
-    const expectedSignature = this.computeSignature(timestamp, rawBody, secret);
+    // 驗證簽名
+    const expectedSignature = this.computeSignature(timestamp, request.body, secret);
     const isValidSignature = this.timingSafeCompare(
       signature,
       expectedSignature,
@@ -91,23 +86,24 @@ export class WebhookSignatureGuard implements CanActivate {
   }
 
   /**
-   * 計算 HMAC-SHA256 簽名（使用原始請求體）
+   * 計算 HMAC-SHA256 簽名
    *
    * @param timestamp Unix timestamp（秒）
-   * @param rawBody 原始請求體 Buffer
+   * @param body 請求體
    * @param secret Webhook 密鑰
    * @returns 十六進位簽名
    */
   private computeSignature(
     timestamp: string,
-    rawBody: Buffer,
+    body: unknown,
     secret: string,
   ): string {
-    return crypto
+    const message = `${timestamp}.${JSON.stringify(body)}`;
+    const signature = crypto
       .createHmac('sha256', secret)
-      .update(`${timestamp}.`)
-      .update(rawBody)
+      .update(message)
       .digest('hex');
+    return signature;
   }
 
   /**

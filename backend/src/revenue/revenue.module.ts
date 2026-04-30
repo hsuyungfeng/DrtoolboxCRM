@@ -6,7 +6,10 @@ import { RevenueRecord } from "./entities/revenue-record.entity";
 import { RevenueAdjustment } from "./entities/revenue-adjustment.entity";
 import { Payment } from "./entities/payment.entity";
 import { Invoice } from "./entities/invoice.entity";
+import { ReconciliationReport } from "./entities/reconciliation-report.entity";
 import { Treatment } from "../treatments/entities/treatment.entity";
+import { TreatmentCourse } from "../treatments/entities/treatment-course.entity";
+import { TreatmentTemplate } from "../treatment-templates/entities/treatment-template.entity";
 import { Patient } from "../patients/entities/patient.entity";
 import { TreatmentSession } from "../treatments/entities/treatment-session.entity";
 import { TreatmentStaffAssignment } from "../staff/entities/treatment-staff-assignment.entity";
@@ -21,6 +24,7 @@ import { PaymentService } from "./services/payment.service";
 import { FeeCalculationService } from "./services/fee-calculation.service";
 import { InvoiceService } from "./services/invoice.service";
 import { RevenueReportService } from "./services/revenue-report.service";
+import { ReconciliationService } from "./services/reconciliation.service";
 import { RevenueEventListener } from "./listeners/revenue-event.listener";
 import { RevenueRuleController } from "./controllers/revenue-rule.controller";
 import { RevenueRecordController } from "./controllers/revenue-record.controller";
@@ -37,7 +41,10 @@ import { RevenueReportController } from "./controllers/revenue-report.controller
       RevenueAdjustment,
       Payment,
       Invoice,
+      ReconciliationReport,
       Treatment,
+      TreatmentCourse,
+      TreatmentTemplate,
       Patient,
       TreatmentSession,
       TreatmentStaffAssignment,
@@ -64,6 +71,7 @@ import { RevenueReportController } from "./controllers/revenue-report.controller
     FeeCalculationService,
     InvoiceService,
     RevenueReportService,
+    ReconciliationService,
     RevenueEventListener,
   ],
   exports: [
@@ -77,6 +85,7 @@ import { RevenueReportController } from "./controllers/revenue-report.controller
     FeeCalculationService,
     InvoiceService,
     RevenueReportService,
+    ReconciliationService,
   ],
 })
 export class RevenueModule {}

@@ -5,6 +5,7 @@ import { PatientService } from "./services/patient.service";
 import { PatientSearchService } from "./services/patient-search.service";
 import { PatientSearchRepository } from "./repositories/patient-search.repository";
 import { PatientController } from "./controllers/patient.controller";
+import { AttributesModule } from "../common/attributes/attributes.module";
 
 /**
  * 患者模組
@@ -16,7 +17,7 @@ import { PatientController } from "./controllers/patient.controller";
  * - PatientSearchRepository：自定義查詢倉庫
  */
 @Module({
-  imports: [TypeOrmModule.forFeature([Patient])],
+  imports: [TypeOrmModule.forFeature([Patient]), AttributesModule],
   controllers: [PatientController],
   providers: [PatientService, PatientSearchService, PatientSearchRepository],
   exports: [PatientService, PatientSearchService],

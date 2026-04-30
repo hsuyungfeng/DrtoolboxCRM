@@ -1,5 +1,19 @@
 import { http } from './api';
 
+export interface CustomMedicalOrder {
+  code: string;
+  nameEn: string;
+  nameZh: string;
+  points: number;
+  paymentType: 'self-pay' | 'nhi';
+}
+
+export interface CustomRevenueRule {
+  staffIdOrRole: string;
+  ruleType: 'percentage' | 'fixed';
+  value: number;
+}
+
 export interface TreatmentTemplate {
   id: string;
   name: string;
@@ -8,12 +22,15 @@ export interface TreatmentTemplate {
   defaultSessions: number;
   clinicId: string;
   isActive: boolean;
+  customMedicalOrders?: CustomMedicalOrder[];
+  customRevenueRules?: CustomRevenueRule[];
+  followUpIntervalDays?: number;
   createdAt: string;
   updatedAt: string;
 }
 
 export const treatmentTemplatesApi = {
-  create: (data: Omit<TreatmentTemplate, 'id' | 'isActive' | 'createdAt' | 'updatedAt'>) =>
+  create: (data: Partial<TreatmentTemplate>) =>
     http.post<TreatmentTemplate>('/treatment-templates', data),
 
   getAll: (clinicId: string, params?: any) =>

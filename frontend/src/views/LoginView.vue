@@ -88,21 +88,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { useMessage } from 'naive-ui';
+import { ref, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import {
-  NButton, NForm, NFormItem, NInput, NIcon, NCheckbox, NCard,
+  NButton, NForm, NFormItem, NInput, NIcon, NCheckbox, NCard, useMessage,
 } from 'naive-ui';
 import type { FormInst, FormRules } from 'naive-ui';
 import { useUserStore } from '@/stores/user';
-import { authService } from '@/services/auth.service';
-import { useI18n } from 'vue-i18n';
 
 const router = useRouter();
+const route = useRoute();
 const userStore = useUserStore();
 const message = useMessage();
-const { t } = useI18n();
 
 const formRef = ref<FormInst | null>(null);
 const loading = ref(false);
@@ -115,46 +112,62 @@ const formValue = ref({
 
 const rules: FormRules = {
   username: [
-    { required: true, message: t('auth.username') + t('common.required'), trigger: 'blur' },
+    { required: true, message: '請輸入用戶名', trigger: 'blur' },
   ],
   password: [
-    { required: true, message: t('auth.password') + t('common.required'), trigger: 'blur' },
+    { required: true, message: '請輸入密碼', trigger: 'blur' },
   ],
   clinicId: [
-    { required: true, message: t('clinic.clinicId') + t('common.required'), trigger: 'blur' },
+    { required: true, message: '請輸入診所 ID', trigger: 'blur' },
   ],
 };
+
+onMounted(async () => {
+  // 檢查是否有 SSO 參數
+  const { clinicId, staffId, ts, sig, name, role } = route.query;
+  
+  if (clinicId && staffId && ts && sig) {
+    try {
+      loading.value = true;
+      message.loading('正在透過 Doctor Toolbox 自動登入...');
+      
+      await userStore.loginViaSSO({
+        clinicId: clinicId as string,
+        staffId: staffId as string,
+        ts: ts as string,
+        sig: sig as string,
+        name: name as string,
+        role: role as string,
+      });
+
+      message.success('自動登入成功');
+      router.push('/');
+    } catch (error: any) {
+      console.error('SSO 登入失敗:', error);
+      message.error(`自動登入失敗: ${error.message || '未知錯誤'}`);
+    } finally {
+      loading.value = false;
+    }
+  }
+});
 
 async function handleLogin() {
   try {
     loading.value = true;
-
+    
     // 驗證表單
     await formRef.value?.validate();
 
-    // 呼叫後端 API
-    const response = await authService.login({
+    // 模擬登入（TODO: 替換為實際的 API 呼叫）
+    await userStore.login({
       username: formValue.value.username,
       password: formValue.value.password,
       clinicId: formValue.value.clinicId,
     });
 
-    // 保存用戶資訊和 token
-    userStore.setUser({
-      ...response.user,
-      createdAt: new Date().toISOString(),
-    });
-    userStore.setToken(response.accessToken);
-    userStore.setClinicId(response.user.clinicId);
-
-    message.success(t('auth.loginSuccess'));
-
-    // 跳轉到首頁（或原始目標 URL）
-    const redirect = router.currentRoute.value.query.redirect as string;
-    router.push(redirect || '/');
-  } catch (error: any) {
-    const errorMessage = error?.message || t('auth.loginFailed');
-    message.error(errorMessage);
+    // 跳轉到首頁
+    router.push('/');
+  } catch (error) {
     console.error('登入失敗:', error);
   } finally {
     loading.value = false;

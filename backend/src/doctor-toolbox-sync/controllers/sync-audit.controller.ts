@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Post,
   Param,
   Query,
   UseGuards,
@@ -51,8 +52,8 @@ export class SyncAuditController {
   @ApiQuery({ name: 'limit', required: false, description: '回傳筆數（預設 100）' })
   async getPatientLogs(
     @Param('patientId') patientId: string,
-    @Query('limit') limit: number = 100,
     @Req() req: any,
+    @Query('limit') limit: number = 100,
   ): Promise<{
     statusCode: number;
     data: SyncAuditLog[];
@@ -89,9 +90,9 @@ export class SyncAuditController {
   @ApiQuery({ name: 'endDate', required: false, description: '結束日期' })
   async getClinicLogs(
     @Req() req: any,
-    @Query('limit') limit: number = 1000,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
+    @Query('limit') limit: number = 1000,
   ): Promise<{
     statusCode: number;
     data: SyncAuditLog[];
@@ -132,8 +133,8 @@ export class SyncAuditController {
   @ApiOperation({ summary: '查詢診所同步統計與失敗警告' })
   @ApiQuery({ name: 'days', required: false, description: '統計天數（預設 7）' })
   async getStats(
+    @Query('days') days: number = 7,
     @Req() req: any,
-    @Query('days') daysStr: string = '7',
   ): Promise<{
     statusCode: number;
     data: {
@@ -150,10 +151,9 @@ export class SyncAuditController {
       };
     };
   }> {
-    const days = Math.min(Math.max(parseInt(daysStr, 10) || 7, 1), 365);
     const stats = await this.monitoringService.getClinicSyncStats(
       req.user.clinicId,
-      days,
+      Number(days),
     );
 
     const failureAlert = await this.monitoringService.checkFailurePattern(
@@ -195,6 +195,68 @@ export class SyncAuditController {
     return {
       statusCode: 200,
       data: patterns,
+    };
+  }
+
+  /**
+   * 手動觸發數據對帳
+   *
+   * POST /sync/audit/reconcile
+   */
+  @Post('reconcile')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: '手動觸發數據對帳' })
+  async triggerReconciliation(@Req() req: any) {
+    const report = await this.monitoringService.reconcileClinicData(req.user.clinicId);
+    return {
+      statusCode: 201,
+      message: '對帳任務執行完成',
+      data: report,
+    };
+  }
+
+  /**
+   * 取得對帳報告列表
+   *
+   * GET /sync/audit/reconciliation-reports
+   */
+  @Get('reconciliation-reports')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '取得對帳報告列表' })
+  async getReconciliationReports(
+    @Req() req: any,
+    @Query('limit') limit: number = 10,
+  ) {
+    const reports = await this.monitoringService.getReconciliationReports(
+      req.user.clinicId,
+      Number(limit),
+    );
+    return {
+      statusCode: 200,
+      data: reports,
+      count: reports.length,
+    };
+  }
+
+  /**
+   * 取得對帳報告詳情
+   *
+   * GET /sync/audit/reconciliation-reports/:id
+   */
+  @Get('reconciliation-reports/:id')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '取得對帳報告詳情' })
+  async getReconciliationReport(
+    @Param('id') id: string,
+    @Req() req: any,
+  ) {
+    const report = await this.monitoringService.getReconciliationReport(
+      req.user.clinicId,
+      id,
+    );
+    return {
+      statusCode: 200,
+      data: report,
     };
   }
 }

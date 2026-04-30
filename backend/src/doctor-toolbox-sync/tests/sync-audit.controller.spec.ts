@@ -55,8 +55,8 @@ describe('SyncAuditController', () => {
 
       const result = await controller.getPatientLogs(
         'patient-1',
-        100,
         mockRequest,
+        100,
       );
 
       expect(result.statusCode).toBe(200);
@@ -82,7 +82,7 @@ describe('SyncAuditController', () => {
 
       jest.spyOn(auditService, 'queryByClinic').mockResolvedValue(logs as any);
 
-      const result = await controller.getClinicLogs(mockRequest, 1000, undefined, undefined);
+      const result = await controller.getClinicLogs(mockRequest, undefined, undefined, 1000);
 
       expect(result.statusCode).toBe(200);
       expect(result.data).toEqual(logs);
@@ -104,9 +104,9 @@ describe('SyncAuditController', () => {
 
       const result = await controller.getClinicLogs(
         mockRequest,
-        1000,
         '2026-03-01',
         '2026-03-31',
+        1000,
       );
 
       expect(result.statusCode).toBe(200);
@@ -135,7 +135,7 @@ describe('SyncAuditController', () => {
         .spyOn(monitoringService, 'checkFailurePattern')
         .mockResolvedValue(failureAlert);
 
-      const result = await controller.getStats(mockRequest, '7');
+      const result = await controller.getStats(7, mockRequest);
 
       expect(result.statusCode).toBe(200);
       expect(result.data.stats).toEqual(stats);
@@ -165,7 +165,7 @@ describe('SyncAuditController', () => {
     it('should use clinicId from JWT in all queries', async () => {
       jest.spyOn(auditService, 'queryByClinic').mockResolvedValue([]);
 
-      await controller.getClinicLogs(mockRequest, 1000, undefined, undefined);
+      await controller.getClinicLogs(mockRequest, undefined, undefined, 1000);
 
       const callArg = (auditService.queryByClinic as jest.Mock).mock.calls[0][0];
       expect(callArg).toBe('clinic-1');

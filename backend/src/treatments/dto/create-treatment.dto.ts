@@ -3,30 +3,11 @@ import {
   IsNumber,
   IsOptional,
   IsDateString,
-  IsArray,
-  ValidateNested,
   Length,
   Min,
   Max,
   IsEnum,
 } from "class-validator";
-import { Type } from "class-transformer";
-
-export class StaffAssignmentCreateDto {
-  @IsString()
-  @Length(1, 32)
-  staffId: string;
-
-  @IsString()
-  @Length(1, 50)
-  role: string; // primary, assistant, consultant, etc.
-
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  @Max(100)
-  revenuePercentage?: number;
-}
 
 export class CreateTreatmentDto {
   @IsString()
@@ -84,8 +65,5 @@ export class CreateTreatmentDto {
   clinicId: string;
 
   @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => StaffAssignmentCreateDto)
-  staffAssignments?: StaffAssignmentCreateDto[];
+  customFields?: Record<string, any>;
 }

@@ -49,39 +49,6 @@
       </div>
     </n-alert>
 
-    <!-- 員工分配選擇 -->
-    <n-form-item label="分配員工（選填）" path="staffAssignments">
-      <n-select
-        v-model:value="formData.staffAssignments"
-        :options="staffOptions"
-        filterable
-        clearable
-        multiple
-        :loading="loadingStaff"
-        placeholder="選擇一個或多個員工..."
-        @update:value="handleStaffUpdate"
-      />
-    </n-form-item>
-
-    <!-- 員工角色配置 -->
-    <n-card
-      v-if="formData.staffAssignments && formData.staffAssignments.length > 0"
-      title="員工角色配置"
-      size="small"
-      style="margin-bottom: 16px"
-    >
-      <div v-for="(staffId, index) in formData.staffAssignments" :key="staffId" style="margin-bottom: 12px">
-        <n-space vertical style="width: 100%">
-          <div style="font-weight: 500">{{ getStaffName(staffId) }}</div>
-          <n-input
-            v-model:value="staffRoles[staffId]"
-            placeholder="輸入角色（如：主治、助理、顧問）..."
-            style="width: 100%"
-          />
-        </n-space>
-      </div>
-    </n-card>
-
     <!-- 可選：點數抵扣 -->
     <n-form-item label="積分抵扣（選填）" path="pointsToRedeem">
       <n-input-number
@@ -115,11 +82,9 @@ import {
   NButton,
   NSpace,
   NAlert,
-  NCard,
-  NInput,
 } from 'naive-ui';
 import type { FormInst, FormRules, SelectOption } from 'naive-ui';
-import { patientsApi, staffApi } from '@/services/api';
+import { patientsApi } from '@/services/api';
 import { treatmentCoursesApi } from '@/services/treatments-api';
 import { useUserStore } from '@/stores/user';
 
@@ -132,32 +97,20 @@ interface TreatmentTemplate {
   defaultSessions: number;
 }
 
-/** 員工型別 */
-interface Staff {
-  id: string;
-  name: string;
-  role: string;
-}
-
-/** 療程表單資料型別 */
+/** 療程表單資料型別（對應後端 CreateTreatmentCourseDto） */
 interface TreatmentFormData {
   patientId: string;
   templateId?: string;
   clinicId?: string;
   pointsToRedeem?: number;
-  staffAssignments?: string[]; // 員工 ID 列表
 }
 
 const props = defineProps<{
   treatment?: any | null;
 }>();
 
-interface SaveData extends TreatmentFormData {
-  staffAssignmentDetails?: Array<{ staffId: string; role: string; revenuePercentage: number }>;
-}
-
 const emit = defineEmits<{
-  (e: 'save', data: SaveData): void;
+  (e: 'save', data: TreatmentFormData): void;
   (e: 'cancel'): void;
 }>();
 
@@ -169,17 +122,12 @@ const patientOptions = ref<SelectOption[]>([]);
 const loadingTemplates = ref(false);
 const treatmentTemplateOptions = ref<SelectOption[]>([]);
 const allTemplates = ref<TreatmentTemplate[]>([]);
-const loadingStaff = ref(false);
-const staffOptions = ref<SelectOption[]>([]);
-const allStaff = ref<Staff[]>([]);
-const staffRoles = reactive<{ [key: string]: string }>({});
 
 const formData = reactive<TreatmentFormData>({
   patientId: '',
   templateId: undefined,
   clinicId: userStore.clinicId || 'clinic_001',
   pointsToRedeem: undefined,
-  staffAssignments: undefined,
 });
 
 /** 根據選定的 templateId 取得對應的範本詳情 */
@@ -204,38 +152,6 @@ const loadTreatmentTemplates = async () => {
     console.error('載入治療範本失敗:', error);
   } finally {
     loadingTemplates.value = false;
-  }
-};
-
-/** 載入員工清單 */
-const loadStaff = async () => {
-  const clinicId = userStore.clinicId || 'clinic_001';
-  loadingStaff.value = true;
-  try {
-    const staff = await staffApi.getAll(clinicId);
-    const list = Array.isArray(staff) ? staff : [];
-    allStaff.value = list as Staff[];
-    staffOptions.value = list.map((s: Staff) => ({
-      label: `${s.name} (${s.role})`,
-      value: s.id,
-    }));
-  } catch (error) {
-    console.error('載入員工清單失敗:', error);
-  } finally {
-    loadingStaff.value = false;
-  }
-};
-
-/** 獲取員工名稱 */
-const getStaffName = (staffId: string): string => {
-  const staff = allStaff.value.find(s => s.id === staffId);
-  return staff ? `${staff.name} (${staff.role})` : staffId;
-};
-
-/** 處理員工選擇變更 */
-const handleStaffUpdate = (staffIds: string[]) => {
-  if (!staffIds || staffIds.length === 0) {
-    Object.keys(staffRoles).forEach(key => delete staffRoles[key]);
   }
 };
 
@@ -280,21 +196,7 @@ const handleSave = async () => {
   }
   saving.value = true;
   try {
-    const staffAssignmentDetails = formData.staffAssignments?.map(staffId => ({
-      staffId,
-      role: staffRoles[staffId] || 'primary',
-      revenuePercentage: 0,
-    })) || undefined;
-
-    const saveData: SaveData = {
-      patientId: formData.patientId,
-      templateId: formData.templateId,
-      clinicId: formData.clinicId,
-      pointsToRedeem: formData.pointsToRedeem,
-      staffAssignments: formData.staffAssignments,
-      staffAssignmentDetails,
-    };
-    emit('save', saveData);
+    emit('save', { ...formData });
   } finally {
     saving.value = false;
   }
@@ -305,14 +207,11 @@ const resetForm = () => {
   formData.patientId = '';
   formData.templateId = undefined;
   formData.pointsToRedeem = undefined;
-  formData.staffAssignments = undefined;
-  Object.keys(staffRoles).forEach(key => delete staffRoles[key]);
 };
 
-/** 元件掛載時載入治療範本和員工清單 */
+/** 元件掛載時載入治療範本 */
 onMounted(() => {
   loadTreatmentTemplates();
-  loadStaff();
 });
 </script>
 

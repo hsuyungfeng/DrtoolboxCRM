@@ -16,6 +16,13 @@ import { PointsConfig } from "../points/entities/points-config.entity";
 import { PointsBalance } from "../points/entities/points-balance.entity";
 import { PointsTransaction } from "../points/entities/points-transaction.entity";
 import { AuditLog } from "../common/audit/audit-log.entity";
+import { AttributeDefinition } from "../common/attributes/entities/attribute-definition.entity";
+import { SyncAuditLog } from "../common/entities/sync-audit-log.entity";
+import { SyncPatientIndex } from "../doctor-toolbox-sync/entities/sync-patient-index.entity";
+import { SyncOutboundLog } from "../doctor-toolbox-sync/entities/sync-outbound-log.entity";
+import { MigrationProgress } from "../doctor-toolbox-sync/entities/migration-progress.entity";
+import { Lead } from "../leads/entities/lead.entity";
+import { ReconciliationReport } from "../revenue/entities/reconciliation-report.entity";
 
 const entities = [
   Staff,
@@ -34,6 +41,13 @@ const entities = [
   PointsBalance,
   PointsTransaction,
   AuditLog,
+  AttributeDefinition,
+  SyncAuditLog,
+  SyncPatientIndex,
+  SyncOutboundLog,
+  MigrationProgress,
+  Lead,
+  ReconciliationReport,
 ];
 
 const dbType = process.env.DB_TYPE || 'sqlite';
@@ -46,9 +60,9 @@ export const databaseConfig: TypeOrmModuleOptions = {
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE || (dbType === 'sqlite' ? join(process.cwd(), 'database.sqlite') : 'doctor_crm'),
   entities,
-  synchronize: process.env.NODE_ENV !== 'production',
+  synchronize: process.env.NODE_ENV !== 'production' && process.env.DB_SYNCHRONIZE !== 'false',
   logging: process.env.NODE_ENV === 'development',
   migrations: [join(__dirname, '../migrations/*{.ts,.js}')],
-  migrationsRun: false,
+  migrationsRun: process.env.DB_MIGRATIONS_RUN === 'true',
   ssl: dbType === 'postgres' && process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
 };

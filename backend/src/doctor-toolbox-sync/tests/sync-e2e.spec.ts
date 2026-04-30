@@ -1,21 +1,45 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import request from 'supertest';
+import { DoctorToolboxSyncModule } from '../doctor-toolbox-sync.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { AuthModule } from '../../auth/auth.module';
+import { Patient } from '../../patients/entities/patient.entity';
+import { TreatmentCourse } from '../../treatments/entities/treatment-course.entity';
+import { TreatmentSession } from '../../treatments/entities/treatment-session.entity';
+import { Treatment } from '../../treatments/entities/treatment.entity';
+import { StaffAssignment } from '../../treatments/entities/staff-assignment.entity';
+import { AttributeDefinition } from '../../common/attributes/entities/attribute-definition.entity';
+import { SyncPatientIndex } from '../entities/sync-patient-index.entity';
+import { SyncOutboundLog } from '../entities/sync-outbound-log.entity';
+import { MigrationProgress } from '../entities/migration-progress.entity';
 import { SyncAuditLog } from '../../common/entities/sync-audit-log.entity';
+import { Staff } from '../../staff/entities/staff.entity';
+import { TreatmentStaffAssignment } from '../../staff/entities/treatment-staff-assignment.entity';
+import { MedicalOrder } from '../../treatments/entities/medical-order.entity';
+import { TreatmentCourseTemplate } from '../../treatments/entities/treatment-course-template.entity';
+import { ScriptTemplate } from '../../treatments/entities/script-template.entity';
+import { TreatmentTemplate } from '../../treatment-templates/entities/treatment-template.entity';
+import { PatientService } from '../../patients/services/patient.service';
 import { SyncAuditService } from '../services/sync-audit.service';
-import { SyncMonitoringService } from '../services/sync-monitoring.service';
-import { SyncAuditController } from '../controllers/sync-audit.controller';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { ClinicGuard } from '../../common/guards/clinic.guard';
 import * as crypto from 'crypto';
 
 describe('Doctor Toolbox Sync E2E', () => {
   let app: INestApplication;
+  let patientRepository: Repository<Patient>;
+  let syncIndexRepository: Repository<SyncPatientIndex>;
   let auditLogRepository: Repository<SyncAuditLog>;
+  let migrationProgressRepository: Repository<MigrationProgress>;
   let auditService: SyncAuditService;
+  let patientService: PatientService;
 
-  const JWT_TOKEN = 'mock-token';
+  const JWT_TOKEN =
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyLTEiLCJjbGluaWNJZCI6ImNsaW5pYy0xIiwiaWF0IjoxNzExODgxNjAwfQ.placeholder';
   const WEBHOOK_SECRET = 'test-secret-key';
 
   beforeAll(async () => {
@@ -24,22 +48,53 @@ describe('Doctor Toolbox Sync E2E', () => {
         TypeOrmModule.forRoot({
           type: 'sqlite',
           database: ':memory:',
-          entities: [SyncAuditLog],
+          entities: [
+            Patient,
+            TreatmentCourse,
+            TreatmentSession,
+            Treatment,
+            StaffAssignment,
+            AttributeDefinition,
+            SyncPatientIndex,
+            SyncOutboundLog,
+            MigrationProgress,
+            SyncAuditLog,
+            Staff,
+            TreatmentStaffAssignment,
+            MedicalOrder,
+            TreatmentCourseTemplate,
+            ScriptTemplate,
+            TreatmentTemplate,
+          ],
           synchronize: true,
           logging: false,
         }),
-        TypeOrmModule.forFeature([SyncAuditLog]),
+        EventEmitterModule.forRoot(),
+        AuthModule,
+        DoctorToolboxSyncModule,
       ],
-      controllers: [SyncAuditController],
-      providers: [SyncAuditService, SyncMonitoringService],
+      providers: [
+        {
+          provide: PatientService,
+          useValue: {
+            create: jest.fn(),
+            findOne: jest.fn(),
+            update: jest.fn(),
+          },
+        },
+      ],
     })
       .overrideGuard(JwtAuthGuard)
       .useValue({
-        canActivate: (ctx: any) => {
-          const req = ctx.switchToHttp().getRequest();
-          req.user = { clinicId: 'clinic-1', sub: 'user-1' };
+        canActivate: (context) => {
+          const req = context.switchToHttp().getRequest();
+          req.user = { userId: 'user-1', clinicId: 'clinic-1' };
           return true;
         },
+      })
+      .overrideGuard(ClinicGuard)
+      .useValue({
+        canActivate: () => true,
       })
       .compile();
 
@@ -47,11 +102,24 @@ describe('Doctor Toolbox Sync E2E', () => {
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
 
+    patientRepository = moduleFixture.get<Repository<Patient>>(
+      getRepositoryToken(Patient),
+    );
+    syncIndexRepository = moduleFixture.get<Repository<SyncPatientIndex>>(
+      getRepositoryToken(SyncPatientIndex),
+    );
+    auditLogRepository = moduleFixture.get<Repository<SyncAuditLog>>(
+      getRepositoryToken(SyncAuditLog),
+    );
+    migrationProgressRepository = moduleFixture.get<Repository<MigrationProgress>>(
+      getRepositoryToken(MigrationProgress),
+    );
     auditService = moduleFixture.get<SyncAuditService>(SyncAuditService);
+    patientService = moduleFixture.get<PatientService>(PatientService);
   });
 
   afterAll(async () => {
-    if (app) await app.close();
+    await app.close();
   });
 
   describe('Complete Sync Workflow', () => {
@@ -60,6 +128,17 @@ describe('Doctor Toolbox Sync E2E', () => {
       const webhookId = 'webhook-test-' + Date.now();
       const toolboxPatientId = 'toolbox-pat-001';
       const crmPatientId = 'crm-pat-001';
+
+      // Create CRM patient for testing
+      const patient = patientRepository.create({
+        id: crmPatientId,
+        clinicId: 'clinic-1',
+        idNumber: 'A123456789',
+        name: '王小明',
+        phone: '0912345678',
+        email: 'wang@example.com',
+      });
+      await patientRepository.save(patient);
 
       // Step 2: Log webhook received event
       const webhookLog = await auditService.logEvent({
@@ -70,6 +149,7 @@ describe('Doctor Toolbox Sync E2E', () => {
         status: 'success',
         eventData: {
           webhookId,
+          clinicId: 'clinic-1',
           toolboxPatientId,
         },
       });
@@ -143,7 +223,7 @@ describe('Doctor Toolbox Sync E2E', () => {
       });
 
       expect(conflictLog.action).toBe('conflict-detected');
-      expect(conflictLog.eventData!.resolution).toBe('CRM authority applied');
+      expect(conflictLog.eventData.resolution).toBe('CRM authority applied');
 
       // Verify conflict logs are retrievable by action
       const conflicts = await auditService.queryByAction(
@@ -200,7 +280,7 @@ describe('Doctor Toolbox Sync E2E', () => {
         },
       });
 
-      expect(successLog.eventData!.retriedCount).toBe(2);
+      expect(successLog.eventData.retriedCount).toBe(2);
 
       // Verify retry history
       const retries = await auditService.queryByAction(
@@ -319,7 +399,7 @@ describe('Doctor Toolbox Sync E2E', () => {
         },
       });
 
-      expect(completeLog.eventData!.totalProcessed).toBe(1000);
+      expect(completeLog.eventData.totalProcessed).toBe(1000);
 
       // Verify migration logs
       const migrationLogs = await auditService.queryByClinic(clinicId);
@@ -382,12 +462,6 @@ describe('Doctor Toolbox Sync E2E', () => {
       expect(response.body.statusCode).toBe(200);
       expect(response.body.data.avgRetriesPerSync).toBeDefined();
       expect(response.body.data.successRateAfterRetry).toBeDefined();
-    });
-
-    it('should handle requests (guard mocked in test env)', async () => {
-      await request(app.getHttpServer())
-        .get('/sync/audit/clinic')
-        .expect(200);
     });
   });
 

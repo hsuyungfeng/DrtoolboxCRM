@@ -3,9 +3,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Patient } from '../patients/entities/patient.entity';
 import { PatientsModule } from '../patients/patients.module';
 import { SyncPatientIndex } from './entities/sync-patient-index.entity';
+import { SyncOutboundLog } from './entities/sync-outbound-log.entity';
 import { MigrationProgress } from './entities/migration-progress.entity';
+import { ReconciliationReport } from './entities/reconciliation-report.entity';
 import { SyncAuditLog } from '../common/entities/sync-audit-log.entity';
 import { SyncPatientService } from './services/sync-patient.service';
+import { SyncOutboundService } from './services/sync-outbound.service';
 import { RetryService } from './services/retry.service';
 import { SyncIndexService } from './services/sync-index.service';
 import { BulkExportService } from './services/bulk-export.service';
@@ -14,6 +17,8 @@ import { SyncAuditService } from './services/sync-audit.service';
 import { SyncMonitoringService } from './services/sync-monitoring.service';
 import { MigrationController } from './controllers/migration.controller';
 import { SyncAuditController } from './controllers/sync-audit.controller';
+import { SyncWebhookController } from './controllers/sync-webhook.controller';
+import { SyncOutboundListener } from './listeners/sync-outbound.listener';
 
 /**
  * DoctorToolboxSyncModule
@@ -35,23 +40,28 @@ import { SyncAuditController } from './controllers/sync-audit.controller';
     TypeOrmModule.forFeature([
       Patient,
       SyncPatientIndex,
+      SyncOutboundLog,
       MigrationProgress,
+      ReconciliationReport,
       SyncAuditLog,
     ]),
   ],
-  controllers: [MigrationController, SyncAuditController],
+  controllers: [MigrationController, SyncAuditController, SyncWebhookController],
   providers: [
     SyncPatientService,
+    SyncOutboundService,
     RetryService,
     SyncIndexService,
     BulkExportService,
     MigrationProgressService,
     SyncAuditService,
     SyncMonitoringService,
+    SyncOutboundListener,
   ],
   exports: [
     TypeOrmModule,
     SyncPatientService,
+    SyncOutboundService,
     RetryService,
     SyncIndexService,
     SyncAuditService,

@@ -1,10 +1,12 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Repository, DataSource } from "typeorm";
 import Decimal from "decimal.js";
 import { RevenueRule } from "../entities/revenue-rule.entity";
 import { RevenueRecord } from "../entities/revenue-record.entity";
 import { Treatment } from "../../treatments/entities/treatment.entity";
+import { TreatmentCourse } from "../../treatments/entities/treatment-course.entity";
+import { TreatmentTemplate } from "../../treatment-templates/entities/treatment-template.entity";
 import { TreatmentSession } from "../../treatments/entities/treatment-session.entity";
 import { TreatmentStaffAssignment } from "../../staff/entities/treatment-staff-assignment.entity";
 import { Staff } from "../../staff/entities/staff.entity";
@@ -13,7 +15,8 @@ import { Staff } from "../../staff/entities/staff.entity";
 Decimal.set({ precision: 8, rounding: Decimal.ROUND_HALF_UP });
 
 export interface RevenueCalculationResult {
-  treatmentId: string;
+  treatmentId?: string;
+  treatmentCourseId?: string;
   sessionId?: string;
   staffId: string;
   role: string;
@@ -23,10 +26,10 @@ export interface RevenueCalculationResult {
 }
 
 export interface RevenueCalculationRequest {
-  treatmentId: string;
-  sessionId?: string; // 如果为空，计算整个疗程
+  treatmentId?: string;
+  treatmentCourseId?: string;
+  sessionId: string;
   clinicId: string;
-  calculationDate?: Date;
 }
 
 @Injectable()
@@ -38,6 +41,10 @@ export class RevenueCalculatorService {
     private revenueRuleRepository: Repository<RevenueRule>,
     @InjectRepository(Treatment)
     private treatmentRepository: Repository<Treatment>,
+    @InjectRepository(TreatmentCourse)
+    private treatmentCourseRepository: Repository<TreatmentCourse>,
+    @InjectRepository(TreatmentTemplate)
+    private templateRepository: Repository<TreatmentTemplate>,
     @InjectRepository(TreatmentSession)
     private treatmentSessionRepository: Repository<TreatmentSession>,
     @InjectRepository(TreatmentStaffAssignment)
@@ -46,370 +53,225 @@ export class RevenueCalculatorService {
     private revenueRecordRepository: Repository<RevenueRecord>,
     @InjectRepository(Staff)
     private staffRepository: Repository<Staff>,
+    private dataSource: DataSource,
   ) {}
 
   /**
-   * 计算单个疗程的分润
+   * 核心分潤計算邏輯：單次操作完成時觸發
    */
-  async calculateTreatmentRevenue(
-    request: RevenueCalculationRequest,
-  ): Promise<RevenueCalculationResult[]> {
-    this.logger.log(
-      `Calculating revenue for treatment ${request.treatmentId}, clinic ${request.clinicId}`,
-    );
-
-    const results: RevenueCalculationResult[] = [];
-    const calculationDate = request.calculationDate || new Date();
-
-    // 1. 获取疗程信息
-    const treatment = await this.treatmentRepository.findOne({
-      where: { id: request.treatmentId, clinicId: request.clinicId },
-      relations: ["staffAssignments", "staffAssignments.staff"],
+  async handleCompletedSession(sessionId: string): Promise<RevenueRecord[]> {
+    const session = await this.treatmentSessionRepository.findOne({
+      where: { id: sessionId },
+      relations: ["treatment", "treatmentCourse"],
     });
 
-    if (!treatment) {
-      throw new Error(
-        `Treatment ${request.treatmentId} not found in clinic ${request.clinicId}`,
-      );
+    if (!session) throw new Error(`TreatmentSession ${sessionId} not found`);
+    if (session.status !== "completed" && session.completionStatus !== "completed") {
+      this.logger.warn(`Session ${sessionId} is not marked as completed. Skipping calculation.`);
+      return [];
     }
 
-    // 2. 如果是单次session计算，获取session信息
-    let session: TreatmentSession | null = null;
-    if (request.sessionId) {
-      session = await this.treatmentSessionRepository.findOne({
-        where: {
-          id: request.sessionId,
-          treatmentId: request.treatmentId,
-          clinicId: request.clinicId,
-        },
+    const clinicId = session.clinicId;
+    const results: RevenueCalculationResult[] = [];
+
+    // 1. 確定所屬療程 (Treatment 或 TreatmentCourse)
+    let parent: any = session.treatment || session.treatmentCourse;
+    if (!parent && session.treatmentCourseId) {
+      parent = await this.treatmentCourseRepository.findOne({ where: { id: session.treatmentCourseId } });
+    }
+    
+    if (!parent) throw new Error(`No parent treatment found for session ${sessionId}`);
+
+    // 2. 獲取模板與自定義分潤
+    const templateId = parent.treatmentTemplateId || parent.templateId;
+    let customRules: any[] | null = null;
+    if (templateId) {
+      const template = await this.templateRepository.findOne({ where: { id: templateId } });
+      customRules = template?.customRevenueRules || null;
+    }
+
+    // 3. 計算基礎金額 (單次價格)
+    // 優先使用實體中的單次價格，若無則計算平均值
+    const totalAmount = new Decimal(parent.totalPrice || parent.purchaseAmount || 0);
+    const totalSessions = parent.totalSessions || 1;
+    const baseAmount = session.sessionPrice ? new Decimal(session.sessionPrice) : totalAmount.div(totalSessions);
+
+    // 4. 計算分潤
+    if (customRules && customRules.length > 0) {
+      // --- 使用模板指定的自定義分潤 ---
+      for (const rule of customRules) {
+        // rule 格式: { staffIdOrRole: string, ruleType: 'percentage' | 'fixed', value: number }
+        let staffId = rule.staffIdOrRole;
+        let staff: Staff | null = null;
+
+        // 🚨 Step 3: 處理動態角色 (dynamic_doctor, dynamic_therapist)
+        if (staffId === "dynamic_doctor" || staffId === "dynamic_therapist") {
+          const targetRole = staffId === "dynamic_doctor" ? "doctor" : "therapist";
+          
+          // 優先從 session.executedBy/executedRole 獲取
+          if (session.executedBy && session.executedRole === targetRole) {
+            staffId = session.executedBy;
+          } else {
+            // 如果 session 沒記，嘗試從該次 session 的 staffAssignments 中尋找匹配角色的第一個員工
+            const sessionAssignments = await this.dataSource
+              .getRepository("StaffAssignment")
+              .find({
+                where: { sessionId: session.id, staffRole: targetRole } as any,
+                relations: ["staff"] as any,
+              });
+            
+            if (sessionAssignments && sessionAssignments.length > 0) {
+              const sa = sessionAssignments[0] as any;
+              staffId = sa.staffId;
+              staff = sa.staff;
+            } else {
+              this.logger.warn(`Dynamic role ${staffId} not found for session ${sessionId}. Skipping.`);
+              continue;
+            }
+          }
+        }
+
+        if (!staff) {
+          staff = await this.staffRepository.findOne({ where: { id: staffId, clinicId } });
+        }
+
+        if (!staff) {
+          this.logger.warn(`Staff ${staffId} not found for revenue calculation in session ${sessionId}`);
+          continue;
+        }
+
+        const amount = this.calculateValue(baseAmount, rule.ruleType, rule.value);
+        results.push({
+          treatmentId: session.treatmentId,
+          treatmentCourseId: session.treatmentCourseId,
+          sessionId,
+          staffId: staff.id,
+          role: staff.role,
+          amount,
+          ruleId: `template-${templateId}`,
+          calculationDetails: {
+            source: 'template_custom_rule',
+            ruleType: rule.ruleType,
+            ruleValue: rule.value,
+            baseAmount: baseAmount.toNumber(),
+            dynamicRole: rule.staffIdOrRole.startsWith("dynamic_") ? rule.staffIdOrRole : undefined,
+          }
+        });
+      }
+    } else {
+      // --- 使用系統預設規則 (基於指派人員) ---
+      const assignments = await this.staffAssignmentRepository.find({
+        where: { treatmentId: session.treatmentId || session.treatmentCourseId },
+        relations: ["staff"],
       });
 
-      if (!session) {
-        throw new Error(
-          `TreatmentSession ${request.sessionId} not found for treatment ${request.treatmentId}`,
-        );
+      for (const assignment of assignments) {
+        const staff = assignment.staff;
+        const rule = await this.findActiveRule(staff.role, clinicId);
+        if (!rule) continue;
+
+        const amount = this.calculateAmountByRule(rule, baseAmount);
+        results.push({
+          treatmentId: session.treatmentId,
+          treatmentCourseId: session.treatmentCourseId,
+          sessionId,
+          staffId: staff.id,
+          role: staff.role,
+          amount,
+          ruleId: rule.id,
+          calculationDetails: {
+            source: 'global_rule',
+            ruleType: rule.ruleType,
+            baseAmount: baseAmount.toNumber(),
+          }
+        });
       }
     }
 
-    // 3. 获取疗程的所有员工分配
-    const assignments = await this.staffAssignmentRepository.find({
-      where: { treatmentId: request.treatmentId },
-      relations: ["staff"],
-    });
-
-    if (assignments.length === 0) {
-      this.logger.warn(
-        `No staff assignments found for treatment ${request.treatmentId}`,
-      );
-      return results;
-    }
-
-    // 4. 为每个员工计算分润
-    for (const assignment of assignments) {
-      const staff = assignment.staff;
-
-      // 获取该角色当前有效的分润规则
-      const activeRules = await this.revenueRuleRepository
-        .createQueryBuilder("rule")
-        .where("rule.clinicId = :clinicId", { clinicId: request.clinicId })
-        .andWhere("rule.role = :role", { role: staff.role })
-        .andWhere("rule.isActive = :isActive", { isActive: true })
-        .andWhere("rule.effectiveFrom <= :date", { date: calculationDate })
-        .andWhere("(rule.effectiveTo IS NULL OR rule.effectiveTo >= :date)", {
-          date: calculationDate,
-        })
-        .orderBy("rule.effectiveFrom", "DESC")
-        .getMany();
-
-      if (activeRules.length === 0) {
-        this.logger.warn(
-          `No active revenue rules found for role ${staff.role} in clinic ${request.clinicId}`,
-        );
-        continue;
-      }
-
-      // 使用最新的规则
-      const rule = activeRules[0];
-
-      // 5. 根据规则类型计算分润金额
-      const amount = this.calculateAmountByRule(
-        rule,
-        treatment,
-        session,
-        staff,
-      );
-
-      // 6. 创建计算结果
-      const result: RevenueCalculationResult = {
-        treatmentId: request.treatmentId,
-        sessionId: request.sessionId,
-        staffId: staff.id,
-        role: staff.role,
-        amount,
-        ruleId: rule.id,
-        calculationDetails: {
-          ruleType: rule.ruleType,
-          rulePayload: rule.rulePayload as Record<string, unknown>,
-          treatmentPrice: treatment.totalPrice,
-          sessionCount: treatment.totalSessions,
-          completedSessions: treatment.completedSessions,
-        },
-      };
-
-      results.push(result);
-    }
-
-    this.logger.log(
-      `Calculated revenue for ${results.length} staff members for treatment ${request.treatmentId}`,
-    );
-    return results;
+    // 5. 儲存記錄
+    return await this.createRevenueRecords(results, clinicId);
   }
 
   /**
-   * 根據規則類型計算金額（使用 Decimal 精確計算）
-   * @description 使用 decimal.js 進行精確的財務計算，避免浮點數精度問題
+   * 向後相容方法：處理療程完成事件
    */
-  private calculateAmountByRule(
-    rule: RevenueRule,
-    treatment: Treatment,
-    session: TreatmentSession | null,
-    _staff: Staff, // eslint-disable-line @typescript-eslint/no-unused-vars
-  ): number {
-    const { ruleType, rulePayload } = rule; // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-
-    // 使用 Decimal 進行精確計算
-    const totalPrice = new Decimal(treatment.totalPrice);
-    const totalSessions = new Decimal(treatment.totalSessions);
-
-    // 計算基礎金額（單次或整個療程）
-    const baseAmount = session
-      ? totalPrice.div(totalSessions) // 單次平均價格（精確除法）
-      : totalPrice; // 整個療程價格
-
-    switch (ruleType) {
-      case "percentage": {
-        // 百分比規則：rulePayload 包含 percentage 欄位
-        const percentageValue =
-          (rulePayload as { percentage: number })?.percentage || 0;
-
-        // 驗證百分比範圍（0-100%）
-        if (percentageValue < 0 || percentageValue > 100) {
-          this.logger.warn(
-            `Invalid percentage value: ${percentageValue}. Must be between 0 and 100.`,
-          );
-          return 0;
-        }
-
-        const percentage = new Decimal(percentageValue);
-        const result = baseAmount.mul(percentage).div(100);
-
-        // 四捨五入到小數點後 2 位（財務標準）
-        return result.toDecimalPlaces(2).toNumber();
-      }
-
-      case "fixed": {
-        // 固定金額規則：rulePayload 包含 amount 欄位
-        const fixedAmount = (rulePayload as { amount: number })?.amount || 0;
-
-        // 驗證金額不為負數
-        if (fixedAmount < 0) {
-          this.logger.warn(
-            `Invalid fixed amount: ${fixedAmount}. Must be non-negative.`,
-          );
-          return 0;
-        }
-
-        return new Decimal(fixedAmount).toDecimalPlaces(2).toNumber();
-      }
-
-      case "tiered": {
-        // 階梯式規則：rulePayload 包含 tiers 陣列
-        // 每個 tier 包含 threshold 和 percentage
-        const tiers =
-          (
-            rulePayload as {
-              tiers: Array<{ threshold: number; percentage: number }>;
-            }
-          )?.tiers || [];
-
-        if (tiers.length === 0) {
-          this.logger.warn("Tiered rule has no tiers defined.");
-          return 0;
-        }
-
-        let amount = new Decimal(0);
-        let previousThreshold = new Decimal(0);
-
-        for (const tier of tiers) {
-          // 驗證百分比範圍
-          if (tier.percentage < 0 || tier.percentage > 100) {
-            this.logger.warn(
-              `Invalid tier percentage: ${tier.percentage}. Skipping tier.`,
-            );
-            continue;
-          }
-
-          const threshold = new Decimal(tier.threshold);
-          const percentage = new Decimal(tier.percentage);
-
-          if (baseAmount.greaterThan(threshold)) {
-            // 計算此階梯的金額
-            const tierAmount = Decimal.min(baseAmount, threshold).minus(
-              previousThreshold,
-            );
-            amount = amount.plus(tierAmount.mul(percentage).div(100));
-            previousThreshold = threshold;
-          } else {
-            // 最後一個適用的階梯
-            const tierAmount = baseAmount.minus(previousThreshold);
-            amount = amount.plus(tierAmount.mul(percentage).div(100));
-            break;
-          }
-        }
-
-        // 四捨五入到小數點後 2 位
-        return amount.toDecimalPlaces(2).toNumber();
-      }
-
-      default:
-        this.logger.warn(`Unknown rule type: ${ruleType}`);
-        return 0;
-    }
+  async handleCompletedTreatment(treatmentId: string): Promise<RevenueRecord[]> {
+    this.logger.log(`Handling completed treatment ${treatmentId} (Legacy)`);
+    // 目前邏輯主要基於 Session 完成，若 Treatment 整體完成，可能需要不同的計算邏輯
+    // 這裡暫時返回空，或根據需求實現整體分潤
+    return [];
   }
 
   /**
-   * 创建分润记录
+   * 向後相容方法：通用計算入口
+   */
+  async calculateAndCreateRecords(request: any): Promise<RevenueRecord[]> {
+    if (request.sessionId) {
+      return this.handleCompletedSession(request.sessionId);
+    }
+    if (request.treatmentId) {
+      return this.handleCompletedTreatment(request.treatmentId);
+    }
+    return [];
+  }
+
+  private calculateValue(base: Decimal, type: string, value: number): number {
+    if (type === 'percentage') {
+      return base.mul(value).div(100).toDecimalPlaces(2).toNumber();
+    }
+    return new Decimal(value).toDecimalPlaces(2).toNumber();
+  }
+
+  private async findActiveRule(role: string, clinicId: string): Promise<RevenueRule | null> {
+    const activeRules = await this.revenueRuleRepository.find({
+      where: { clinicId, role, isActive: true },
+      order: { effectiveFrom: "DESC" },
+    });
+    return activeRules.length > 0 ? activeRules[0] : null;
+  }
+
+  /**
+   * 根據規則類型計算金額 (輔助方法)
+   */
+  private calculateAmountByRule(rule: RevenueRule, baseAmount: Decimal): number {
+    const { ruleType, rulePayload } = rule;
+    const payload = rulePayload as any;
+
+    if (ruleType === "percentage") {
+      return baseAmount.mul(payload.percentage || 0).div(100).toDecimalPlaces(2).toNumber();
+    } else if (ruleType === "fixed") {
+      return new Decimal(payload.amount || 0).toDecimalPlaces(2).toNumber();
+    }
+    return 0;
+  }
+
+  /**
+   * 建立分潤記錄
    */
   async createRevenueRecords(
-    calculationResults: RevenueCalculationResult[],
+    results: RevenueCalculationResult[],
+    clinicId: string
   ): Promise<RevenueRecord[]> {
     const records: RevenueRecord[] = [];
 
-    for (const result of calculationResults) {
+    for (const result of results) {
       const record = this.revenueRecordRepository.create({
         treatmentId: result.treatmentId,
-        treatmentSessionId: result.sessionId || null,
+        treatmentSessionId: result.sessionId,
         staffId: result.staffId,
         role: result.role,
         amount: result.amount,
         ruleId: result.ruleId,
         calculationDetails: result.calculationDetails,
         calculatedAt: new Date(),
-        clinicId: await this.getClinicIdFromTreatment(result.treatmentId),
-        calculationType: result.sessionId ? "session" : "treatment",
+        clinicId: clinicId,
+        calculationType: "session",
         status: "calculated",
-        lockedAt: null,
-        paidAt: null,
       });
 
       const savedRecord = await this.revenueRecordRepository.save(record);
       records.push(savedRecord);
     }
-
-    this.logger.log(`Created ${records.length} revenue records`);
     return records;
-  }
-
-  /**
-   * 锁定分润记录（财务锁定）
-   */
-  async lockRevenueRecord(recordId: string): Promise<RevenueRecord> {
-    const record = await this.revenueRecordRepository.findOne({
-      where: { id: recordId },
-    });
-
-    if (!record) {
-      throw new Error(`RevenueRecord ${recordId} not found`);
-    }
-
-    if (record.lockedAt) {
-      throw new Error(
-        `RevenueRecord ${recordId} is already locked at ${record.lockedAt.toISOString()}`,
-      );
-    }
-
-    record.lockedAt = new Date();
-    return await this.revenueRecordRepository.save(record);
-  }
-
-  /**
-   * 计算并创建分润记录
-   */
-  async calculateAndCreateRecords(
-    request: RevenueCalculationRequest,
-  ): Promise<RevenueRecord[]> {
-    const results = await this.calculateTreatmentRevenue(request);
-    return await this.createRevenueRecords(results);
-  }
-
-  /**
-   * 自动处理完成疗程的分润计算
-   */
-  async handleCompletedTreatment(
-    treatmentId: string,
-  ): Promise<RevenueRecord[]> {
-    const treatment = await this.treatmentRepository.findOne({
-      where: { id: treatmentId },
-    });
-
-    if (!treatment) {
-      throw new Error(`Treatment ${treatmentId} not found`);
-    }
-
-    if (treatment.status !== "completed") {
-      throw new Error(
-        `Treatment ${treatmentId} is not completed (status: ${treatment.status})`,
-      );
-    }
-
-    const request: RevenueCalculationRequest = {
-      treatmentId,
-      clinicId: treatment.clinicId,
-      calculationDate: new Date(),
-    };
-
-    return await this.calculateAndCreateRecords(request);
-  }
-
-  /**
-   * 自动处理完成疗次的分润计算
-   */
-  async handleCompletedSession(sessionId: string): Promise<RevenueRecord[]> {
-    const session = await this.treatmentSessionRepository.findOne({
-      where: { id: sessionId },
-      relations: ["treatment"],
-    });
-
-    if (!session) {
-      throw new Error(`TreatmentSession ${sessionId} not found`);
-    }
-
-    if (session.status !== "completed") {
-      throw new Error(
-        `TreatmentSession ${sessionId} is not completed (status: ${session.status})`,
-      );
-    }
-
-    const request: RevenueCalculationRequest = {
-      treatmentId: session.treatmentId,
-      sessionId,
-      clinicId: session.clinicId,
-      calculationDate: new Date(),
-    };
-
-    return await this.calculateAndCreateRecords(request);
-  }
-
-  private async getClinicIdFromTreatment(treatmentId: string): Promise<string> {
-    const treatment = await this.treatmentRepository.findOne({
-      where: { id: treatmentId },
-      select: ["clinicId"],
-    });
-
-    if (!treatment) {
-      throw new Error(`Treatment ${treatmentId} not found`);
-    }
-
-    return treatment.clinicId;
   }
 }

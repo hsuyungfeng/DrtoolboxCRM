@@ -74,8 +74,8 @@ export class SyncPatientIndex {
    * - failed: 同步失敗
    */
   @Column({
-    type: 'enum',
-    enum: SyncStatus,
+    type: 'varchar',
+    length: 20,
     default: SyncStatus.PENDING,
   })
   syncStatus: SyncStatus;

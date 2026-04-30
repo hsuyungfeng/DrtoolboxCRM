@@ -13,11 +13,19 @@ import { TreatmentSessionService } from "../services/treatment-session.service";
 import { CreateTreatmentSessionDto } from "../dto/create-treatment-session.dto";
 import { UpdateTreatmentSessionDto } from "../dto/update-treatment-session.dto";
 
+import { ClinicScoped } from "../../common/decorators/clinic-scoped.decorator";
+
 @Controller("treatment-sessions")
+@ClinicScoped()
 export class TreatmentSessionController {
   constructor(
     private readonly treatmentSessionService: TreatmentSessionService,
   ) {}
+
+  @Get()
+  findAll(@Query("clinicId") clinicId: string) {
+    return this.treatmentSessionService.findAllByClinic(clinicId);
+  }
 
   @Post()
   create(@Body() createTreatmentSessionDto: CreateTreatmentSessionDto) {

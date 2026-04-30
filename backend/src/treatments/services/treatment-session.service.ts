@@ -119,6 +119,12 @@ export class TreatmentSessionService {
       if (updateDto.patientFeedback !== undefined) {
         session.patientFeedback = updateDto.patientFeedback;
       }
+      if (updateDto.executedBy !== undefined) {
+        session.executedBy = updateDto.executedBy;
+      }
+      if (updateDto.executedRole !== undefined) {
+        session.executedRole = updateDto.executedRole;
+      }
 
       session.completionStatus = "completed";
 

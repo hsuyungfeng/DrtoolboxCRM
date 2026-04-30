@@ -10,7 +10,7 @@ export const treatmentCoursesApi = {
    * 取得患者的所有療程套餐
    */
   getPatientCourses: (patientId: string, clinicId: string) =>
-    http.get<TreatmentCourse[]>('/treatments/courses', {
+    http.get<TreatmentCourse[]>('/treatment-courses', {
       params: {
         patientId,
         clinicId,
@@ -21,7 +21,7 @@ export const treatmentCoursesApi = {
    * 取得特定療程套餐詳細資訊
    */
   getCourse: (courseId: string, clinicId: string) =>
-    http.get<TreatmentCourse>(`/treatments/courses/${courseId}`, {
+    http.get<TreatmentCourse>(`/treatment-courses/${courseId}`, {
       params: {
         clinicId,
       },
@@ -35,7 +35,7 @@ export const treatmentCoursesApi = {
     templateId: string;
     clinicId: string;
     pointsToRedeem?: number;
-  }) => http.post<TreatmentCourse>('/treatments/courses', data),
+  }) => http.post<TreatmentCourse>('/treatment-courses', data),
 
   /**
    * 更新療程會話
@@ -54,7 +54,7 @@ export const treatmentCoursesApi = {
     },
     clinicId: string
   ) =>
-    http.put<TreatmentCourseSession>(`/treatments/sessions/${sessionId}`, data, {
+    http.put<TreatmentCourseSession>(`/treatment-sessions/${sessionId}`, data, {
       params: {
         clinicId,
       },
@@ -64,7 +64,7 @@ export const treatmentCoursesApi = {
    * 取得所有可用的療程模板
    */
   getTemplates: (clinicId: string) =>
-    http.get<TreatmentTemplate[]>('/treatments/templates', {
+    http.get<TreatmentTemplate[]>('/treatment-templates', {
       params: {
         clinicId,
       },
@@ -82,7 +82,7 @@ export const treatmentCoursesApi = {
       endDate?: string;
     }
   ) =>
-    http.get<TreatmentCourseSession[]>(`/staff/${staffId}/sessions`, {
+    http.get<TreatmentCourseSession[]>(`/staff-sessions/${staffId}/sessions`, {
       params: {
         clinicId,
         ...filters,
@@ -92,43 +92,43 @@ export const treatmentCoursesApi = {
 
 export const treatmentSessionApi = {
   getAll: (clinicId: string) =>
-    http.get<TreatmentSession[]>('/treatments/sessions', {
+    http.get<TreatmentSession[]>('/treatment-sessions', {
       params: { clinicId },
     }),
 
   getById: (id: string, clinicId: string) =>
-    http.get<TreatmentSession>(`/treatments/sessions/${id}`, {
+    http.get<TreatmentSession>(`/treatment-sessions/${id}`, {
       params: { clinicId },
     }),
 
   create: (data: Partial<TreatmentSession>) =>
-    http.post<TreatmentSession>('/treatments/sessions', data),
+    http.post<TreatmentSession>('/treatment-sessions', data),
 
   update: (id: string, data: Partial<TreatmentSession>) =>
-    http.put<TreatmentSession>(`/treatments/sessions/${id}`, data),
+    http.put<TreatmentSession>(`/treatment-sessions/${id}`, data),
 
   delete: (id: string, clinicId: string) =>
-    http.delete(`/treatments/sessions/${id}`, {
+    http.delete(`/treatment-sessions/${id}`, {
       params: { clinicId },
     }),
 };
 
 /**
  * 療程管理 API（供 TreatmentList / TreatmentDetail 使用）
- * 對應後端 /treatments/courses CRUD 端點
+ * 對應後端 /treatment-courses CRUD 端點
  */
 export const treatmentsApi = {
   /**
    * 取得所有療程（含患者資訊）
    */
   getTreatments: (params?: { clinicId?: string; patientId?: string; status?: string }) =>
-    http.get<Treatment[]>('/treatments/courses', { params }),
+    http.get<Treatment[]>('/treatment-courses', { params }),
 
   /**
    * 取得單一療程詳情
    */
   getTreatment: (id: string, params?: { clinicId?: string }) =>
-    http.get<TreatmentCourse>(`/treatments/courses/${id}`, { params }),
+    http.get<TreatmentCourse>(`/treatment-courses/${id}`, { params }),
 
   /**
    * 建立新療程（基於範本選擇）
@@ -138,7 +138,7 @@ export const treatmentsApi = {
     templateId: string;
     clinicId: string;
     pointsToRedeem?: number;
-  }) => http.post<TreatmentCourse>('/treatments/courses', data),
+  }) => http.post<TreatmentCourse>('/treatment-courses', data),
 
   /**
    * 更新療程資訊
@@ -153,48 +153,18 @@ export const treatmentsApi = {
       description?: string;
       status?: string;
     },
-  ) => http.patch<TreatmentCourse>(`/treatments/courses/${id}`, data),
+  ) => http.patch<TreatmentCourse>(`/treatment-courses/${id}`, data),
 
   /**
    * 刪除療程
    */
-  deleteTreatment: (id: string) => http.delete(`/treatments/courses/${id}`),
+  deleteTreatment: (id: string) => http.delete(`/treatment-courses/${id}`),
 
   /**
    * 標記課程為完成
    */
   completeSession: (sessionId: string) =>
-    http.patch<TreatmentCourseSession>(`/treatments/sessions/${sessionId}/complete`, {}),
-};
-
-/**
- * 療程員工分配 API
- * 預留端點用於管理治療和員工之間的關聯
- */
-export const treatmentStaffAssignmentApi = {
-  /**
-   * 為療程添加員工分配
-   */
-  addStaffAssignment: (treatmentId: string, data: { staffId: string; role: string; revenuePercentage?: number }) =>
-    http.post(`/treatments/${treatmentId}/staff-assignments`, data),
-
-  /**
-   * 取得療程的所有員工分配
-   */
-  getStaffAssignments: (treatmentId: string) =>
-    http.get(`/treatments/${treatmentId}/staff-assignments`),
-
-  /**
-   * 更新員工分配
-   */
-  updateStaffAssignment: (treatmentId: string, assignmentId: string, data: Partial<{ role: string; revenuePercentage: number }>) =>
-    http.put(`/treatments/${treatmentId}/staff-assignments/${assignmentId}`, data),
-
-  /**
-   * 刪除員工分配
-   */
-  removeStaffAssignment: (treatmentId: string, assignmentId: string) =>
-    http.delete(`/treatments/${treatmentId}/staff-assignments/${assignmentId}`),
+    http.patch<TreatmentCourseSession>(`/treatment-sessions/${sessionId}/complete`, {}),
 };
 
 export default treatmentCoursesApi;

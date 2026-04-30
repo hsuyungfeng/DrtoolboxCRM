@@ -3,9 +3,10 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { Treatment } from "../entities/treatment.entity";
-import { TreatmentStaffAssignment } from "../../staff/entities/treatment-staff-assignment.entity";
 import { CreateTreatmentDto } from "../dto/create-treatment.dto";
 import { UpdateTreatmentDto } from "../dto/update-treatment.dto";
+import { AttributeService } from "../../common/attributes/services/attribute.service";
+import { AttributeTarget } from "../../common/attributes/entities/attribute-definition.entity";
 
 @Injectable()
 export class TreatmentService {
@@ -14,45 +15,27 @@ export class TreatmentService {
   constructor(
     @InjectRepository(Treatment)
     private treatmentRepository: Repository<Treatment>,
-    @InjectRepository(TreatmentStaffAssignment)
-    private staffAssignmentRepository: Repository<TreatmentStaffAssignment>,
+    private attributeService: AttributeService,
     private eventEmitter: EventEmitter2,
   ) {}
 
   async create(createTreatmentDto: CreateTreatmentDto): Promise<Treatment> {
-    const { staffAssignments, ...treatmentData } = createTreatmentDto;
-    const treatment = this.treatmentRepository.create(treatmentData);
-    const savedTreatment = await this.treatmentRepository.save(treatment);
-
-    // 創建員工分配
-    if (staffAssignments && staffAssignments.length > 0) {
-      for (const assignment of staffAssignments) {
-        const staffAssignment = this.staffAssignmentRepository.create({
-          treatmentId: savedTreatment.id,
-          staffId: assignment.staffId,
-          role: assignment.role,
-          revenuePercentage: assignment.revenuePercentage || 0,
-          isActive: true,
-        });
-        await this.staffAssignmentRepository.save(staffAssignment);
-      }
-    }
-
-    // 發送 treatment.created 事件
-    try {
-      this.eventEmitter.emit("treatment.created", {
-        treatmentId: savedTreatment.id,
-        patientId: savedTreatment.patientId,
-        clinicId: savedTreatment.clinicId,
-        staffAssignments: staffAssignments?.length || 0,
-      });
-    } catch (error) {
-      this.logger.warn(
-        `Failed to emit treatment.created event: ${error.message}`,
+    // 驗證自定義欄位
+    if (createTreatmentDto.customFields) {
+      await this.attributeService.validateCustomFields(
+        createTreatmentDto.clinicId,
+        AttributeTarget.TREATMENT,
+        createTreatmentDto.customFields,
       );
     }
 
-    return await this.findOne(savedTreatment.id);
+    const treatment = this.treatmentRepository.create(createTreatmentDto);
+    const savedTreatment = await this.treatmentRepository.save(treatment);
+
+    // 發送 treatment.created 事件
+    this.emitEvent("treatment.created", savedTreatment);
+
+    return savedTreatment;
   }
 
   async findAll(clinicId: string): Promise<Treatment[]> {
@@ -81,15 +64,49 @@ export class TreatmentService {
     updateTreatmentDto: UpdateTreatmentDto,
   ): Promise<Treatment> {
     const treatment = await this.findOne(id);
+
+    // 驗證自定義欄位
+    if (updateTreatmentDto.customFields) {
+      await this.attributeService.validateCustomFields(
+        treatment.clinicId,
+        AttributeTarget.TREATMENT,
+        updateTreatmentDto.customFields,
+      );
+    }
+
     Object.assign(treatment, updateTreatmentDto);
-    return await this.treatmentRepository.save(treatment);
+    const savedTreatment = await this.treatmentRepository.save(treatment);
+
+    // 發送事件
+    this.emitEvent("treatment.updated", savedTreatment);
+
+    return savedTreatment;
   }
 
   async remove(id: string): Promise<void> {
     const treatment = await this.findOne(id);
     // 软删除：将状态标记为 cancelled
     treatment.status = "cancelled";
-    await this.treatmentRepository.save(treatment);
+    const savedTreatment = await this.treatmentRepository.save(treatment);
+
+    // 發送事件
+    this.emitEvent("treatment.deleted", savedTreatment);
+  }
+
+  /**
+   * 發送事件助手方法
+   */
+  private emitEvent(eventName: string, treatment: Treatment) {
+    try {
+      this.eventEmitter.emit(eventName, {
+        treatmentId: treatment.id,
+        patientId: treatment.patientId,
+        clinicId: treatment.clinicId,
+        data: treatment,
+      });
+    } catch (error) {
+      this.logger.warn(`Failed to emit ${eventName} event: ${error.message}`);
+    }
   }
 
   async findByPatientId(patientId: string): Promise<Treatment[]> {
@@ -107,6 +124,7 @@ export class TreatmentService {
     const treatment = await this.findOne(id);
     treatment.completedSessions = completedSessions;
 
+    // 如果完成次数等于总次数，自动更新状态为 completed
     if (treatment.completedSessions >= treatment.totalSessions) {
       treatment.status = "completed";
       treatment.actualEndDate = new Date();
@@ -115,63 +133,5 @@ export class TreatmentService {
     }
 
     return await this.treatmentRepository.save(treatment);
-  }
-
-  // 員工分配方法
-  async addStaffAssignment(
-    treatmentId: string,
-    assignmentData: { staffId: string; role: string; revenuePercentage?: number },
-  ): Promise<TreatmentStaffAssignment> {
-    await this.findOne(treatmentId); // 驗證治療存在
-
-    const assignment = this.staffAssignmentRepository.create({
-      treatmentId,
-      staffId: assignmentData.staffId,
-      role: assignmentData.role,
-      revenuePercentage: assignmentData.revenuePercentage || 0,
-      isActive: true,
-    });
-
-    return await this.staffAssignmentRepository.save(assignment);
-  }
-
-  async getStaffAssignments(treatmentId: string): Promise<TreatmentStaffAssignment[]> {
-    return await this.staffAssignmentRepository.find({
-      where: { treatmentId, isActive: true },
-      relations: ["staff"],
-    });
-  }
-
-  async removeStaffAssignment(
-    treatmentId: string,
-    assignmentId: string,
-  ): Promise<void> {
-    const assignment = await this.staffAssignmentRepository.findOne({
-      where: { id: assignmentId, treatmentId },
-    });
-
-    if (!assignment) {
-      throw new NotFoundException(`Staff assignment ${assignmentId} not found`);
-    }
-
-    assignment.isActive = false;
-    await this.staffAssignmentRepository.save(assignment);
-  }
-
-  async updateStaffAssignment(
-    treatmentId: string,
-    assignmentId: string,
-    updateData: { role?: string; revenuePercentage?: number },
-  ): Promise<TreatmentStaffAssignment> {
-    const assignment = await this.staffAssignmentRepository.findOne({
-      where: { id: assignmentId, treatmentId },
-    });
-
-    if (!assignment) {
-      throw new NotFoundException(`Staff assignment ${assignmentId} not found`);
-    }
-
-    Object.assign(assignment, updateData);
-    return await this.staffAssignmentRepository.save(assignment);
   }
 }

@@ -8,6 +8,7 @@ import {
   ManyToOne,
   OneToMany,
   JoinColumn,
+  Index,
 } from "typeorm";
 import { Patient } from "../../patients/entities/patient.entity";
 import { TreatmentSession } from "./treatment-session.entity";
@@ -63,6 +64,10 @@ export class Treatment {
 
   @Column({ type: "decimal", precision: 20, scale: 2, nullable: true })
   finalPrice: number; // 最終價格 (totalPrice - pointsRedeemed)
+
+  @Column({ type: 'simple-json', nullable: true })
+  @Index({ fulltext: true })
+  customFields?: Record<string, any>;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -31,6 +31,7 @@ export interface Patient {
   emergencyContactName?: string;
   emergencyContactPhone?: string;
   clinicId: string;
+  customFields?: Record<string, any>;
   createdAt: string;
   updatedAt?: string;
 }
@@ -69,6 +70,7 @@ export interface Treatment {
   actualEndDate?: string;
   notes?: string;
   clinicId: string;
+  customFields?: Record<string, any>;
   createdAt: string;
   updatedAt?: string;
 }
@@ -252,6 +254,7 @@ export interface TreatmentCourse {
   actualPayment: string | number;
   completedAt?: string;
   clinicId: string;
+  customFields?: Record<string, any>;
   sessions?: TreatmentCourseSession[];
   createdAt: string;
   updatedAt?: string;

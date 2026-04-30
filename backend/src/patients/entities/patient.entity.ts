@@ -91,6 +91,10 @@ export class Patient {
   @Column({ type: "varchar", length: 50, default: "active" })
   status: string; // active | inactive | blocked
 
+  @Column({ type: 'simple-json', nullable: true })
+  @Index({ fulltext: true })
+  customFields?: Record<string, any>;
+
   // 時間戳
   @CreateDateColumn()
   createdAt: Date;

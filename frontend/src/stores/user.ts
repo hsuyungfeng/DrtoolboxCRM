@@ -1,113 +1,117 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import type { User } from '@/types';
+import { authApi } from '@/services/api';
 
 const CLINIC_ID_STORAGE_KEY = 'crm_clinic_id';
 const CLINIC_IDS_KEY = 'crm_clinic_ids';
+const INTEGRATED_MODE_KEY = 'crm_integrated_mode';
+const TOKEN_KEY = 'token';
 
 export const useUserStore = defineStore('user', () => {
   const user = ref<User | null>(null);
-  const token = ref<string | null>(localStorage.getItem('token'));
+  const token = ref<string | null>(localStorage.getItem(TOKEN_KEY));
   const clinicId = ref<string | null>(localStorage.getItem(CLINIC_ID_STORAGE_KEY));
+  const isIntegrated = ref<boolean>(localStorage.getItem(INTEGRATED_MODE_KEY) === 'true');
   const availableClinics = ref<Array<{ id: string; name: string }>>([]);
 
-  const isAuthenticated = computed(() => !!token.value && !!user.value);
-  const getUserRole = computed(() => user.value?.role || null);
-  const getClinicId = computed(() => {
-    if (!clinicId.value && user.value?.clinicId) {
-      clinicId.value = user.value.clinicId;
+  // 初始化邏輯：如果是在整合模式，確保 User 物件存在
+  const initUser = () => {
+    if (isIntegrated.value && !user.value) {
+      user.value = {
+        id: 'integrated-user',
+        username: 'app_user',
+        name: '整合模式',
+        role: 'admin',
+        clinicId: clinicId.value || 'clinic_001',
+      } as any;
+      if (!token.value) {
+        token.value = 'app-integrated-token';
+        localStorage.setItem(TOKEN_KEY, 'app-integrated-token');
+      }
     }
-    return clinicId.value;
+  };
+
+  // 執行初始化
+  initUser();
+
+  const isAuthenticated = computed(() => isIntegrated.value || (!!token.value && !!user.value));
+  
+  const getUserRole = computed(() => {
+    if (user.value?.role) return user.value.role;
+    if (isIntegrated.value) return 'admin';
+    return null;
   });
-
-  const hasMultipleClinics = computed(() => availableClinics.value.length > 1);
-
-  function validateClinicId(id: string): boolean {
-    if (!id) return false;
-    if (user.value?.role === 'super_admin') return true;
-    if (availableClinics.value.length > 0) {
-      return availableClinics.value.some(c => c.id === id);
-    }
-    return id === user.value?.clinicId;
-  }
+  
+  const getClinicId = computed(() => {
+    return clinicId.value || localStorage.getItem(CLINIC_ID_STORAGE_KEY) || 'clinic_001';
+  });
 
   function setUser(userData: User) {
     user.value = userData;
     if (userData.clinicId) {
-      if (!clinicId.value) {
-        clinicId.value = userData.clinicId;
-        localStorage.setItem(CLINIC_ID_STORAGE_KEY, userData.clinicId);
-      }
-      availableClinics.value = [{ id: userData.clinicId, name: userData.clinicName || '預設診所' }];
-      localStorage.setItem(CLINIC_IDS_KEY, JSON.stringify(availableClinics.value));
+      setClinicId(userData.clinicId);
     }
   }
 
   function setToken(newToken: string) {
     token.value = newToken;
-    localStorage.setItem('token', newToken);
+    localStorage.setItem(TOKEN_KEY, newToken);
   }
 
   function setClinicId(id: string) {
-    if (!validateClinicId(id)) {
-      console.error(`Invalid clinic ID: ${id}`);
-      return;
-    }
     clinicId.value = id;
     localStorage.setItem(CLINIC_ID_STORAGE_KEY, id);
   }
 
-  function switchClinic(id: string) {
-    if (!validateClinicId(id)) {
-      throw new Error('無權限訪問此診所');
-    }
-    setClinicId(id);
+  function setIntegratedMode(value: boolean) {
+    isIntegrated.value = value;
+    localStorage.setItem(INTEGRATED_MODE_KEY, value.toString());
+    initUser();
   }
 
   function logout() {
     user.value = null;
     token.value = null;
     clinicId.value = null;
+    isIntegrated.value = false;
     availableClinics.value = [];
-    localStorage.removeItem('token');
+    localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(CLINIC_ID_STORAGE_KEY);
     localStorage.removeItem(CLINIC_IDS_KEY);
+    localStorage.removeItem(INTEGRATED_MODE_KEY);
   }
 
   async function login(credentials: { username: string; password: string; clinicId: string }) {
-    const mockUser: User = {
-      id: '1',
-      username: credentials.username,
-      name: '管理員',
-      role: 'admin',
-      clinicId: credentials.clinicId,
-      clinicName: '示範診所',
-      email: 'admin@example.com',
-      createdAt: new Date().toISOString(),
-    };
+    const response = await authApi.login(credentials);
+    setIntegratedMode(false);
+    setToken(response.accessToken);
+    setUser(response.user);
+    return response.user;
+  }
 
-    setUser(mockUser);
-    setToken('mock-jwt-token');
-    setClinicId(credentials.clinicId);
-
-    return mockUser;
+  async function loginViaSSO(params: { clinicId: string; staffId: string; ts: string; sig: string; name?: string; role?: string }) {
+    const response = await authApi.sso(params);
+    setIntegratedMode(false);
+    setToken(response.accessToken);
+    setUser(response.user);
+    return response.user;
   }
 
   return {
     user,
     token,
     clinicId,
-    availableClinics,
+    isIntegrated,
     isAuthenticated,
     getUserRole,
     getClinicId,
-    hasMultipleClinics,
-    validateClinicId,
     setUser,
     setToken,
     setClinicId,
-    switchClinic,
+    setIntegratedMode,
     logout,
     login,
+    loginViaSSO,
   };
 });

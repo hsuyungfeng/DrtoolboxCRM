@@ -8,11 +8,16 @@ import {
   Delete,
   Query,
   Patch,
+  UseGuards,
 } from "@nestjs/common";
 import { TreatmentService } from "../services/treatment.service";
 import { CreateTreatmentDto } from "../dto/create-treatment.dto";
 import { UpdateTreatmentDto } from "../dto/update-treatment.dto";
+import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
+import { ClinicScoped } from "../../common/decorators/clinic-scoped.decorator";
 
+@UseGuards(JwtAuthGuard)
+@ClinicScoped()
 @Controller("treatments")
 export class TreatmentController {
   constructor(private readonly treatmentService: TreatmentService) {}
@@ -56,36 +61,5 @@ export class TreatmentController {
   @Delete(":id")
   remove(@Param("id") id: string) {
     return this.treatmentService.remove(id);
-  }
-
-  // 員工分配 API 端點 (API 預留)
-  @Post(":id/staff-assignments")
-  async addStaffAssignment(
-    @Param("id") treatmentId: string,
-    @Body() assignmentData: any,
-  ) {
-    return this.treatmentService.addStaffAssignment(treatmentId, assignmentData);
-  }
-
-  @Get(":id/staff-assignments")
-  async getStaffAssignments(@Param("id") treatmentId: string) {
-    return this.treatmentService.getStaffAssignments(treatmentId);
-  }
-
-  @Delete(":id/staff-assignments/:assignmentId")
-  async removeStaffAssignment(
-    @Param("id") treatmentId: string,
-    @Param("assignmentId") assignmentId: string,
-  ) {
-    return this.treatmentService.removeStaffAssignment(treatmentId, assignmentId);
-  }
-
-  @Put(":id/staff-assignments/:assignmentId")
-  async updateStaffAssignment(
-    @Param("id") treatmentId: string,
-    @Param("assignmentId") assignmentId: string,
-    @Body() updateData: any,
-  ) {
-    return this.treatmentService.updateStaffAssignment(treatmentId, assignmentId, updateData);
   }
 }

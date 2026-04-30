@@ -31,6 +31,25 @@ export class TreatmentTemplate {
   @Column({ type: "boolean", default: true })
   isActive: boolean;
 
+  @Column({ type: "simple-json", nullable: true })
+  customMedicalOrders: Array<{
+    code: string;
+    nameEn: string;
+    nameZh: string;
+    points: number;
+    paymentType: "self-pay" | "nhi";
+  }>;
+
+  @Column({ type: "simple-json", nullable: true })
+  customRevenueRules: Array<{
+    staffIdOrRole: string;
+    ruleType: "percentage" | "fixed";
+    value: number;
+  }>;
+
+  @Column({ type: "int", nullable: true })
+  followUpIntervalDays: number;
+
   @CreateDateColumn()
   createdAt: Date;
 

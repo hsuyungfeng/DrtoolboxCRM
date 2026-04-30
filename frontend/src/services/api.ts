@@ -17,16 +17,19 @@ const createApiInstance = (): AxiosInstance => {
   instance.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
       const userStore = useUserStore();
-      
-      // 添加認證 token
+
+      // 1. 添加受信任整合金鑰 (Local Net / App Integration)
+      const trustedAppKey = import.meta.env.VITE_TRUSTED_APP_KEY || 'drtoolbox_local_secret_2026';
+      config.headers['X-App-Key'] = trustedAppKey;
+
+      // 2. 添加認證 token
       if (userStore.token) {
         config.headers.Authorization = `Bearer ${userStore.token}`;
       }
 
-      // 添加診所 ID（如果存在）
-      if (userStore.clinicId) {
-        config.headers['X-Clinic-Id'] = userStore.clinicId;
-      }
+      // 3. 添加診所 ID（如果存在）
+      const cid = userStore.clinicId || localStorage.getItem('crm_clinic_id') || 'clinic_001';
+      config.headers['X-Clinic-Id'] = cid;
 
       // 添加請求時間戳（防止緩存）
       if (config.method?.toLowerCase() === 'get') {
@@ -69,8 +72,13 @@ const createApiInstance = (): AxiosInstance => {
         case 401:
           // 未授權，清除用戶狀態並跳轉到登入頁面
           const userStore = useUserStore();
-          userStore.logout();
-          window.location.href = '/login';
+          // 如果是整合模式且遇到 401，可能是金鑰失效，記錄錯誤但不立即跳轉，給予除錯空間
+          if (userStore.isIntegrated) {
+            console.error('整合模式下的 401 錯誤：請檢查 X-App-Key 是否正確', errorResponse);
+          } else {
+            userStore.logout();
+            window.location.href = '/login';
+          }
           break;
         case 403:
           // 權限不足
@@ -117,6 +125,15 @@ export const http = {
 };
 
 // 各模塊的 API 服務
+export const authApi = {
+  login: (credentials: any) => http.post('/auth/login', credentials),
+  
+  sso: (params: { clinicId: string; staffId: string; ts: string; sig: string; name?: string; role?: string }) => 
+    http.get('/auth/sso', { params }),
+  
+  getProfile: () => http.get('/auth/profile'),
+};
+
 export const patientsApi = {
   getAll: (clinicId: string, params?: any) => 
     http.get('/patients', { params: { clinicId, ...params } }),
@@ -215,6 +232,20 @@ export const revenueAdjustmentApi = {
   
   getTotalAdjustmentByRevenueRecord: (revenueRecordId: string, clinicId: string) => 
     http.get(`/revenue-adjustments/revenue-record/${revenueRecordId}/total-adjustment`, { params: { clinicId } }),
+};
+
+export const attributesApi = {
+  getAll: (clinicId: string, targetEntity?: string) => 
+    http.get('/attributes', { params: { clinicId, targetEntity } }),
+  
+  getById: (id: string, clinicId: string) => 
+    http.get(`/attributes/${id}`, { params: { clinicId } }),
+  
+  create: (data: any) => http.post('/attributes', data),
+  
+  update: (id: string, data: any) => http.put(`/attributes/${id}`, data),
+  
+  delete: (id: string) => http.delete(`/attributes/${id}`),
 };
 
 export { treatmentTemplatesApi } from './treatment-templates-api';

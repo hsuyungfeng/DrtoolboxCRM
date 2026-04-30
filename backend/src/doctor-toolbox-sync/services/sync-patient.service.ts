@@ -8,7 +8,6 @@ import { SyncIndexService } from './sync-index.service';
 import { RetryService } from './retry.service';
 import { WebhookPayloadDto, ToolboxPatientDto } from '../dto/webhook-payload.dto';
 import { SyncStatus } from '../../common/enums/sync-status.enum';
-import { CreatePatientDto } from '../../patients/dto/create-patient.dto';
 
 /**
  * SyncPatientService - 患者雙向同步邏輯
@@ -62,10 +61,12 @@ export class SyncPatientService {
   ): Promise<Patient> {
     const { patient: toolboxPatient } = payload;
 
-    // 步驟 1：精確匹配（idNumber 存在時才嘗試）
-    let crmPatient = toolboxPatient.idNumber
-      ? await this.findPatientExact(clinicId, toolboxPatient.idNumber, toolboxPatient.name)
-      : null;
+    // 步驟 1：精確匹配
+    let crmPatient = await this.findPatientExact(
+      clinicId,
+      toolboxPatient.idNumber,
+      toolboxPatient.name,
+    );
 
     if (crmPatient) {
       this.logger.debug(
@@ -75,10 +76,12 @@ export class SyncPatientService {
       return await this.applyToolboxUpdate(crmPatient, toolboxPatient);
     }
 
-    // 步驟 2：備用匹配（phone 存在時才嘗試）
-    const fallbackPatient = toolboxPatient.phone
-      ? await this.findPatientFallback(clinicId, toolboxPatient.name, toolboxPatient.phone)
-      : null;
+    // 步驟 2：備用匹配
+    const fallbackPatient = await this.findPatientFallback(
+      clinicId,
+      toolboxPatient.name,
+      toolboxPatient.phone,
+    );
 
     if (fallbackPatient) {
       this.logger.debug(
@@ -116,7 +119,8 @@ export class SyncPatientService {
         idNumber: toolboxPatient.idNumber,
         email: toolboxPatient.email,
         phone: toolboxPatient.phone,
-      } as CreatePatientDto,
+        clinicId,
+      },
       clinicId,
     );
 
@@ -276,7 +280,6 @@ export class SyncPatientService {
 
       // 步驟 4：成功，更新索引
       await this.syncIndexService.updateStatus(
-        clinicId,
         patient.id,
         SyncStatus.SYNCED,
         null,
@@ -291,7 +294,6 @@ export class SyncPatientService {
 
       try {
         await this.syncIndexService.updateStatus(
-          clinicId,
           patient.id,
           SyncStatus.FAILED,
           errorMsg,

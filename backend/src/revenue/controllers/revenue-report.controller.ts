@@ -7,6 +7,8 @@ import {
 } from "@nestjs/common";
 import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
 import { RevenueReportService } from "../services/revenue-report.service";
+import { ReconciliationService } from "../services/reconciliation.service";
+import { ClinicScoped } from "../../common/decorators/clinic-scoped.decorator";
 
 /**
  * RevenueReportController — 收入報表查詢 REST API（FIN-06）
@@ -19,9 +21,13 @@ import { RevenueReportService } from "../services/revenue-report.service";
  * GET /revenue-reports/staff           — 醫護人員分潤統計
  */
 @UseGuards(JwtAuthGuard)
+@ClinicScoped()
 @Controller("revenue-reports")
 export class RevenueReportController {
-  constructor(private readonly reportService: RevenueReportService) {}
+  constructor(
+    private readonly reportService: RevenueReportService,
+    private readonly reconciliationService: ReconciliationService,
+  ) {}
 
   /**
    * GET /revenue-reports/summary?startDate=&endDate=
@@ -83,5 +89,14 @@ export class RevenueReportController {
       start,
       end,
     );
+  }
+
+  /**
+   * GET /revenue-reports/reconciliation/reports
+   * 獲取對帳報告列表
+   */
+  @Get("reconciliation/reports")
+  getReconciliationReports(@Request() req: { user: { clinicId: string } }) {
+    return this.reconciliationService.getReports(req.user.clinicId);
   }
 }

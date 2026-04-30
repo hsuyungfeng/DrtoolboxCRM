@@ -1,23 +1,27 @@
-import { NestFactory } from "@nestjs/core";
+import { NestFactory, Reflector } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { HttpExceptionFilter } from "./common/filters/http-exception.filter";
 import { AllExceptionsFilter } from "./common/filters/all-exceptions.filter";
 import { ValidationErrorFilter } from "./common/filters/validation-error.filter";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { ClinicAuthMiddleware } from "./common/middlewares/clinic-auth.middleware";
+import { ClinicGuard } from "./common/guards/clinic.guard";
+import { JwtAuthGuard } from "./auth/guards/jwt-auth.guard";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { rawBody: true });
+  const app = await NestFactory.create(AppModule);
 
-  // 註冊全域異常過濾器（LIFO 順序：最後註冊 = 最先執行）
-  // AllExceptionsFilter 最先註冊 → 最後執行（兜底）
-  // HttpExceptionFilter 次之 → 處理所有 HttpException（401/403/404 等）
-  // ValidationErrorFilter 最後 → 最先執行，優先捕獲驗證錯誤
+  const reflector = app.get(Reflector);
+
+  // 註冊全域異常過濾器（順序重要：後註冊的先執行，所以 AllExceptionsFilter 放在最前面作為最後退路）
   app.useGlobalFilters(
     new AllExceptionsFilter(),
     new HttpExceptionFilter(),
     new ValidationErrorFilter(),
   );
+
+  // 註冊全域守衛 (JwtAuthGuard 必須在 ClinicGuard 之前)
+  app.useGlobalGuards(new JwtAuthGuard(reflector), new ClinicGuard(reflector));
 
   // 啟用 CORS
   app.enableCors({
@@ -29,11 +33,18 @@ async function bootstrap() {
   // 設置全域 API 前綴
   app.setGlobalPrefix("api");
 
-  // 註冊診所隔離中間件（排除文檔和健康檢查路由）
+  // 註冊診所隔離中間件（排除認證、文檔和健康檢查路由）
   const clinicMiddleware = new ClinicAuthMiddleware();
   app.use((req, res, next) => {
-    // 排除 Swagger 文檔路由和健康檢查路由
-    if (req.path.startsWith("/api/docs") || req.path === "/api/health") {
+    const path = req.path;
+    // 排除不需要診所隔離的路由
+    if (
+      path === "/api" || 
+      path === "/api/" ||
+      path.startsWith("/api/auth") ||
+      path.startsWith("/api/docs") ||
+      path === "/api/health"
+    ) {
       return next();
     }
     return clinicMiddleware.use(req, res, next);

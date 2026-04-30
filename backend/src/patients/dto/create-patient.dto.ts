@@ -59,4 +59,7 @@ export class CreatePatientDto {
   @IsOptional()
   @IsString()
   emergencyPhone?: string;
+
+  @IsOptional()
+  customFields?: Record<string, any>;
 }

@@ -100,6 +100,7 @@ describe('SyncPatientService', () => {
 
     const payload: WebhookPayloadDto = {
       webhookId: 'webhook-123',
+      clinicId,
       patientId: 'TB-001',
       action: 'patient_created' as any,
       timestamp: Math.floor(Date.now() / 1000),
@@ -149,12 +150,13 @@ describe('SyncPatientService', () => {
         name: toolboxPatient.name,
         phoneNumber: '0987654321', // 舊電話
         email: null, // 舊郵箱為空
-      } as unknown as Patient;
+      } as Patient;
 
       const updatedPatient = { ...existingPatient };
 
-      patientRepository.findOne.mockResolvedValueOnce(existingPatient); // 精確匹配找到
-      patientRepository.save.mockResolvedValueOnce(updatedPatient); // 更新後的患者
+      patientRepository.findOne
+        .mockResolvedValueOnce(existingPatient) // 精確匹配找到
+        .mockResolvedValueOnce(updatedPatient); // save 返回更新後的患者
 
       const result = await service.syncFromToolbox(payload, clinicId);
 
@@ -174,15 +176,15 @@ describe('SyncPatientService', () => {
         name: toolboxPatient.name,
         phoneNumber: toolboxPatient.phone,
         email: null,
-      } as unknown as Patient;
+      } as Patient;
 
       const mergedPatient = { ...existingPatient };
-      mergedPatient.email = toolboxPatient.email ?? ''; // 更新郵箱
+      mergedPatient.email = toolboxPatient.email; // 更新郵箱
 
       patientRepository.findOne
         .mockResolvedValueOnce(null) // 精確匹配失敗
-        .mockResolvedValueOnce(existingPatient); // 備用匹配成功
-      patientRepository.save.mockResolvedValueOnce(mergedPatient); // 合併後的患者
+        .mockResolvedValueOnce(existingPatient) // 備用匹配成功
+        .mockResolvedValueOnce(mergedPatient); // save 返回合併後的患者
 
       const result = await service.syncFromToolbox(payload, clinicId);
 
@@ -258,7 +260,7 @@ describe('SyncPatientService', () => {
         idNumber: '111111111', // CRM 身份證號優先
         phoneNumber: '0912345678', // CRM 已有電話
         email: null, // CRM 郵箱為空
-      } as unknown as Patient;
+      } as Patient;
 
       const toolboxData: ToolboxPatientDto = {
         idNumber: '222222222', // Toolbox 身份證號被忽略
@@ -330,7 +332,6 @@ describe('SyncPatientService', () => {
 
         expect(retryService.executeWithRetry).toHaveBeenCalled();
         expect(syncIndexService.updateStatus).toHaveBeenCalledWith(
-          clinicId,
           patient.id,
           SyncStatus.SYNCED,
           null,
@@ -360,7 +361,6 @@ describe('SyncPatientService', () => {
         await service.pushPatientToToolbox(patient, clinicId);
 
         expect(syncIndexService.updateStatus).toHaveBeenCalledWith(
-          clinicId,
           patient.id,
           SyncStatus.FAILED,
           expect.stringContaining('Network timeout'),

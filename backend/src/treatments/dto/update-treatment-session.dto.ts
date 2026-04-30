@@ -42,6 +42,14 @@ export class UpdateTreatmentSessionDto {
   patientFeedback?: string;
 
   @IsOptional()
+  @IsString()
+  executedBy?: string;
+
+  @IsOptional()
+  @IsString()
+  executedRole?: string;
+
+  @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => StaffAssignmentDto)

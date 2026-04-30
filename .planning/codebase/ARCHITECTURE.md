@@ -1,217 +1,109 @@
 # Architecture
 
-**Analysis Date:** 2026-03-26
+**Analysis Date:** 2025-05-22
 
 ## Pattern Overview
 
-**Overall:** Modular NestJS backend with Domain-Driven Design (DDD) layering, combined with Vue 3 frontend using Pinia for state management. Multi-tenant architecture with clinic isolation at middleware and guard levels.
+**Overall:** Modular Monolith (Backend) + Component-based Single Page Application (Frontend)
 
 **Key Characteristics:**
-- Feature-based module organization (each feature is a self-contained module)
-- Repository pattern via TypeORM for data access
-- Event-driven architecture using NestJS EventEmitter for cross-module communication
-- Clinic-isolation middleware enforcing multi-tenant boundaries at request level
-- Axios-based API client on frontend with request/response interceptors for auth and clinic context
-- Pinia stores for frontend state management with localStorage persistence
+- **Domain-Driven Design (lite):** Backend organized into functional modules (Patients, Treatments, Staff, etc.).
+- **Clinic-based Isolation:** Multi-tenancy achieved through clinic-specific context and middleware.
+- **Event-Driven:** Uses NestJS `EventEmitter` for decoupled side effects (e.g., notifications, audit logs).
 
 ## Layers
 
+**API Layer (Backend):**
+- Purpose: Entry point for HTTP requests, routing, and request validation.
+- Location: `backend/src/*/controllers/`
+- Contains: NestJS Controllers, DTOs, Swagger decorators.
+- Depends on: Services, DTOs.
+- Used by: Frontend API services.
+
+**Business Logic Layer (Backend):**
+- Purpose: Core application logic, business rules, and orchestration.
+- Location: `backend/src/*/services/`
+- Contains: NestJS Providers/Services.
+- Depends on: Repositories, EventEmitter, other Services.
+- Used by: Controllers, other Services.
+
+**Data Access Layer (Backend):**
+- Purpose: Database interaction and persistence logic.
+- Location: `backend/src/*/repositories/` and `backend/src/*/entities/`
+- Contains: TypeORM Entities, Custom Repositories.
+- Depends on: TypeORM.
+- Used by: Services.
+
 **Presentation Layer (Frontend):**
-- Purpose: User interface and interaction handling
-- Location: `frontend/src/views/`, `frontend/src/components/`
-- Contains: Vue components, page layouts, UI logic
-- Depends on: Services layer, Stores, Router
-- Used by: Browser/client
+- Purpose: User interface and user interaction.
+- Location: `frontend/src/views/` and `frontend/src/components/`
+- Contains: Vue SFCs (.vue), Naive UI components.
+- Depends on: Stores, Services.
 
-**Service Layer (Frontend):**
-- Purpose: API communication and business logic coordination
-- Location: `frontend/src/services/api.ts`, `frontend/src/services/treatments-api.ts`
-- Contains: Axios configuration, HTTP method wrappers, request/response interceptors
-- Depends on: axios library, Pinia stores
-- Used by: Components and views
-
-**State Management (Frontend):**
-- Purpose: Application state persistence and reactive updates
-- Location: `frontend/src/stores/user.ts`
-- Contains: Pinia stores with user authentication, clinic context, role management
-- Depends on: localStorage API, Vue reactivity
-- Used by: Components via useUserStore()
-
-**Controller Layer (Backend):**
-- Purpose: HTTP request handling and routing
-- Location: `backend/src/*/controllers/*.ts` (e.g., `backend/src/patients/controllers/patient.controller.ts`)
-- Contains: REST endpoints, request validation, response formatting
-- Depends on: Services, DTOs
-- Used by: Router, middleware
-
-**Service Layer (Backend):**
-- Purpose: Business logic, data processing, and cross-service orchestration
-- Location: `backend/src/*/services/*.ts`
-- Contains: Core algorithms (PPF calculation, revenue rules), data transformation
-- Depends on: Repositories, other services, event emitter
-- Used by: Controllers, event listeners
-
-**Repository/Data Access Layer (Backend):**
-- Purpose: Database operations through TypeORM
-- Location: Injected via `@InjectRepository()` decorator
-- Contains: Database queries via TypeORM Repository API
-- Depends on: TypeORM entities
-- Used by: Services
-
-**Entity Layer (Backend):**
-- Purpose: Database schema and type definitions
-- Location: `backend/src/*/entities/*.entity.ts`
-- Contains: TypeORM entity classes with decorators
-- Depends on: TypeORM decorators, Decimal.js
-- Used by: Services, controllers (for type safety)
-
-**Module Layer (Backend):**
-- Purpose: Feature encapsulation and dependency injection
-- Location: `backend/src/*/[feature].module.ts`
-- Contains: Module definition with imports, controllers, providers, exports
-- Depends on: NestJS, TypeOrmModule
-- Used by: AppModule for composition
-
-**Common/Infrastructure Layer (Backend):**
-- Purpose: Cross-cutting concerns and utilities
-- Location: `backend/src/common/`
-- Contains: Exception filters, middleware, guards, interceptors, audit logging
-- Depends on: NestJS core
-- Used by: Application-wide, injected into modules
+**State Management Layer (Frontend):**
+- Purpose: Client-side state and reactive data.
+- Location: `frontend/src/stores/`
+- Contains: Pinia stores.
+- Depends on: Services (API).
 
 ## Data Flow
 
-**User Authentication & Multi-Tenant Request Flow:**
+**Request-Response Flow:**
 
-1. User submits login credentials via frontend LoginView
-2. API request goes through axios interceptor which adds X-Clinic-Id header
-3. ClinicAuthMiddleware validates clinicId from header/query/body and attaches to request object
-4. ClinicContextGuard checks user auth and clinic access permissions
-5. Controller receives request with clinicId context
-6. Services filter queries by clinicId ensuring data isolation
-7. Response returns to axios response interceptor which extracts data portion
-8. Pinia user store updates with token, clinicId, and role
-9. Frontend can now request other resources with clinic context
+1. Frontend Component triggers an action (e.g., clicking "Save").
+2. Component calls a method in a Pinia Store (`frontend/src/stores/`).
+3. Store calls an API Service (`frontend/src/services/`) using Axios.
+4. Backend `ClinicAuthMiddleware` intercepts the request to set clinic context.
+5. Backend Controller (`backend/src/*/controllers/`) validates the DTO.
+6. Controller calls the Service (`backend/src/*/services/`).
+7. Service performs business logic and interacts with the Repository (`backend/src/*/repositories/`).
+8. Service might emit an event (`EventEmitter2`).
+9. Response flows back through the Controller to the Frontend Store, then to the Component.
 
-**Treatment Creation with Revenue & Points Trigger:**
-
-1. Staff creates TreatmentCourse via TreatmentCourseController
-2. TreatmentCourseService saves to database
-3. EventEmitter emits TreatmentCompletedEvent
-4. RevenueEventListener subscribes and triggers RevenueCalculationService
-5. RevenueCalculationService calls RevenueRuleEngine
-6. RevenueRuleEngine applies rules via PPFCalculationService
-7. RevenueRecordService creates revenue records for each staff member
-8. PointsService updates patient points balance via PointsTransaction
-9. AuditLogService (Global module) logs all mutations
-
-**Patient Treatment History Retrieval:**
-
-1. PatientDetailView requests patient data via treatments-api
-2. API service calls GET /api/patients/:id with clinicId header
-3. PatientController.findOne() routes to PatientService
-4. PatientService queries database with clinicId filter and eager-loads treatments relation
-5. TypeORM returns Patient entity with nested TreatmentSession[] relations
-6. Response flows through axios interceptor, Pinia store updates
-7. Component renders TreatmentHistoryTab with sessions
-
-**State Management (Frontend):**
-
-- Pinia store (user.ts) holds: user object, token, clinicId, availableClinics
-- localStorage persists token and clinicId across page refreshes
-- Routes check user authentication via route guards (meta properties)
-- Components access store via useUserStore() composable
+**State Management:**
+- **Server State:** Handled by NestJS Services and TypeORM, persisted in SQLite.
+- **Client State:** Handled by Pinia stores for global state (e.g., user profile, revenue stats) and local component state for UI-specific data.
 
 ## Key Abstractions
 
-**Module Pattern (Backend):**
-- Purpose: Encapsulate feature-related controllers, services, entities, and providers
-- Examples: `PatientsModule`, `TreatmentsModule`, `RevenueModule`, `PointsModule`
-- Pattern: Each module controls its own database entities via TypeOrmModule.forFeature(), exports public services, manages internal dependencies
+**Clinic Context:**
+- Purpose: Ensures data isolation between different medical clinics.
+- Examples: `backend/src/common/middlewares/clinic-auth.middleware.ts`, `backend/src/common/clinic/clinic-context.guard.ts`.
+- Pattern: Request-scoped context / Middleware.
 
-**Service Pattern (Backend):**
-- Purpose: Encapsulate business logic separate from HTTP concerns
-- Examples: `PatientService`, `TreatmentCourseService`, `PPFCalculationService`
-- Pattern: Injectable classes with repository injection, methods correspond to domain operations
-
-**Event-Driven Pattern (Backend):**
-- Purpose: Decouple modules for async, side-effect operations
-- Examples: TreatmentCompletedEvent triggers RevenueEventListener and PointsService updates
-- Pattern: EventEmitter.emit() from service → EventListener subscribes → triggers side effects
-
-**Guard/Middleware Pattern (Backend):**
-- Purpose: Request-level enforcement of business rules and security
-- Examples: ClinicContextGuard (auth + clinic access), ClinicAuthMiddleware (clinic ID extraction)
-- Pattern: Guard validates state, Middleware modifies request context
-
-**API Client Pattern (Frontend):**
-- Purpose: Centralized HTTP communication with auth/clinic headers
-- Location: `frontend/src/services/api.ts`
-- Pattern: Axios interceptors add Authorization and X-Clinic-Id headers, handle 401 logout
-
-**Store Pattern (Frontend):**
-- Purpose: Centralized reactive state with localStorage sync
-- Location: `frontend/src/stores/user.ts`
-- Pattern: Pinia defineStore with computed properties, methods that read/write localStorage
+**Audit Logging:**
+- Purpose: Tracks all critical actions within the system for compliance.
+- Examples: `backend/src/common/audit/audit-log.service.ts`, `backend/src/common/audit/audit.module.ts`.
+- Pattern: Event Listeners / Interceptors.
 
 ## Entry Points
 
-**Backend Entry Point:**
+**Backend Main:**
 - Location: `backend/src/main.ts`
-- Triggers: npm start (development) or node dist/main (production)
-- Responsibilities:
-  - Bootstrap NestApplication via NestFactory.create(AppModule)
-  - Configure global filters (HttpExceptionFilter, AllExceptionsFilter)
-  - Enable CORS with origin validation
-  - Register ClinicAuthMiddleware (except /api/docs and /api/health)
-  - Setup Swagger documentation at /api/docs
-  - Listen on PORT (default 3000)
+- Triggers: Node.js process start.
+- Responsibilities: Initialize NestJS app, register global filters, set up Swagger, enable CORS, start listening on port.
 
-**Frontend Entry Point:**
+**Frontend Main:**
 - Location: `frontend/src/main.ts`
-- Triggers: npm run dev (development) or npm run build (production)
-- Responsibilities:
-  - Create Vue app instance
-  - Setup Pinia store instance
-  - Load Naive UI component library and styles
-  - Initialize i18n for multi-language support
-  - Register Vue Router
-  - Mount to #app DOM element
-
-**Database Entry Point:**
-- Location: `backend/src/config/database.config.ts`
-- Triggers: AppModule initialization via TypeOrmModule.forRoot()
-- Responsibilities:
-  - Configure database type (SQLite or PostgreSQL based on DB_TYPE env)
-  - Register all entities (Patient, Treatment, Staff, Revenue*, Points*, etc.)
-  - Enable synchronize in development for auto-migrations
-  - Setup migrations directory
+- Triggers: Browser load.
+- Responsibilities: Initialize Vue app, register Pinia, Naive UI, i18n, and Router.
 
 ## Error Handling
 
-**Strategy:** Structured exception hierarchy with global filters and consistent error response format.
+**Strategy:** Global Exception Filters and Centralized Error Definitions.
 
 **Patterns:**
-- Custom exceptions inherit from NestJS HttpException for status code mapping
-- HttpExceptionFilter catches and formats HTTP exceptions to standardized ApiErrorResponse
-- AllExceptionsFilter catches unexpected errors, logs them, returns generic error response
-- API responses include statusCode, message, errorCode, timestamp, path, details, errors
-- Frontend axios interceptor handles specific status codes (401 logout, 403 forbidden, 404 not found)
+- **Global Filters:** `backend/src/common/filters/all-exceptions.filter.ts` (catch-all), `backend/src/common/filters/http-exception.filter.ts` (REST errors).
+- **Validation Errors:** `backend/src/common/filters/validation-error.filter.ts` specifically handles `class-validator` issues.
+- **Custom Exceptions:** `backend/src/common/exceptions/` (e.g., `BusinessRuleException`).
 
 ## Cross-Cutting Concerns
 
-**Logging:** NestJS Logger class used in middleware and services, logs to console in development
-
-**Validation:** class-validator decorators on DTOs for automatic request validation, BadRequestException for failures
-
-**Authentication:** JWT via passport-jwt strategy, token passed in Authorization header, validated in ClinicContextGuard
-
-**Authorization:** Clinic isolation via ClinicContextGuard checking user.clinicId against request clinicId, role-based checks for super_admin
-
-**Audit Logging:** AuditLogService (Global module) subscribes to mutations, records actor, action, entity type, changes to AuditLog table
-
-**Multi-Tenancy:** ClinicAuthMiddleware extracts clinicId from header/query/body, ClinicContextGuard validates access, services always filter by clinicId in queries
+**Logging:** Standardized through NestJS Logger and custom `AuditLogService` for business events.
+**Validation:** DTO-based validation using `class-validator` and `class-transformer` in the backend.
+**Authentication:** JWT-based authentication with Clinic ID isolation.
+**Synchronization:** `DoctorToolboxSyncModule` handles integration with external "Doctor Toolbox" system.
 
 ---
 
-*Architecture analysis: 2026-03-26*
+*Architecture analysis: 2025-05-22*

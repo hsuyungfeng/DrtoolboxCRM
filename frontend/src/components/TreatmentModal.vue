@@ -71,6 +71,14 @@
               :rows="3"
             />
           </n-form-item>
+
+          <!-- 自定義欄位 -->
+          <DynamicFieldRenderer
+            v-if="attributeDefinitions.length > 0"
+            v-model="formValue.customFields"
+            :definitions="attributeDefinitions"
+            path-prefix="customFields"
+          />
         </n-form>
       </n-tab-pane>
 
@@ -86,7 +94,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import {
   NModal,
   NForm,
@@ -102,9 +110,10 @@ import {
 } from 'naive-ui';
 import type { FormInst, FormRules } from 'naive-ui';
 import type { Treatment } from '@/types';
-import { patientsApi } from '@/services/api';
+import { patientsApi, attributesApi } from '@/services/api';
 import { useUserStore } from '@/stores/user';
 import TreatmentSessionsManager from './TreatmentSessionsManager.vue';
+import DynamicFieldRenderer from './common/DynamicFieldRenderer.vue';
 
 interface FormData {
   patientId: string;
@@ -115,6 +124,7 @@ interface FormData {
   expectedEndDate: number | null;
   enableReminder: boolean;
   notes: string;
+  customFields?: Record<string, any>;
 }
 
 interface Props {
@@ -136,6 +146,7 @@ const userStore = useUserStore();
 const message = useMessage();
 const formRef = ref<FormInst | null>(null);
 const patientOptions = ref<any[]>([]);
+const attributeDefinitions = ref<any[]>([]);
 const clinicId = computed(() => userStore.clinicId || 'clinic_001');
 
 const formValue = ref({
@@ -147,6 +158,7 @@ const formValue = ref({
   expectedEndDate: null as any,
   enableReminder: false,
   notes: '',
+  customFields: {} as Record<string, any>,
 });
 
 const rules: FormRules = {
@@ -173,6 +185,7 @@ watch(() => props.treatment, (treatment) => {
       expectedEndDate: treatment.expectedEndDate ? new Date(treatment.expectedEndDate).getTime() : null,
       enableReminder: false,
       notes: treatment.notes || '',
+      customFields: treatment.customFields || {},
     };
   } else {
     resetForm();
@@ -181,13 +194,22 @@ watch(() => props.treatment, (treatment) => {
 
 async function loadPatients() {
   try {
-    const patients = await patientsApi.getAll('clinic_001');
+    const patients = await patientsApi.getAll(clinicId.value);
     patientOptions.value = patients.map((p: any) => ({
       label: p.name,
       value: p.id,
     }));
   } catch (error) {
     message.error('加載患者列表失敗');
+  }
+}
+
+async function loadAttributeDefinitions() {
+  try {
+    const defs = await attributesApi.getAll(clinicId.value, 'treatment');
+    attributeDefinitions.value = defs;
+  } catch (error) {
+    console.error('加載自定義欄位定義失敗:', error);
   }
 }
 
@@ -201,6 +223,7 @@ function resetForm() {
     expectedEndDate: null,
     enableReminder: false,
     notes: '',
+    customFields: {},
   };
 }
 
@@ -218,6 +241,7 @@ async function handleSubmit() {
       expectedEndDate: formValue.value.expectedEndDate,
       enableReminder: formValue.value.enableReminder,
       notes: formValue.value.notes,
+      customFields: formValue.value.customFields,
     };
 
     emit('confirm', submitData);
@@ -226,5 +250,8 @@ async function handleSubmit() {
   }
 }
 
-loadPatients();
+onMounted(async () => {
+  await loadPatients();
+  await loadAttributeDefinitions();
+});
 </script>

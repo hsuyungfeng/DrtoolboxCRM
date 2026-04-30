@@ -20,7 +20,6 @@ import {
   Body,
   Param,
   Query,
-  UseGuards,
   Req,
   HttpCode,
   HttpStatus,
@@ -42,10 +41,12 @@ interface ApiResponse<T> {
   count?: number;
 }
 
+import { ClinicScoped } from '../../common/decorators/clinic-scoped.decorator';
+
 @ApiBearerAuth()
 @ApiTags('醫令管理 Medical Orders')
-@Controller('api/medical-orders')
-@UseGuards(JwtAuthGuard, ClinicContextGuard)
+@Controller('medical-orders')
+@ClinicScoped()
 export class MedicalOrderController {
   constructor(private readonly medicalOrderService: MedicalOrderService) {}
 

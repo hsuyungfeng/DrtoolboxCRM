@@ -80,7 +80,6 @@ export class SyncAuditService {
     clinicId: string,
     startDate: Date,
     endDate: Date,
-    limit: number = 5000,
   ): Promise<SyncAuditLog[]> {
     return this.auditLogRepository.find({
       where: {
@@ -88,7 +87,6 @@ export class SyncAuditService {
         timestamp: Between(startDate, endDate),
       },
       order: { timestamp: 'DESC' },
-      take: limit,
     });
   }
 

@@ -7,11 +7,16 @@ import {
   Put,
   Delete,
   Query,
+  UseGuards,
 } from "@nestjs/common";
 import { RevenueRuleService } from "../services/revenue-rule.service";
 import { CreateRevenueRuleDto } from "../dto/create-revenue-rule.dto";
 import { UpdateRevenueRuleDto } from "../dto/update-revenue-rule.dto";
+import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
+import { ClinicScoped } from "../../common/decorators/clinic-scoped.decorator";
 
+@UseGuards(JwtAuthGuard)
+@ClinicScoped()
 @Controller("revenue-rules")
 export class RevenueRuleController {
   constructor(private readonly revenueRuleService: RevenueRuleService) {}
